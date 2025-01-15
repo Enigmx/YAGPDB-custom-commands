@@ -1,6 +1,7 @@
 {{$admin := cslice 0}}
 {{$channels := cslice 0}}
 
+{{/* don't touch below */}}
 {{$staff := false}}
 {{range $admin}}
 {{if (in $.Member.Roles .)}}
