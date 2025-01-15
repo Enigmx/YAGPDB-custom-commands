@@ -1,0 +1,220 @@
+{{$admin := cslice 0}}
+{{$channels := cslice 0}}
+
+{{$staff := false}}
+{{range $admin}}
+{{if (in $.Member.Roles .)}}
+{{$staff = true}}
+{{break}}
+{{end}}
+{{end}}
+
+{{$string := ""}}
+{{$dict := (dbGet 0 "pets").Value}}
+{{if not (dbGet 0 "pets")}}
+{{$dict = dict}}
+{{end}}
+{{if and (eq (len $dict) 0) (eq (len .Args) 1)}}
+Nothing has been uploaded yet. Upload your first picture by running 
+**-pet admin add [Name]**. (Server Staff only)
+{{return}}
+{{end}}
+
+{{if eq (len .Args) 1}}
+{{if or (in $channels .Channel.ID) (and (eq (len .Args) 1) ($staff))}}
+{{$fact := randInt 1 3}}
+{{if eq $fact 1}}
+{{$fact = exec "cat"}}
+{{else}}
+{{$fact = exec "dog"}}
+{{end}}
+{{$id := randInt 1 (add (len $dict) 1)}}
+{{if not ($dict.HasKey (toInt64 $id))}}
+{{$id = randInt 0 (len $dict)}}
+{{end}}
+{{if not ($dict.HasKey (toInt64 $id))}}
+{{$id = randInt 0 (len $dict)}}
+{{end}}
+{{$name := ""}}
+{{$image := ""}}
+{{range $k , $v := ($dict.Get (toInt64 $id))}}
+{{$name = $k}}
+{{$image = $v}}
+{{end}}
+{{sendMessage nil (cembed "description" $fact "footer" (sdict "text" (print "Their name is " $name "!")) "color" 0x979090 "image" (sdict "url" (print "https://cdn.discordapp.com/attachments/" $image)))}}
+{{return}}
+{{else}}
+{{return}}
+{{end}}
+{{end}}
+
+{{if and (eq (len .Args) 2) (eq (index .Args 1) "admin") ($staff)}}
+__**Admin tools**__
+
+-pet admin add [Name] [Picture attachment]
+Add a new picture to the server
+
+-pet admin remove [ID]
+Remove a picture from the server
+
+-pet admin list [Number]
+Show a picture based in its ID
+
+-pet admin list page [Page number]
+Show a list of pictures and their IDs
+
+-pet admin database
+Get everything stored in the internal database
+{{return}}
+{{end}}
+
+{{if and (eq (len .Args) 3) ($staff)}}
+
+{{if eq (index .Args 2) "database"}}
+{{sendMessage nil (complexMessage "content" "Database content, max weight: 100kb" "file" (print (json $dict true)))}}
+{{return}}
+{{end}}
+
+{{if eq (index .Args 2) "list"}}
+{{$joinStr := ""}}
+{{range $seq := (seq 1 10)}}
+{{if ($dict.Get .)}}
+{{range $key , $value := ($dict.Get .)}}
+{{$seq = print "**[" $seq "]** "}}
+{{$joinStr = joinStr " " $seq $key}}
+{{end}}
+{{$string = joinStr "\n\n" $string $joinStr}}
+{{end}}
+{{end}}
+{{sendMessage nil (cembed "description" (print $string) "title" "Server pets" "footer" (sdict "text" "Page 1") "color" 0x979090)}}
+{{return}}
+{{end}}
+
+{{if and (eq (index .Args 2) "add") ($staff)}}
+__**Usage:**__
+-pet admin add [Name] [Picture as message attachment]
+{{return}}
+{{else if and (eq (index .Args 2) "remove") ($staff)}}
+__**Usage:**__
+-pet admin remove [ID]
+{{return}}
+{{end}}
+
+{{else if (gt (len .Args) 3)}}
+{{if and (eq (index .Args 2) "add") ($staff)}}
+{{$string = (index (reSplit `add` .Message.Content 2) 1)}}
+{{$string = trimSpace $string}}
+{{if eq (len .Message.Attachments) 1}}
+{{$file := (index .Message.Attachments 0).URL}}
+{{$file = reSplit `/` $file 5}}
+{{$file = index $file 4}}
+{{if eq (len $dict) 0}}
+{{$dict = dict (toInt64 1) (sdict $string $file)}}
+{{dbSet 0 "pets" $dict}}
+Added **{{$string}}** to the gallery 🐍
+{{return}}
+{{else}}
+{{$id := 0}}
+{{range (seq 1 400)}}
+{{if $dict.HasKey (toInt64 .)}}
+{{continue}}
+{{else}}
+{{$id = .}}
+{{break}}
+{{end}}
+{{end}}
+{{$dict.Set (toInt64 $id) (sdict $string $file)}}
+{{dbSet 0 "pets" $dict}}
+Added **{{$string}}** to the gallery 🐍
+{{return}}
+
+{{end}}
+{{else}}
+Seems like you didn't provide the picture...
+{{return}}
+{{end}} 
+{{return}}
+{{else if and (eq (index .Args 2) "remove") ($staff)}}
+{{$string = (index (reSplit `remove` .Message.Content 2) 1)}}
+{{$string = trimSpace $string}}
+{{if ($dict.HasKey (toInt64 $string))}}
+{{$a := ""}}
+{{$b := ""}}
+{{range $k , $v := ($dict.Get (toInt64 $string))}}
+{{$a = $k}}
+{{$b = $v}}
+{{break}}
+{{end}}
+Erased **{{$a}}** from the gallery :(
+{{print "https://cdn.discordapp.com/attachments/" $b}}
+{{$dict.Del (toInt64 $string)}}
+{{dbSet 0 "pets" $dict}}
+{{return}}
+{{else}}
+Seems like that ID does not exist already...
+{{return}}
+{{end}}
+{{end}}
+
+{{if and (inFold (index .Args 2) "list") $staff}}
+{{if (inFold (index .Args 3) "page")}}
+{{try}}
+{{$yus := index .Args 4}}
+{{catch}}
+Which page do you want to see?
+
+**__Usage:__**
+-pet admin list page [Number]
+{{return}}
+{{end}}
+{{if $id := (reFind `\d+` (index .Args 4))}}
+{{$page := ""}}
+{{$string := ""}}
+{{$key := ""}}
+{{$page = toInt (joinStr "" $id 0)}}
+{{$result1 := sub $page 9}}
+{{$result2 := sub $page 8}}
+{{$result3 := sub $page 7}}
+{{$result4 := sub $page 6}}
+{{$result5 := sub $page 5}}
+{{$result6 := sub $page 4}}
+{{$result7 := sub $page 3}}
+{{$result8 := sub $page 2}}
+{{$result9 := sub $page 1}}
+{{$result10 := $page}}
+{{range $seq := (seq $result1 (add $page 1))}}
+{{if ($dict.Get (toInt64 .))}}
+{{range $key , $value := ($dict.Get (toInt64 .))}}
+{{$string = (print $string "\n**[" $seq "]** " $key "\n")}}
+{{continue}}
+{{end}}
+{{end}}
+{{end}}
+{{sendMessage nil (cembed "title" (print "Page " $id) "description" (print $string) "color" 0x979090)}}
+{{return}}
+{{else}}
+Which page do you want to see?
+
+**__Usage:__**
+-pet admin page [Number]
+{{return}}
+{{end}}
+{{end}}
+{{$keys := ""}}
+{{$content := ""}}
+{{if $id := (toInt64 (reFind `\d+` (index .Args 3)))}}
+{{range $key , $value := ($dict.Get $id)}}
+{{$keys = $key}}
+{{$content = $value}}
+{{break}}
+{{end}}
+{{sendMessage nil (complexMessage "embed" (cembed "title" (print $keys) "image" (sdict "url" (print "https://cdn.discordapp.com/attachments/" $content)) "color" 0x979090))}}
+{{return}}
+{{else}}
+I couldn't tell which ID to fetch for...
+{{return}}
+{{end}}
+{{end}}
+{{end}}
+
+{{/* made in chile */}}
