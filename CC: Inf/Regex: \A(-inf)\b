@@ -1,0 +1,164 @@
+{{$db := (dbGet 0 "infEnigma").Value}}
+{{if not $db}}
+{{$db = dict}}
+{{end}}
+{{if eq (len .Args) 1}}
+{{$string := ""}}
+{{range (seq 0 30)}}
+{{if not ($db.Get (toInt64 .))}}
+{{continue}}
+{{end}}
+{{$string = print $string "**" . "**"}}
+{{range $k2, $v2 := ($db.Get (toInt64 .))}}
+{{range (split $k2 "/")}}
+{{$string = print $string " **|** " .}}
+{{end}}
+{{$string = print $string "\n"}}
+{{end}}
+{{end}}
+### Automatically generate an infraction reason.
+
+__Usage:__
+-inf [User] [Reason]
+
+__Available reasons:__
+{{$string}}
+{{return}}
+{{end}}
+{{if eq (len .Args) 2}}
+{{if not (eq (lower (index .Args 1)) "admin")}}
+{{if (reFind `\d+` (index .Args 1))}}
+I could not tell which template to send. Try again?
+
+**__Usage:__**
+-inf [User ID] [Template]
+{{return}}
+{{else}}
+I didn't seem to find an ID in the first argument. Try again?
+
+**__Usage:__**
+-inf [User ID] [Template]
+{{return}}
+{{end}}
+{{end}}
+{{end}}
+{{if ge (len .Args) 3}}
+{{if not (eq (lower (index .Args 1)) "admin")}}
+{{if $id := (reFind `\d+` (index .Args 1))}}
+{{$template := ""}}
+{{range $c, $a := .Args}}
+{{if not (eq $c 0 1)}}
+{{$template = print $template " " .}}
+{{end}}
+{{end}}
+{{$template = trimSpace $template}}
+{{range $k, $v := $db}}
+{{$compare := print $k "/"}}
+{{range $k2, $v2 := $v}}
+{{$compare = print $compare $k2}}
+{{range (split $compare "/")}}
+{{if eq (lower $template) (lower .)}}
+{{range $v2}}
+{{if not (le (len .) 0)}}
+{{$content := ""}}
+{{range $c, $s := (split . "[ID]")}}
+{{if eq $c 0}}
+{{$content = $s}}
+{{continue}}
+{{end}}
+{{$content = print $content $id $s}}
+{{end}}
+{{sendMessage nil (complexMessage "content" $content "embed" (cembed "author" (sdict "name" ($.User.Username) "icon_url" ($.User.AvatarURL "512")) "color" 0xf707bf "description" (print "Automatically generated an infraction reason 🤖")))}}
+{{end}}
+{{end}}
+{{return}}
+{{end}}
+{{end}}
+{{end}}
+{{end}}
+Seems like this template does not exist. Check which ones exist by running -inf.
+{{return}}
+{{end}}
+{{end}}
+{{end}}
+{{if eq (len .Args) 2}}
+{{if eq (lower (index .Args 1)) "admin"}}
+{{sendMessage nil (complexMessage "embed" (cembed "title" "Administrator tools" "color" 0xf707bf "description" "**__Listing templates__**\n-inf admin list [ID]\n\n**__Adding templates__**\nRun -__inf admin list__ and use the ''Create'' tool.\n\n**__Editing templates__**\nUse __-inf admin list [ID]__ and use the ''Edit generated messages'' tool. A key word can generate up to 9 messages, each message corresponds to a form text box, to add a new message, write something in an unused text box (use [ID] as a place holder for the user ID), to edit a current message, write in an already used text box, and to remove a message leave the text box empty. To edit the key words themselves, use the first text box.\n\n**__Deleting templates__**\nUse __-inf admin list [ID]__ and use the ''Delete'' tool."))}}
+{{return}}
+{{end}}
+{{end}}
+{{if eq (len .Args) 3}}
+{{if eq (lower (index .Args 1)) "admin"}}
+{{if eq (lower (index .Args 2)) "list"}}
+{{$a := 0}}
+{{$string := ""}}
+{{range (seq 0 10)}}
+{{if not ($db.Get (toInt64 .))}}
+{{continue}}
+{{end}}
+{{$string = print $string "\n\n**" . "**: "}}
+{{range $k, $v := ($db.Get (toInt64 .))}}
+{{$string = print $string $k}}
+{{end}}
+{{end}}
+{{sendMessage nil (complexMessage "embed" (cembed "title" "Templates" "color" 0xf707bf "description" $string) "buttons" (cbutton "label" "Create" "custom_id" "infEnigmaCreate" "style" "green"))}}
+{{return}}
+{{end}}
+{{end}}
+{{end}}
+{{if eq (len .Args) 4}}
+{{if eq (lower (index .Args 1)) "admin"}}
+{{if eq (lower (index .Args 2)) "list"}}
+{{if reFind `\d+` (index .Args 3)}}
+{{$ID := reFind `\d+` (index .Args 3)}}
+{{$string := print "**Keywords:**"}}
+{{if not ($db.Get (toInt64 $ID))}}
+This template ID does not exist... check what is available by running __-inf admin list__.
+{{return}}
+{{end}}
+{{range $k, $v := ($db.Get (toInt64 $ID))}}
+{{$string = print $string " " $k "\n"}}
+{{$count := 0}}
+{{range $v}}
+{{$count = add $count 1}}
+{{$string = print $string "\n**" $ID "." $count " :** " . "\n"}}
+{{end}}
+{{end}}
+{{sendMessage nil (complexMessage "embed" (cembed "title" (print "Current template: " $ID) "color" 0xf707bf "description" $string) "buttons" (cslice (sdict "label" "Edit keywords or 1, 2, 3, 4" "style" "green" "custom_id" "infEnigmaEdit1")  (sdict "label" "Edit 5, 6, 7, 8, 9" "style" "green" "custom_id" "infEnigmaEdit2")  (sdict "label" "Delete" "style" "red" "custom_id" "infEnigmaDelete")))}}
+{{return}}
+{{end}}
+I couldn't tell which ID to fetch. Try again?
+
+**__Usage:__**
+-inf admin list [ID]
+{{return}}
+{{end}}
+{{end}}
+{{end}}
+{{if eq (len .Args) 5}}
+{{if eq (lower (index .Args 1)) "admin"}}
+{{if eq (lower (index .Args 2)) "list"}}
+{{if eq (lower (index .Args 3)) "page"}}
+{{if $page := reFind `\d+` (index .Args 4)}}
+{{$db := (dbGet 0 "infEnigma").Value}}
+{{$string := ""}}
+{{range (seq (toInt (print (sub $page 1) "0")) (toInt (print $page 0)))}}
+{{if not ($db.Get (toInt64 .))}}
+{{continue}}
+{{end}}
+{{$string = print $string "**" . "**:"}}
+{{range $k, $v := ($db.Get (toInt64 .))}}
+{{$string = print $string " " $k "\n\n"}}
+{{end}}
+{{end}}
+{{sendMessage nil (cembed "title" (print "Page " $page) "description" $string "color" 0xf707bf)}}
+{{else}}
+I couldn't tell which page to fetch. Try again?
+
+**__Usage:__**
+-inf admin list page [Number]
+{{end}}
+{{end}}
+{{end}}
+{{end}}
+{{end}}
