@@ -15,4 +15,4 @@ The code has two lines of code at the beginning which can also be edited.
 {{$admin := cslice 0}} : IDs of the role which will have permission to add and remove pictures. Replace 0 with your role ID , for example, {{$admin := cslice 1234567890 0987654321}}.  
 {{$channels := cslice 0}} IDs of the channels where regular members can use the command. Admins will be able to use the command anywhere else (unless you configure "Ignore the following channels" in the interface). Replace 0 with the channel IDs, for example, {{$channels := cslice 1234567890 0987654321}}.  
 
-![pic](ignore/pet2.jpg)
+![pic](../ignore/pet2.jpg)
