@@ -9,7 +9,7 @@ Send a randomly selected photo of someone's pet. Photos are manually added and r
 # Set up
 Copy and paste the code "Regex: \A(-pet)\b" into a new custom command code box. As the title of the file implies, the trigger type must be set as "Regex", and the trigger must be set as "\A(-pet)\b". 
 
-![pic](ignore/pet1.png)
+![pic](../ignore/pet1.png)
 
 The code has two lines of code at the beginning which can also be edited.  
 {{$admin := cslice 0}} : IDs of the role which will have permission to add and remove pictures. Replace 0 with your role ID , for example, {{$admin := cslice 1234567890 0987654321}}.  
