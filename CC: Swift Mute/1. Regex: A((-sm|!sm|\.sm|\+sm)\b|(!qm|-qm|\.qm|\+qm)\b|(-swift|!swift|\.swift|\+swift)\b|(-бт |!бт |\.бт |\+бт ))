@@ -1,0 +1,88 @@
+{{$limit := 50}}
+{{$staffchannel := 0}}
+{{$mutedrole := 0}}
+{{$duration := 600}}
+
+{{/* ignore */}}
+{{$a := 0}}
+{{$b := .User.Username}}
+{{$c := .User.AvatarURL "512"}}
+{{$e := 0}}
+{{$aq := ""}}
+{{$qa := ""}}
+{{$de := 0}}
+{{$v := 0}}
+{{$massmutelimit := 20}}
+{{$massmute := 0}}
+{{$repeated := cslice}}
+{{if eq (len .CmdArgs) 0}}
+__Command usage:__
+**-sm** [Targets: Mention/UserID] [Optional number of messages to delete]
+
+__Valid triggers:__
+-sm | !sm | .sm | +sm
+-qm | !qm | .qm | +qm
+-swift | !swift | .swift | +swift
+-бт | !бт | .бт | +бт
+{{else}}
+{{deleteTrigger 0.5}}
+{{range .CmdArgs}}
+{{if le (len .) 3}}
+{{$a = toInt .}}
+{{break}}
+{{else}}
+{{continue}}
+{{end}}
+{{end}}
+{{range .CmdArgs}}
+{{if le (len .) 3}}
+{{continue}}
+{{else if $mem := (getMember .)}}
+{{if (in $repeated $mem.User.ID)}}
+{{continue}}
+{{else}}
+{{$repeated = $repeated.Append $mem.User.ID}}
+{{end}}
+{{dbSet $mem.User.ID "swiftMute" "yA" }}
+{{$v = add $v 1}}
+{{$d := $mem.User.Username}}
+{{giveRoleID . $mutedrole}}
+{{takeRoleID . $mutedrole $duration}}
+{{$aq = joinStr " " $aq $mem.User.ID}}
+{{if eq $de 0}}
+{{$de = add $de 1}}
+{{$qa = (print "**" $d)}}
+{{else}}
+{{$qa = joinStr "**, **" $qa $d}}
+{{end}}
+{{sendMessage $staffchannel (complexMessage "content" (print $mem.User.ID) "embed" (cembed "author" (sdict "name" (print $b) "icon_url" ($c)) "description" (print "**" $b "** has used the Swift mute towards **" $d "**.") "color" 2657023))}}
+{{$massmute = add $massmute 1}}
+{{if eq $massmute $massmutelimit}}
+{{break}}
+{{end}}
+{{if gt $a 0}}
+{{if lt $e 5}}
+{{if gt $a $limit}}
+{{exec "clear" . $limit}}
+{{$e = add $e 1}}
+{{else}}
+{{exec "clear" . $a}}
+{{$e = add $e 1}}
+{{end}}
+{{else}}
+{{end}}
+{{end}}
+{{end}}
+{{end}}
+{{if gt $a $limit}}
+{{$error3 := (print "You have ordered to delete a greater number of messages than **" $limit "**. Since this is the established limit, no more messages than that have been deleted.") }}
+{{sendMessage $staffchannel $error3}}
+{{end}}
+{{end}}
+{{if gt $v 1}}
+{{if eq $massmute $massmutelimit}}
+{{$qa = joinStr "\n\n" $qa "Sorry, I can only mute 20 people at once :("}}
+{{end}}
+{{sendMessage $staffchannel (complexMessage "content" (print $aq) "embed" (cembed "author" (sdict "name" (print $b) "icon_url" ($c)) "description" (print "**" $b "** has used the Swift mute towards " $qa "**.") "color" 0xf542d1))}}
+{{end}}
+{{/* made in chile */}}
