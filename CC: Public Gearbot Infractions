@@ -1,0 +1,92 @@
+{{if eq (len .Args) 1}}
+### Automatically generate an infraction list
+__Usage:__
+-publicize [Infraction text]
+{{return}}
+{{end}}
+{{$count := 0}}
+{{$date := ""}}
+{{$year := ""}}
+{{$month := ""}}
+{{$day := ""}}
+{{$kindOf := ""}}
+{{$reason := ""}}
+{{$string := "## Infractions"}}
+{{$b := ""}}
+{{$a := split .Message.Content "\n"}}
+{{range $a}}
+{{if le $count 3}}
+{{$count = add $count 1}}
+{{continue}}
+{{end}}
+{{$b = split . "|"}}
+{{try}}
+{{$kindOf = index $b 4}}
+{{catch}}
+{{continue}}
+{{end}}
+{{if or (in $kindOf "Forced ban") (in $kindOf "Ban") (in $kindOf "Tempban") (in $kindOf "Warning") (in $kindOf "Mute") (in $kindOf "Kick") (in $kindOf "Softban") (in $kindOf "Cleankick") (in $kindOf "Unban")}}
+{{if in $kindOf "Ban"}}
+{{$kindOf = "Ban"}}
+{{else if in $kindOf "Tempban"}}
+{{$kindOf = "Tempban"}}
+{{else if in $kindOf "Forced ban"}}
+{{$kindOf = "Forced ban"}}
+{{else if in $kindOf "Softban"}}
+{{$kindOf = "Softban"}}
+{{else if in $kindOf "Cleankick"}}
+{{$kindOf = "CleanKick"}}
+{{else if in $kindOf "Kick"}}
+{{$kindOf = "Kick"}}
+{{else if in $kindOf "Mute"}}
+{{$kindOf = "Mute"}}
+{{else if in $kindOf "Warning"}}
+{{$kindOf = "Warning"}}
+{{else if in $kindOf "Unban"}}
+{{$kindOf = "Unban"}}
+{{end}}
+{{$string = joinStr "\n\n" $string (print "**" $kindOf "**")}}
+{{else}}
+{{continue}}
+{{end}}
+{{$date = index $b 3}}
+{{$date = index (split $date " ") 1}}
+{{$date = split $date "-"}}
+{{$year = index $date 0}}
+{{$day = index $date 2}}
+{{$month = index $date 1}}
+{{if eq $month "01"}}
+{{$month = "January"}}
+{{else if eq $month "02"}}
+{{$month = "February"}}
+{{else if eq $month "03"}}
+{{$month = "March"}}
+{{else if eq $month "04"}}
+{{$month = "April"}}
+{{else if eq $month "05"}}
+{{$month = "May"}}
+{{else if eq $month "06"}}
+{{$month = "June"}}
+{{else if eq $month "07"}}
+{{$month = "July"}}
+{{else if eq $month "08"}}
+{{$month = "August"}}
+{{else if eq $month "09"}}
+{{$month = "September"}}
+{{else if eq $month "10"}}
+{{$month = "October"}}
+{{else if eq $month "11"}}
+{{$month = "November"}}
+{{else if eq $month "12"}}
+{{$month = "December"}}
+{{end}}
+{{$date = (print $day " " $month " " $year)}}
+{{$string = joinStr "  |  " $string $date}}
+{{$reason = index $b 5}}
+{{$string = joinStr "\n" $string (trimSpace $reason)}}
+{{end}}
+{{$string = reReplace "```" $string " "}}
+{{$string}}
+{{deleteTrigger 2}}
+
+{{/* made in chile */}}
