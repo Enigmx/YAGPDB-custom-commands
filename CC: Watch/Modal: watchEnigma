@@ -1,0 +1,39 @@
+{{if eq .StrippedID "watchEnigmaEditUsers"}}
+{{$db := (dbGet 0 "watchEnigma").Value}}
+{{if eq (len (index .Values 0)) 0}}
+{{$db.Set "users" (index .Values 0)}}
+{{dbSet 0 "watchEnigma" $db}}
+{{sendResponse nil "Modified the user list 👀"}}
+{{return}}
+{{end}}
+{{$db.Set "users" (index .Values 0)}}
+{{dbSet 0 "watchEnigma" $db}}
+{{sendResponse nil "Modified the user list 👀"}}
+{{return}}
+{{end}}
+{{if eq .StrippedID "watchEnigmaEditChannels"}}
+{{$db := (dbGet 0 "watchEnigma").Value}}
+{{if eq (len (index .Values 0)) 0}}
+{{$db.Set "channels" (index .Values 0)}}
+{{dbSet 0 "watchEnigma" $db}}
+{{sendResponse nil "Modified the channel list 👀"}}
+{{return}}
+{{end}}
+{{$db.Set "channels" (index .Values 0)}}
+{{dbSet 0 "watchEnigma" $db}}
+{{sendResponse nil "Modified the channel list 👀"}}
+{{return}}
+{{end}}
+{{if eq .StrippedID "watchEnigmaEditRoles"}}
+{{$db := (dbGet 0 "watchEnigma").Value}}
+{{if eq (len (index .Values 0)) 0}}
+{{$db.Set "roles" (index .Values 0)}}
+{{dbSet 0 "watchEnigma" $db}}
+{{sendResponse nil "Modified the role list 👀"}}
+{{return}}
+{{end}}
+{{$db.Set "roles" (index .Values 0)}}
+{{dbSet 0 "watchEnigma" $db}}
+{{sendResponse nil "Modified the role list 👀"}}
+{{return}}
+{{end}}
