@@ -1,0 +1,54 @@
+{{if eq .StrippedID "watchEnigmaInstantTag"}}
+{{$db := (dbGet 0 "watchEnigma").Value}}
+{{$slice := $db.Get "tag"}}
+{{$sliceNew := cslice}}
+{{if in $slice .User.ID}}
+{{range $slice}}
+{{if eq . $.User.ID}}
+{{continue}}
+{{end}}
+{{$sliceNew = $sliceNew.Append .}}
+{{end}}
+{{ephemeralResponse}}
+Removed you from the instant tag system, you won't be tagged when something is catched anymore.
+{{$db.Set "tag" $sliceNew}}
+{{dbSet 0 "watchEnigma" $db}}
+{{return}}
+{{end}}
+{{$slice = $slice.Append .User.ID}}
+{{ephemeralResponse}}
+Added you to the instant tag system, from now on, every time something is catched, you will be notified inmediately.
+{{$db.Set "tag" $slice}}
+{{dbSet 0 "watchEnigma" $db}}
+{{return}}
+{{end}}
+{{if eq .StrippedID "watchEnigmaEditRoles"}}
+{{$db := (dbGet 0 "watchEnigma").Value}}
+{{if not (in .Member.Roles ($db.Get "admin"))}}
+{{ephemeralResponse}}
+Admin configuration can only be done by those who have the **{{(getRole (toInt ($db.Get "admin"))).Name}}** role.
+{{return}}
+{{end}}
+{{sendModal (sdict "title" "Edit roles" "custom_id" "watchEnigmaEditRoles" "fields" (sdict "value" ($db.Get "roles") "label" "Role ID - optional note" "placeholder" "1234567890 Mod\n0987654321 Admin" "required" false "style" 2))}}
+{{return}}
+{{end}}
+{{if eq .StrippedID "watchEnigmaEditChannels"}}
+{{$db := (dbGet 0 "watchEnigma").Value}}
+{{if not (in .Member.Roles ($db.Get "admin"))}}
+{{ephemeralResponse}}
+Admin configuration can only be done by those who have the **{{(getRole (toInt ($db.Get "admin"))).Name}}** role.
+{{return}}
+{{end}}
+{{sendModal (sdict "title" "Edit channels" "custom_id" "watchEnigmaEditChannels" "fields" (sdict "value" ($db.Get "channels") "label" "Channel ID - optional note" "placeholder" "1234567890 #Mod\n0987654321 #Admin" "required" false "style" 2))}}
+{{return}}
+{{end}}
+{{if eq .StrippedID "watchEnigmaEditUsers"}}
+{{$db := (dbGet 0 "watchEnigma").Value}}
+{{if not (in .Member.Roles ($db.Get "admin"))}}
+{{ephemeralResponse}}
+Admin configuration can only be done by those who have the **{{(getRole (toInt ($db.Get "admin"))).Name}}** role.
+{{return}}
+{{end}}
+{{sendModal (sdict "title" "Edit users" "custom_id" "watchEnigmaEditUsers" "fields" (sdict "value" ($db.Get "users") "label" "User ID - optional note" "placeholder" "1234567890 Bob\n0987654321 Tim" "required" false "style" 2))}}
+{{return}}
+{{end}}
