@@ -18,7 +18,7 @@ After configuring this custom command, copy the code found in "Component: infEni
 Do not configure "Ignore the following channels" nor "ignore the following roles".  
 After configuring this custom command, create a new one and paste the code found in "Modal: infEnigma" into the response box. Configure the trigger type and trigger as follows:  
 
-![pic](../ignore/inf2.png)  
+![pic](../ignore/inf3.png)  
 
 Do not configure "ignore the following channels" nor "ignore the following roles".  
 That is all, enjoy!
