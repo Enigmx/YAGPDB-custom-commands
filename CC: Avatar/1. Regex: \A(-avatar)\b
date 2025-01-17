@@ -1,0 +1,21 @@
+{{if eq (len .Args) 1}}
+{{sendMessage nil (.User.AvatarURL "2048")}}
+{{if (.Member.Avatar)}}
+{{sendMessage nil (.Member.AvatarURL "2048")}}
+{{end}}
+{{return}}
+{{end}}
+{{if $a := (reFind `\d+` (index .Args 1))}}
+{{if not (getMember $a)}}
+Seems like this person either left the server, or doesn't exist. Try again?
+{{return}}
+{{end}}
+{{sendMessage nil ((getMember $a).User.AvatarURL "2048")}}
+{{if ((getMember $a).Avatar)}}
+{{sendMessage nil ((getMember $a).AvatarURL "2048")}}
+{{end}}
+{{return}}
+{{else}}
+No idea what is it that you're trying to tell me. If you want to get your own avatar, run "-avatar", if you want to get someone else's avatar, run "-avatar @person".
+{{end}}
+{{/* made in chile */}}
