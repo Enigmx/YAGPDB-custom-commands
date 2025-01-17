@@ -1,0 +1,51 @@
+{{if not (.Message.ReferencedMessage)}}
+## Grab an embed from a reply
+**__Usage__**
+-extract [Embed position]
+{{return}}
+{{end}}
+{{$target := getMessage nil (.Message.ReferencedMessage.ID)}}
+{{if not $target.Embeds}}
+This message doesn't have any embed to work on 🧐
+{{return}}
+{{end}}
+{{$select := 0}}
+{{if ge (len .Args) 2}}
+{{$select = (add (toInt (index .Args 1)) -1)}}
+{{end}}
+{{if gt  (add $select 1) (len $target.Embeds)}}
+I couldn't find an embed in the position {{add $select 1}}...
+{{return}}
+{{end}}
+{{$extract := (index $target.Embeds $select)}}
+{{$string := ""}}
+{{if ($extract.Author)}}
+{{if ($extract.Author.Name)}}
+{{sendMessage nil (complexMessage "content" ($extract.Author.Name) "embed" (cembed "color" 0xeb459f "description" "Author"))}}
+{{$string = print $extract.Author.Name}}
+{{end}}
+{{end}}
+{{if ($extract.Title)}}
+{{sendMessage nil (complexMessage "content" ($extract.Title) "embed" (cembed "color" 0xeb459f "description" "Title"))}}
+{{$string = print $string "\n\n" $extract.Title}}
+{{end}}
+{{if ($extract.Description)}}
+{{sendMessage nil (complexMessage "content" ($extract.Description) "embed" (cembed "color" 0xeb459f "description" "Description"))}}
+{{$string = print $string "\n\n" $extract.Description}}
+{{end}}
+{{if ($extract.Fields)}}
+{{sendMessage nil "fields are a little more complicated to work with, hang on..."}}
+{{sleep 2}}
+{{range $a, $b := $extract.Fields}}
+{{sendMessage nil (complexMessage "content" ($b.Name) "embed" (cembed "footer" (sdict "text" (print "field number: " $a)) "color" 0xeb459f "description" "Fields title"))}}
+{{$string = print $string "\n\n" $b.Name "\n" $b.Value}}
+{{sendMessage nil (complexMessage "content" ($b.Value) "embed" (cembed "footer" (sdict "text" (print "field number: " $a)) "color" 0xeb459f "description" "Fields description"))}}
+{{end}}
+{{end}}
+{{if ($extract.Footer)}}
+{{if ($extract.Footer.Text)}}
+{{sendMessage nil (complexMessage "content" ($extract.Footer.Text) "embed" (cembed "color" 0xeb459f "description" "Footer"))}}
+{{$string = print $string "\n\n" $extract.Footer.Text}}
+{{end}}
+{{end}}
+{{sendMessage nil (complexMessage "content" $string "embed" (cembed "author" (sdict "name" ($.User.Username) "icon_url" ($.User.AvatarURL "512")) "color" 0xeb459f "description" "Here's the whole embed in one message"))}}
