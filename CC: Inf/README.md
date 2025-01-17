@@ -6,7 +6,7 @@ Generate a template for infractions. Good for those infraction reasons which are
 **-inf admin** Show all admin tools where you can add, edit or remove templates.  
 
 # Set up
-Copy the code found in "Regex: \A(-inf)\b" and paste it in a new custom command. The trigger type and trigger have to be set up as follows:  
+Copy the code found in "Regex: \A(-inf)\b" and paste it into the response box of a new custom command. The trigger type and trigger have to be set up as follows:  
 
 ![pic](../ignore/inf1.png)
 
