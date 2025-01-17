@@ -4,6 +4,16 @@
 {{$duration := 600}}
 
 {{/* ignore */}}
+{{if not (getChannel $staffchannel)}}
+This Custom Command has not been configured properly; a log channel has not been set. 
+Edit the second line of the code: \{\{$staffchannel := 0\}\}, replace 0 with the channel ID where logs will be sent.
+{{return}}
+{{end}}
+{{if not (getRole $mutedrole)}}
+This Custom Command has not been configured properly; a muted role has not been sent.
+Edit the third line of the code: \{\{$mutedrole := 0\}\}, replace 0 with the muted role ID. People will be added this role if they are swift muted.
+{{return}}
+{{end}}
 {{$a := 0}}
 {{$b := .User.Username}}
 {{$c := .User.AvatarURL "512"}}
