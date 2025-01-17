@@ -26,14 +26,11 @@ Edit the third line of the code: \{\{$mutedrole := 0\}\}, replace 0 with the mut
 {{$massmute := 0}}
 {{$repeated := cslice}}
 {{if eq (len .CmdArgs) 0}}
+### Swift mute
+Quickly mute members without having to provide a reason or a duration.
+
 __Command usage:__
 **-sm** [Targets: Mention/UserID] [Optional number of messages to delete]
-
-__Valid triggers:__
--sm | !sm | .sm | +sm
--qm | !qm | .qm | +qm
--swift | !swift | .swift | +swift
--бт | !бт | .бт | +бт
 {{else}}
 {{deleteTrigger 0.5}}
 {{range .CmdArgs}}
