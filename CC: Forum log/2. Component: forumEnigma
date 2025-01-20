@@ -1,0 +1,40 @@
+{{/* Forum log menu */}}
+{{if eq .StrippedID "Rename"}}
+{{sendModal (sdict "title" "Change name" "custom_id" "forumEnigmaRename" "fields" (cslice (sdict "label" "New name:" "value" (index .Message.Embeds 0).Title "placeholder" "Write something that will replace the name for the post" "style" 1 "min_length" 1 "max_length" 100)))}}
+{{return}}
+{{end}}
+{{if eq .StrippedID "ErasePost"}}
+{{if $a := (getChannelOrThread (reFind `\d+` .Message.Content))}}
+{{sendModal (sdict "title" "Erase post" "custom_id" "forumEnigmaErase" "fields" (cslice (sdict "label" "Reason (optional):" "placeholder" "leave empty to remove it silently" "style" 1 "max_length" 1000)))}}
+{{return}}
+{{else}}
+Seems like this channel does not exist anymore
+{{ephemeralResponse}}
+{{end}}
+{{end}}
+{{if eq .StrippedID "Concluded"}}
+{{$embed := structToSdict (index .Message.Embeds 0)}}
+{{($embed.Set "color" 0x00FF00)}}
+{{if eq (len .Message.Embeds) 2}}
+{{if in (structToSdict (index .Message.Embeds 1)).Description (print " Has marked this post as concluded.")}}
+Seems like this post has already been marked as concluded
+{{ephemeralResponse}}
+{{return}}
+{{end}}
+{{editMessage nil .Message.ID (complexMessageEdit "content" .Message.Content "embed" (cslice $embed (cembed "description" (print (structToSdict (index .Message.Embeds 1)).Description "\n\n" .User.Mention " Has marked this post as concluded."))))}}
+{{ephemeralResponse}}
+Done! marked as concluded.
+{{return}}
+{{else}}
+{{editMessage nil .Message.ID (complexMessageEdit "content" .Message.Content "embed" (cslice $embed (cembed "description" (print .User.Mention " Has marked this post as concluded."))))}}
+Done! Marked as concluded.
+{{ephemeralResponse}}
+{{return}}
+{{end}}
+{{end}}
+{{if eq .StrippedID "Tags"}}
+{{editThread (reFind `\d+` .Message.Content) (sdict "tags" .Values)}}
+{{ephemeralResponse}}
+Done! changed the tags for that post.
+{{return}}
+{{end}}
