@@ -1,0 +1,140 @@
+{{$db := (dbGet 0 "autohelpEnigma").Value}}
+{{if not $db}}
+{{$db = dict "ccid" .CCID}}
+{{dbSet 0 "autohelpEnigma" $db}}
+{{end}}
+{{if not ($db.Get "ccid")}}
+{{$db.Set "ccid" .CCID}}
+{{dbSet 0 "autohelpEnigma" $db}}
+{{end}}
+{{if not (eq ($db.Get "ccid") .CCID)}}
+{{$db.Set "ccid" .CCID}}
+{{dbSet 0 "autohelpEnigma" $db}}
+{{end}}
+{{if .ExecData}}
+{{$count := 0}}
+{{$content := .ExecData}}
+{{range $k, $v := $db}}
+{{if eq $count 3}}
+{{break}}
+{{end}}
+{{if eq (kindOf $v) "int64"}}
+{{continue}}
+{{end}}
+{{range (index $v 0)}}
+{{if in $content .}}
+{{if eq $count 0}}
+{{sendMessage nil "### Automatic Support:\nI have read your issue and thought this may be helpful..."}}
+{{end}}
+{{$count = add $count 1}}
+{{sendMessage nil (complexMessage "embed" (cembed "description" (index $v 1) "image" (sdict "url" (index $v 2))))}}
+{{break}}
+{{end}}
+{{end}}
+{{end}}
+{{return}}
+{{end}}
+{{if eq (len .Args) 1}}
+{{$db.Set "ccid" .CCID}}
+### Forum autohelp
+Pick up keywords from new posts and send prefabricated messages. Good for repetitive questions.
+
+**__Usage:__**
+**-autohelp** List all tools.
+**-autohelp list** List all premade messages with their keywords, also used to create new autohelp messages.
+**-autohelp list [ID]** Use the ID of an autohelp message to list it's content and keywords, including options to edit and remove.
+**-autohelp list page [Number]** list a page of automatic message.
+**-autohelp test [text]** Check which automatic messages would have been sent if the text was a new post.
+{{return}}
+{{end}}
+{{if eq (len .Args) 2}}
+{{$db.Set "ccid" .CCID}}
+{{if eq (index .Args 1) "test"}}
+You didn't provide text to test the autohelp. Try again?
+
+**__Usage:__**
+**-autohelp test [Text]**
+{{return}}
+{{end}}
+{{if eq (index .Args 1) "list"}}
+{{if not $db}}
+{{sendMessage nil (complexMessage "embed" (cembed "title" "Autohelp messages" "description" "Nothing here..." "color" 0xeb459f) "buttons" (sdict "label" "Create" "style" "green" "custom_id" "autohelpEnigmaCreate"))}}
+{{return}}
+{{end}}
+{{$string := ""}}
+{{range (seq 0 10)}}
+{{if $db.Get (toInt64 .)}}
+{{$string = print $string "**[" . "]** " (joinStr " **/** " (index ($db.Get (toInt64 .)) 0)) "\n\n"}}
+{{end}}
+{{end}}
+{{sendMessage nil (complexMessage "embed" (cembed "title" "Autohelp messages" "description" $string "color" 0xeb459f) "buttons" (sdict "label" "Create" "style" "green" "custom_id" "autohelpEnigmaCreate"))}}
+{{return}}
+{{end}}
+{{end}}
+{{if eq (len .Args) 3}}
+{{$db.Set "ccid" .CCID}}
+{{if eq (index .Args 2) "page"}}
+Which page would you like to fetch exactly?
+
+**__Usage:__**
+-autohelp list page [Number]
+{{return}}
+{{end}}
+{{if eq (index .Args 1) "test"}}
+{{execCC .CCID nil 0 (index .Args 2)}}
+{{return}}
+{{end}}
+{{if (eq (index .Args 1) "list")}}
+{{$id := (reFind `\d+` (index .Args 2))}}
+{{if not $id}}
+I could not tell which automatic message to fetch. Try again?
+
+**__Usage:__**
+-autohelp list [ID]
+-autohelp list page [Number]
+{{return}}
+{{end}}
+{{if ($db.Get (toInt64 $id))}}
+{{sendMessage nil (complexMessage "content" (joinStr " **/** " (index ($db.Get (toInt64 $id)) 0)) "embed" (cembed "title" (print $id " | Automatic message") "description" (index ($db.Get (toInt64 $id)) 1) "image" (sdict "url" (index ($db.Get (toInt64 $id)) 2)) "color" 0xeb459f) "buttons" (cslice (sdict "label" "Edit" "style" "green" "custom_id" "autohelpEnigmaEdit")  (sdict "label" "Erase" "style" "red" "custom_id" "autohelpEnigmaErase")))}}
+{{return}}
+{{else}}
+Seems like this ID does not point to anything. You could check which ones do exist by running -autohelp list.
+{{return}}
+{{end}}
+{{end}}
+{{end}}
+{{if ge (len .Args) 3}}
+{{if and (eq (index .Args 1) "list") (eq (index .Args 2) "page")}}
+{{$id := ""}}
+{{if $z := (reFind `\d+` (index .Args 3))}}
+{{$id = toInt $z}}
+{{else}}
+Seems like you didn't provide a page number. Try again?
+
+**__Usage:__**
+-autohelp list page [Number]
+{{return}}
+{{end}}
+{{$string := ""}} 
+{{range (seq (toInt (print (sub $id 1) "0")) (toInt (print $id "0")))}}
+{{if ($db.Get (toInt64 .))}}
+{{$string = print $string "**[" . "]** " (joinStr " **/** " (index ($db.Get (toInt64 .)) 0)) "\n\n"}}
+{{end}}
+{{end}}
+{{sendMessage nil (complexMessage "embed" (cembed "title" (print "Autohelp messages: page " (index .Args 3)) "description" $string "color" 0xeb459f) "buttons" (sdict "label" "Create" "style" "green" "custom_id" "autohelpEnigmaCreate"))}} 
+{{return}}
+{{end}}
+{{if eq (index .Args 1) "test"}}
+{{execCC .CCID nil 0 (joinStr " " (slice .Args 2))}}
+{{return}}
+{{end}}
+{{end}}
+I could not tell what exactly are you trying to do. Try again?
+
+**__Usage:__**
+**-autohelp** List all tools.
+**-autohelp list** List all premade messages with their keywords, also used to create new autohelp messages.
+**-autohelp list [ID]** Use the ID of an autohelp message to list it's content and keywords, including options to edit and remove.
+**-autohelp list page [Number]** list a page of automatic message.
+**-autohelp test [text]** Check which automatic messages would have been sent if the text was a new post.
+{{return}}
