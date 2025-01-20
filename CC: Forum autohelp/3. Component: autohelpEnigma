@@ -1,7 +1,7 @@
 {{/* autohelp buttons */}}
 {{$autohelpAdmin := 0}}
 
-{{if eq .StrippedID "autohelpEnigmaErase"}}
+{{if eq .StrippedID "Erase"}}
 {{if not (in .Member.Roles $autohelpAdmin)}}
 {{sendResponse nil (complexMessage "content" "Only administrators of the bot can configure the automatic messages :(" "ephemeral" true)}}
 {{return}}
@@ -14,7 +14,7 @@ Seems like this automatic message has been erased already...
 {{end}}
 {{sendModal (sdict "title" "Erase automatic message" "custom_id" "autohelpEnigmaErase" "fields" (cslice (sdict "label" "Type ''confirm'' to erase:" "placeholder" "confirm" "required" true "style" 1 "max_length" 10)))}}
 {{end}}
-{{if eq .StrippedID "autohelpEnigmaEdit"}}
+{{if eq .StrippedID "Edit"}}
 {{if not (in .Member.Roles $autohelpAdmin)}}
 {{sendResponse nil (complexMessage "content" "Only administrators of the bot can configure the automatic messages :(" "ephemeral" true)}}
 {{return}}
@@ -28,7 +28,7 @@ Seems like this automatic message has been erased already...
 {{sendModal (sdict "title" "Edit automatic help" "custom_id" "autohelpEnigmaEdit" "fields" (cslice (sdict "label" "Keywords" "value" (joinStr "/" (index ($db.Get (toInt64 $id)) 0)) "placeholder" "split your keywords using ''/''." "required" true "style" 1 "max_length" 1900) (sdict "label" "Automatic message" "value" (index ($db.Get (toInt64 $id)) 1) "placeholder" "This will be sent if there is a match" "required" true "style" 2 "max_length" 3900) (sdict "label" "Optional attachment" "placeholder" "https://media.discordapp.net/attachments/..." "value" (index ($db.Get (toInt64 $id)) 2)  "style" 1 "max_length" 900)))}}
 {{return}}
 {{end}}
-{{if eq .StrippedID "autohelpEnigmaCreate"}}
+{{if eq .StrippedID "Create"}}
 {{if not (in .Member.Roles $autohelpAdmin)}}
 {{sendResponse nil (complexMessage "content" "Only administrators of the bot can configure the automatic messages :(" "ephemeral" true)}}
 {{return}}
