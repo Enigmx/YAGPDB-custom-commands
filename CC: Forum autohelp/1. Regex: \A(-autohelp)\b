@@ -45,10 +45,16 @@ Pick up keywords from new posts and send prefabricated messages. Good for repeti
 **-autohelp list [ID]** Use the ID of an autohelp message to list it's content and keywords, including options to edit and remove.
 **-autohelp list page [Number]** list a page of automatic message.
 **-autohelp test [text]** Check which automatic messages would have been sent if the text was a new post.
+**-autohelp database** Retrieve the content of the bots database and how much it's being used.
 {{return}}
 {{end}}
 {{if eq (len .Args) 2}}
 {{$db.Set "ccid" .CCID}}
+{{if eq (index .Args 1) "database"}}
+{{$database := dbGet 0 "autohelpEnigma"}}
+{{sendMessage nil (complexMessage "content" (print "Database used: " $database.ValueSize " out of 100 000.") "file" (json $db true) "filename" "autohelp")}}
+{{return}}
+{{end}}
 {{if eq (index .Args 1) "test"}}
 You didn't provide text to test the autohelp. Try again?
 
@@ -137,4 +143,5 @@ I could not tell what exactly are you trying to do. Try again?
 **-autohelp list [ID]** Use the ID of an autohelp message to list it's content and keywords, including options to edit and remove.
 **-autohelp list page [Number]** list a page of automatic message.
 **-autohelp test [text]** Check which automatic messages would have been sent if the text was a new post.
+**-autohelp database** Retrieve the content of the bots database and how much it's being used.
 {{return}}
