@@ -82,7 +82,7 @@ Messages that are picked up are sent in the log channel during the time set. Max
 {{if eq $userlist "\n<@>"}}
 {{$userlist = "\nnothing configured..."}}
 {{end}}
-{{sendMessage nil (complexMessage "buttons" (cslice (sdict "label" "Edit roles" "style" "green" "custom_id" "watchEnigmaEditRoles") (sdict "label" "Edit channels" "style" "green" "custom_id" "watchEnigmaEditChannels") (sdict "label" "Edit users" "style" "green" "custom_id" "watchEnigmaEditUsers")) "embed" (cslice (cembed "color" 0xeb459f "title" "Inmune roles" "description" (print "The following roles cannot be put an eye on:\n" $rolelist)) (cembed "color" 0xeb459f "title" "Enabled channels" "description" (print "The following channels are enabled to put an eye on:\n" $channellist)) (cembed "color" 0xeb459f "title" "Inmune users" "description" (print "The following users cannot be put an eye on:\n" $userlist))))}}
+{{sendMessage nil (complexMessage "buttons" (cslice (sdict "label" "Edit roles" "style" "green" "custom_id" "watchEnigmaEditBlacklistedRoles") (sdict "label" "Edit channels" "style" "green" "custom_id" "watchEnigmaEditWhitelistedChannels") (sdict "label" "Edit users" "style" "green" "custom_id" "watchEnigmaEditInmuneUsers")) "embed" (cslice (cembed "color" 0xeb459f "title" "Inmune roles" "description" (print "The following roles cannot be put an eye on:\n" $rolelist)) (cembed "color" 0xeb459f "title" "Enabled channels" "description" (print "The following channels are enabled to put an eye on:\n" $channellist)) (cembed "color" 0xeb459f "title" "Inmune users" "description" (print "The following users cannot be put an eye on:\n" $userlist))))}}
 {{return}}
 {{end}}
 {{$target := false}}
