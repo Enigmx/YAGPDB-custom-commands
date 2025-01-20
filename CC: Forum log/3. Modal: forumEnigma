@@ -1,6 +1,6 @@
 {{/* forum log modals */}}
 {{$forumEraseLogChannel := 0}}
-{{if eq .StrippedID "Rename"}}
+{{if eq .StrippedID "RenamePost"}}
 {{if eq (len (index .Values 0)) 0}}
 {{return}}
 {{end}}
@@ -9,7 +9,7 @@ Seems like this channel doesn't exist anymore...
 {{ephemeralResponse}}
 {{return}}
 {{end}}
-{{/* editChannelName (toInt (reFind `\d+` .Message.Content)) (index .Values 0) */}}
+{{ editChannelName (toInt (reFind `\d+` .Message.Content)) (index .Values 0) }}
 {{$embed1 := structToSdict (index .Message.Embeds 0)}}
 {{$embed1.Set "title" (index .Values 0)}}
 {{if eq (len .Message.Embeds) 2}}
@@ -21,7 +21,7 @@ Done! Post has been renamed.
 {{ephemeralResponse}}
 {{return}}
 {{end}}
-{{if eq .StrippedID "Erase"}}
+{{if eq .StrippedID "ErasePostLog"}}
 {{deleteForumPost (reFind `\d+` .Message.Content)}}
 {{if not (eq (len (index .Values 0)) 0)}}
 {{$user := getMember (index (reFindAll `\d+` .Message.Content) 1)}}
