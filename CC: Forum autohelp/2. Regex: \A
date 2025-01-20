@@ -1,0 +1,4 @@
+{{$autohelpCCID := 0}}
+{{if and (getChannel .Channel.ParentID).IsForum (eq .Channel.ID .Message.ID)}}
+{{execCC $autohelpCCID nil 0 (print .Channel.Name "\n" .Message.Content)}}
+{{end}}
