@@ -1,18 +1,18 @@
 {{/* Forum log menu */}}
-{{if eq .StrippedID "Rename"}}
-{{sendModal (sdict "title" "Change name" "custom_id" "forumEnigmaRename" "fields" (cslice (sdict "label" "New name:" "value" (index .Message.Embeds 0).Title "placeholder" "Write something that will replace the name for the post" "style" 1 "min_length" 1 "max_length" 100)))}}
+{{if eq .StrippedID "RenamePost"}}
+{{sendModal (sdict "title" "Change name" "custom_id" "forumEnigmaRenamePost" "fields" (cslice (sdict "label" "New name:" "value" (index .Message.Embeds 0).Title "placeholder" "Write something that will replace the name for the post" "style" 1 "min_length" 1 "max_length" 100)))}}
 {{return}}
 {{end}}
-{{if eq .StrippedID "ErasePost"}}
+{{if eq .StrippedID "ErasePostLog"}}
 {{if $a := (getChannelOrThread (reFind `\d+` .Message.Content))}}
-{{sendModal (sdict "title" "Erase post" "custom_id" "forumEnigmaErase" "fields" (cslice (sdict "label" "Reason (optional):" "placeholder" "leave empty to remove it silently" "style" 1 "max_length" 1000)))}}
+{{sendModal (sdict "title" "Erase post" "custom_id" "forumEnigmaErasePostLog" "fields" (cslice (sdict "label" "Reason (optional):" "placeholder" "leave empty to remove it silently" "style" 1 "max_length" 1000)))}}
 {{return}}
 {{else}}
 Seems like this channel does not exist anymore
 {{ephemeralResponse}}
 {{end}}
 {{end}}
-{{if eq .StrippedID "Concluded"}}
+{{if eq .StrippedID "ConcludedLog"}}
 {{$embed := structToSdict (index .Message.Embeds 0)}}
 {{($embed.Set "color" 0x00FF00)}}
 {{if eq (len .Message.Embeds) 2}}
@@ -32,7 +32,7 @@ Done! Marked as concluded.
 {{return}}
 {{end}}
 {{end}}
-{{if eq .StrippedID "Tags"}}
+{{if eq .StrippedID "TagsEdit"}}
 {{editThread (reFind `\d+` .Message.Content) (sdict "tags" .Values)}}
 {{ephemeralResponse}}
 Done! changed the tags for that post.
