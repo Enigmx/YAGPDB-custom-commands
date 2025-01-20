@@ -1,4 +1,4 @@
-{{if eq .StrippedID "EditUsers"}}
+{{if eq .StrippedID "EditInmuneUsers"}}
 {{$db := (dbGet 0 "watchEnigma").Value}}
 {{if eq (len (index .Values 0)) 0}}
 {{$db.Set "users" (index .Values 0)}}
@@ -11,7 +11,7 @@
 {{sendResponse nil "Modified the user list 👀"}}
 {{return}}
 {{end}}
-{{if eq .StrippedID "EditChannels"}}
+{{if eq .StrippedID "EditWhitelistedChannels"}}
 {{$db := (dbGet 0 "watchEnigma").Value}}
 {{if eq (len (index .Values 0)) 0}}
 {{$db.Set "channels" (index .Values 0)}}
@@ -24,7 +24,7 @@
 {{sendResponse nil "Modified the channel list 👀"}}
 {{return}}
 {{end}}
-{{if eq .StrippedID "EditRoles"}}
+{{if eq .StrippedID "EditBlacklistedRoles"}}
 {{$db := (dbGet 0 "watchEnigma").Value}}
 {{if eq (len (index .Values 0)) 0}}
 {{$db.Set "roles" (index .Values 0)}}
