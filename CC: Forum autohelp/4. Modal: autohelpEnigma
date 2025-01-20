@@ -1,5 +1,5 @@
 {{/* autohelp modals */}}
-{{if eq .StrippedID "Erase"}}
+{{if eq .StrippedID "EraseAutoMessage"}}
 {{$db := (dbGet 0 "autohelpEnigma").Value}}
 {{$id := toInt (reFind `\d+` (index .Message.Embeds 0).Title)}}
 {{if eq (lower (index .Values 0)) "confirm"}}
@@ -9,7 +9,7 @@
 {{return}}
 {{end}}
 {{end}}
-{{if eq .StrippedID "Edit"}}
+{{if eq .StrippedID "EditAutoMessage"}}
 {{$db := (dbGet 0 "autohelpEnigma").Value}}
 {{$id := toInt (reFind `\d+` (index .Message.Embeds 0).Title)}}
 {{dbSet 0 "autohelpEnigma" $db}}
@@ -18,7 +18,7 @@
 {{sendResponse nil (complexMessage "content" (index .Values 0) "embed" (cembed "title" (print $id " | Edited by <@" .User.ID ">") "description" (index .Values 1) "image" (sdict "url" (index .Values 2)) "color" 0xeb459f))}}
 {{return}}
 {{end}}
-{{if eq .StrippedID "Create"}}
+{{if eq .StrippedID "CreateAutoMessage"}}
 {{$keywords := split (index .Values 0) "/"}}
 {{$automessage := index .Values 1}}
 {{$attachment := index .Values 2}}
