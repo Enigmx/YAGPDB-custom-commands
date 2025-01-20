@@ -101,7 +101,7 @@ Seems like this template does not exist. Check which ones exist by running -inf.
 {{$string = print $string $k}}
 {{end}}
 {{end}}
-{{sendMessage nil (complexMessage "embed" (cembed "title" "Templates" "color" 0xf707bf "description" $string) "buttons" (cbutton "label" "Create" "custom_id" "infEnigmaCreate" "style" "green"))}}
+{{sendMessage nil (complexMessage "embed" (cembed "title" "Templates" "color" 0xf707bf "description" $string) "buttons" (cbutton "label" "Create" "custom_id" "infEnigmaCreateTemplate" "style" "green"))}}
 {{return}}
 {{end}}
 {{end}}
@@ -124,7 +124,7 @@ This template ID does not exist... check what is available by running __-inf adm
 {{$string = print $string "\n**" $ID "." $count " :** " . "\n"}}
 {{end}}
 {{end}}
-{{sendMessage nil (complexMessage "embed" (cembed "title" (print "Current template: " $ID) "color" 0xf707bf "description" $string) "buttons" (cslice (sdict "label" "Edit keywords or 1, 2, 3, 4" "style" "green" "custom_id" "infEnigmaEdit1")  (sdict "label" "Edit 5, 6, 7, 8, 9" "style" "green" "custom_id" "infEnigmaEdit2")  (sdict "label" "Delete" "style" "red" "custom_id" "infEnigmaDelete")))}}
+{{sendMessage nil (complexMessage "embed" (cembed "title" (print "Current template: " $ID) "color" 0xf707bf "description" $string) "buttons" (cslice (sdict "label" "Edit keywords or 1, 2, 3, 4" "style" "green" "custom_id" "infEnigmaEditTemplate1")  (sdict "label" "Edit 5, 6, 7, 8, 9" "style" "green" "custom_id" "infEnigmaEditTemplate2")  (sdict "label" "Delete" "style" "red" "custom_id" "infEnigmaDeleteTemplate")))}}
 {{return}}
 {{end}}
 I couldn't tell which ID to fetch. Try again?
