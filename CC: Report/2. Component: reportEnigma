@@ -1,0 +1,56 @@
+{{/* report buttons */}}
+{{if eq .StrippedID "EraseMessage"}}
+{{$a := reFindAll `\d+` .Message.Content}}
+{{deleteMessage (index $a 3) (index $a 4) 0}}
+{{editMessage nil .Message.ID (complexMessageEdit "content" (print .Message.Content "\n\n" .User.Mention " has erased the message being reported.") "embed" (cslice (index .Message.Embeds 0) (index .Message.Embeds 1)))}}
+Done! erased the message.
+{{ephemeralResponse}}
+{{return}}
+{{end}}
+{{if eq .StrippedID "TimeoutMember"}}
+{{$a := reFindAll `\d+` .Message.Content}}
+{{if not (getMember (index $a 1))}}
+Seems like this member is no longer in the server...
+{{return}}
+{{end}}
+{{try}}
+{{dbSetExpire (index $a 1) "reportEnigma" "yA" 10}}
+{{execAdmin "timeout" (index $a 1) "5m"}}
+{{catch}}
+Can't timeout this person, seems like they are a server moderator or administrator...
+{{ephemeralResponse}}
+{{return}}
+{{end}}
+Done! Timed out the person who got reported for 5 minutes. Take a proper decision during that time.
+{{ephemeralResponse}}
+{{return}}
+{{end}}
+{{if eq .StrippedID "ErasePostReport"}}
+{{if $a := (getChannelOrThread (reFind `\d+` .Message.Content))}}
+{{sendModal (sdict "title" "Erase post" "custom_id" "reportEnigmaErasePostReport" "fields" (cslice (sdict "label" "Reason (optional):" "placeholder" "leave empty to remove it silently" "style" 1 "max_length" 1000)))}}
+{{return}}
+{{else}}
+Seems like this channel does not exist anymore
+{{ephemeralResponse}}
+{{end}}
+{{end}}
+{{if eq .StrippedID "ConcludeReport"}}
+{{if in .Message.Content "report as concluded"}}
+Seems like this post has already been marked as concluded by someone else...
+{{ephemeralResponse}}
+{{return}}
+{{end}}
+{{$embed := structToSdict (index .Message.Embeds 0)}}
+{{$embed.Set "color" 0x00FF00}}
+{{if eq (len .Message.Embeds) 1}}
+{{editMessage nil .Message.ID (complexMessageEdit "content" (print .Message.Content "\n\n<@" .User.ID "> has marked this report as concluded.") "embed" $embed)}}
+Done! marked as concluded.
+{{ephemeralResponse}}
+{{return}}
+{{else}}
+{{editMessage nil .Message.ID (complexMessageEdit "content" (print .Message.Content "\n\n<@" .User.ID "> has marked this report as concluded.") "embed" (cslice $embed (index .Message.Embeds 1)))}}
+Done! marked as concluded.
+{{ephemeralResponse}}
+{{return}}
+{{end}}
+{{end}}
