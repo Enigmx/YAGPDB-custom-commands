@@ -1,7 +1,10 @@
 {{/* Forum log */}}
 {{$forumLogChannel := 0}}
-
 {{if and (getChannel .Channel.ParentID).IsForum (eq .Channel.ID .Message.ID)}}
+{{$attach := ""}}
+{{if .Message.Attachments}}
+{{$attach = (index .Message.Attachments 0).URL}}
+{{end}}
 {{pinMessage .Channel.ID .Message.ID}}
 {{$names := cslice}}
 {{$sdicts := cslice}}
@@ -15,8 +18,8 @@
 {{end}}
 {{end}}
 {{if eq (len $sdicts) 0}}
-{{sendMessage $forumLogChannel (complexMessage "content" (print .Channel.Mention " - Post created by: " .User.Mention "\nForum: <#" .Channel.ParentID ">") "embed" (cembed "color" 0xFF0000 "title" .Channel.Name "description" .Message.Content "author" (sdict "name" ($.User.Username) "icon_url" ($.User.AvatarURL "512"))) "buttons" (cslice (cbutton "label" "Concluded" "custom_id" "forumEnigmaConcludedLog" "emoji" (sdict "name" "✅") "style" "secondary") (cbutton "label" "Erase post" "custom_id" "forumEnigmaErasePostLog" "emoji" (sdict "name" "🗑️") "style" "secondary") (cbutton "label" "Rename" "custom_id" "forumEnigmaRenamePost" "emoji" (sdict "name" "✏️") "style" "secondary")))}}
+{{sendMessage $forumLogChannel (complexMessage "content" (print .Channel.Mention " - Post created by: " .User.Mention "\nForum: <#" .Channel.ParentID ">") "embed" (cembed "color" 0xFF0000 "image" (sdict "url" $attach) "title" .Channel.Name "description" .Message.Content "author" (sdict "name" ($.User.Username) "icon_url" ($.User.AvatarURL "512"))) "buttons" (cslice (cbutton "label" "Concluded" "custom_id" "forumEnigmaConcludedLog" "emoji" (sdict "name" "✅") "style" "secondary") (cbutton "label" "Erase post" "custom_id" "forumEnigmaErasePostLog" "emoji" (sdict "name" "🗑️") "style" "secondary") (cbutton "label" "Rename" "custom_id" "forumEnigmaRenamePost" "emoji" (sdict "name" "✏️") "style" "secondary")))}}
 {{else}}
-{{sendMessage $forumLogChannel (complexMessage "content" (print .Channel.Mention " - Post created by: " .User.Mention "\nForum: <#" .Channel.ParentID ">") "menus" (cmenu "type" "text" "placeholder" "Post tags" "custom_id" "forumEnigmaTagsEdit" "options" $sdicts "max_values" (len (getChannel .Channel.ParentID).AvailableTags)) "embed" (cembed "color" 0xFF0000 "title" .Channel.Name "description" .Message.Content "author" (sdict "name" ($.User.Username) "icon_url" ($.User.AvatarURL "512"))) "buttons" (cslice (cbutton "label" "Concluded" "custom_id" "forumEnigmaConcludedLog" "emoji" (sdict "name" "✅") "style" "secondary") (cbutton "label" "Erase post" "custom_id" "forumEnigmaErasePostLog" "emoji" (sdict "name" "🗑️") "style" "secondary") (cbutton "label" "Rename" "custom_id" "forumEnigmaRenamePost" "emoji" (sdict "name" "✏️") "style" "secondary")))}}
+{{sendMessage $forumLogChannel (complexMessage "content" (print .Channel.Mention " - Post created by: " .User.Mention "\nForum: <#" .Channel.ParentID ">") "menus" (cmenu "type" "text" "placeholder" "Post tags" "custom_id" "forumEnigmaTagsEdit" "options" $sdicts "max_values" (len (getChannel .Channel.ParentID).AvailableTags)) "embed" (cembed "image" (sdict "url" $attach) "color" 0xFF0000 "title" .Channel.Name "description" .Message.Content "author" (sdict "name" ($.User.Username) "icon_url" ($.User.AvatarURL "512"))) "buttons" (cslice (cbutton "label" "Concluded" "custom_id" "forumEnigmaConcludedLog" "emoji" (sdict "name" "✅") "style" "secondary") (cbutton "label" "Erase post" "custom_id" "forumEnigmaErasePostLog" "emoji" (sdict "name" "🗑️") "style" "secondary") (cbutton "label" "Rename" "custom_id" "forumEnigmaRenamePost" "emoji" (sdict "name" "✏️") "style" "secondary")))}}
 {{end}}
 {{end}}
