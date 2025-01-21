@@ -1,0 +1,4 @@
+{{/* report */}}
+{{if (dbGet .User.ID "reportEnigma")}}
+{{return}}
+{{end}}
