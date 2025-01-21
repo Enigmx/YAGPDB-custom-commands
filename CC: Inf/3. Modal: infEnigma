@@ -51,7 +51,7 @@ The total character count across all messages and keywords is too big, must be l
 {{sendResponse nil (cembed "color" 0xf707bf "author" (sdict "name" .User.Username "icon_url" (.Member.AvatarURL "512")) "title" "Updated template" "description" (print "**" .User.Username "** has modified template " $ID "."))}}
 {{return}}
 {{end}}
-{{if eq .StrippedID "Delete"}}
+{{if eq .StrippedID "DeleteTemplate"}}
 {{if eq (index .Values 0) "confirm"}}
 {{$db := (dbGet 0 "infEnigma").Value}}
 {{$ID := reFind `\d+` (structToSdict (index .Message.Embeds 0)).Title}}
