@@ -1,5 +1,5 @@
 {{/* report modals */}}
-{{$forumEraseReportChannel := 0}}
+{{$forumEraseReportChannel := 615250760812331080}}
 {{if eq .StrippedID "ErasePostReport"}}
 {{deleteForumPost (reFind `\d+` .Message.Content)}}
 {{if not (eq (len (index .Values 0)) 0)}}
@@ -10,6 +10,7 @@
 {{editMessage nil .Message.ID (complexMessageEdit "content" (print .Message.Content "\n\n" .User.Mention " has removed this post.") "embed" (cslice (index .Message.Embeds 0) (index .Message.Embeds 1)))}}
 {{end}}
 Done! Erased this post.
+{{deleteResponse 5}}
 {{ephemeralResponse}}
 {{return}}
 {{end}}
