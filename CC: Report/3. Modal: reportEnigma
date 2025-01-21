@@ -1,0 +1,15 @@
+{{/* report modals */}}
+{{$forumEraseReportChannel := 0}}
+{{if eq .StrippedID "ErasePostReport"}}
+{{deleteForumPost (reFind `\d+` .Message.Content)}}
+{{if not (eq (len (index .Values 0)) 0)}}
+{{$user := getMember (index (reFindAll `\d+` .Message.Content) 1)}}
+{{sendMessage $forumEraseReportChannel (complexMessage "content" (print "<@"  $user.User.ID "> Your post has been removed from the forums. The moderator gave the following reason:") "embed" (cembed "author" (sdict "name" ($user.User.Username) "icon_url" ($user.User.AvatarURL "512")) "description" (index .Values 0)))}}
+{{editMessage nil .Message.ID (complexMessageEdit "content" (print .Message.Content "\n\n" .User.Mention " has removed this post for the following reason:\n" (index .Values 0)) "embed" (cslice (index .Message.Embeds 0) (index .Message.Embeds 1)))}}
+{{else}}
+{{editMessage nil .Message.ID (complexMessageEdit "content" (print .Message.Content "\n\n" .User.Mention " has removed this post.") "embed" (cslice (index .Message.Embeds 0) (index .Message.Embeds 1)))}}
+{{end}}
+Done! Erased this post.
+{{ephemeralResponse}}
+{{return}}
+{{end}}
