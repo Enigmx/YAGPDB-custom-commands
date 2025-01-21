@@ -9,6 +9,7 @@
 {{return}}
 {{else}}
 Seems like this channel does not exist anymore
+{{deleteResponse 5}}
 {{ephemeralResponse}}
 {{return}}
 {{end}}
@@ -16,26 +17,22 @@ Seems like this channel does not exist anymore
 {{if eq .StrippedID "ConcludedLog"}}
 {{$embed := structToSdict (index .Message.Embeds 0)}}
 {{($embed.Set "color" 0x00FF00)}}
-{{if eq (len .Message.Embeds) 2}}
-{{if in (structToSdict (index .Message.Embeds 1)).Description (print " Has marked this post as concluded.")}}
-Seems like this post has already been marked as concluded
+{{if in .Message.Content "post as concluded"}}
+Seems like this post has already been marked as concluded...
+{{deleteResponse 5}}
 {{ephemeralResponse}}
 {{return}}
 {{end}}
-{{editMessage nil .Message.ID (complexMessageEdit "content" .Message.Content "embed" (cslice $embed (cembed "description" (print (structToSdict (index .Message.Embeds 1)).Description "\n\n" .User.Mention " Has marked this post as concluded."))))}}
-{{ephemeralResponse}}
-Done! marked as concluded.
-{{return}}
-{{else}}
-{{editMessage nil .Message.ID (complexMessageEdit "content" .Message.Content "embed" (cslice $embed (cembed "description" (print .User.Mention " Has marked this post as concluded."))))}}
+{{editMessage nil .Message.ID (complexMessageEdit "content" (print .Message.Content "\n\n" .User.Mention " Has marked this post as concluded.")  "embed" $embed )}}
 Done! Marked as concluded.
+{{deleteResponse 5}}
 {{ephemeralResponse}}
 {{return}}
-{{end}}
 {{end}}
 {{if eq .StrippedID "TagsEdit"}}
 {{editThread (reFind `\d+` .Message.Content) (sdict "tags" .Values)}}
 {{ephemeralResponse}}
 Done! changed the tags for that post.
+{{deleteResponse 5}}
 {{return}}
 {{end}}
