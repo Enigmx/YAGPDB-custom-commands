@@ -1,14 +1,18 @@
 {{$reportChannel := 0}}
 
+{{$attach := ""}}
 {{deleteTrigger 0}}
 {{if eq (len .Args) 1}}
 {{sendDM "**__Usage:__**\n-report [reason]\n\nYou can optionally reply to a message while reporting, which will also be sent with the report."}}
 {{return}}
 {{end}}
 {{if (getChannel .Channel.ParentID).IsForum}}
+{{if $b := (getMessage .Channel.ID .Channel.ID).Attachments}}
+{{$attach = (index $b 0).URL}}
+{{end}}
 {{$message := getMessage nil .Channel.ID}}
 {{$member := getMember $message.Author}}
-{{sendMessage $reportChannel (complexMessage "content" (print "<#" .Channel.ID ">, Post opened by <@" $message.Author.ID ">\nForum: <#" .Channel.ParentID "> \n\nReport submitted by <@" .User.ID ">") "buttons" (cslice (sdict "emoji" (sdict "name" "✅") "label" "Concluded" "style" "grey" "custom_id" "reportEnigmaConcludeReport") (sdict "label" "Erase Post" "emoji" (sdict "name" "🗑️") "style" "grey" "custom_id" "reportEnigmaErasePostReport") (sdict "emoji" (sdict "name" "🛑") "label" "Timeout" "style" "grey" "custom_id" "reportEnigmaTimeoutMember")) "embed" (cslice (cembed "color" 0xFF0000 "title" .Channel.Name "description" $message.Content "author" (sdict "name" ($member.User.Username) "icon_url" ($member.User.AvatarURL "512"))) (cembed "author" (sdict "name" ($.User.Username) "icon_url" ($.User.AvatarURL "512")) "description" .StrippedMsg) ))}}
+{{sendMessage $reportChannel (complexMessage "content" (print "<#" .Channel.ID ">, Post opened by <@" $message.Author.ID ">\nForum: <#" .Channel.ParentID "> \n\nReport submitted by <@" .User.ID ">") "buttons" (cslice (sdict "emoji" (sdict "name" "✅") "label" "Concluded" "style" "grey" "custom_id" "reportEnigmaConcludeReport") (sdict "label" "Erase Post" "emoji" (sdict "name" "🗑️") "style" "grey" "custom_id" "reportEnigmaErasePostReport") (sdict "emoji" (sdict "name" "🛑") "label" "Timeout" "style" "grey" "custom_id" "reportEnigmaTimeoutMember")) "embed" (cslice (cembed "image" (sdict "url" $attach) "color" 0xFF0000 "title" .Channel.Name "description" $message.Content "author" (sdict "name" ($member.User.Username) "icon_url" ($member.User.AvatarURL "512"))) (cembed "author" (sdict "name" ($.User.Username) "icon_url" ($.User.AvatarURL "512")) "description" .StrippedMsg) ))}}
 {{else}}
 {{if .Message.Reference}}
 {{$message := getMessage nil (.Message.Reference.MessageID)}}
@@ -16,5 +20,5 @@
 {{sendMessage $reportChannel (complexMessage "content" (print "<#" .Channel.ID ">, Message sent by <@" $message.Author.ID ">, link: https://discord.com/channels/" .Guild.ID "/" .Channel.ID "/" .Message.Reference.MessageID "\n\nReport submitted by <@" .User.ID ">") "buttons" (cslice (sdict "emoji" (sdict "name" "✅") "label" "Concluded" "style" "grey" "custom_id" "reportEnigmaConcludeReport") (sdict "label" "Erase Message" "emoji" (sdict "name" "🚮") "style" "grey" "custom_id" "reportEnigmaEraseMessage") (sdict "emoji" (sdict "name" "🛑") "label" "Timeout" "style" "grey" "custom_id" "reportEnigmaTimeoutMember")) "embed" (cslice (cembed "color" 0xFF0000 "description" $message.Content "author" (sdict "name" ($member.User.Username) "icon_url" ($member.User.AvatarURL "512"))) (cembed "author" (sdict "name" ($.User.Username) "icon_url" ($.User.AvatarURL "512")) "description" .StrippedMsg) ))}}
 {{return}}
 {{end}}
-{{sendMessage $reportChannel (complexMessage "content" (print "<#" .Channel.ID ">,\n\nReport submitted by <@" .User.ID ">") "buttons" (cslice (sdict "emoji" (sdict "name" "✅") "label" "Concluded" "style" "grey" "custom_id" "reportEnigmaConcludeReport")) "embed" (cembed "author" (sdict "name" ($.User.Username) "icon_url" ($.User.AvatarURL "512")) "description" .StrippedMsg))}}
+{{sendMessage $reportChannel (complexMessage "content" (print "<#" .Channel.ID ">,\n\nReport submitted by <@" .User.ID ">") "buttons" (cslice (sdict "emoji" (sdict "name" "✅") "label" "Concluded" "style" "grey" "custom_id" "reportEnigmaConcludeReport")) "embed" (cembed "color" 0xFF0000 "author" (sdict "name" ($.User.Username) "icon_url" ($.User.AvatarURL "512")) "description" .StrippedMsg))}}
 {{end}}
