@@ -10,6 +10,7 @@
 {{else}}
 Seems like this channel does not exist anymore
 {{ephemeralResponse}}
+{{return}}
 {{end}}
 {{end}}
 {{if eq .StrippedID "ConcludedLog"}}
