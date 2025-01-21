@@ -1,5 +1,5 @@
 {{/* report modals */}}
-{{$forumEraseReportChannel := 615250760812331080}}
+{{$forumEraseReportChannel := 0}}
 {{if eq .StrippedID "ErasePostReport"}}
 {{deleteForumPost (reFind `\d+` .Message.Content)}}
 {{if not (eq (len (index .Values 0)) 0)}}
