@@ -14,7 +14,7 @@ Seems like this member is no longer in the server...
 {{return}}
 {{end}}
 {{try}}
-{{dbSetExpire (index $a 1) "reportEnigma" "yA" 10}}
+{{dbSetExpire (toInt (index $a 1)) "reportEnigma" "yA" 10}}
 {{execAdmin "timeout" (index $a 1) "5m"}}
 {{catch}}
 Can't timeout this person, seems like they are a server moderator or administrator...
