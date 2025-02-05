@@ -36,3 +36,5 @@ Seems like this automatic message has been erased already...
 {{sendModal (sdict "title" "Create automatic help" "custom_id" "autohelpEnigmaCreateAutoMessage" "fields" (cslice (sdict "label" "Keywords" "placeholder" "split your keywords using ''/''." "required" true "style" 1 "max_length" 1900) (sdict "label" "Automatic message" "placeholder" "This will be sent if there is a match" "required" true "style" 2 "max_length" 3900) (sdict "label" "Optional attachment" "placeholder" "https://media.discordapp.net/attachments/..." "style" 1 "max_length" 900)))}}
 {{return}}
 {{end}}
+{{/* https://github.com/Enigmx/YAGPDB-custom-commands/tree/main/CC%3A%20Forum%20autohelp */}}
+{{/* made in chile */}}
