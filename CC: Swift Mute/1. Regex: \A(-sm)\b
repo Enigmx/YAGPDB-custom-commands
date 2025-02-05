@@ -92,4 +92,5 @@ __Command usage:__
 {{end}}
 {{sendMessage $staffchannel (complexMessage "content" (print $aq) "embed" (cembed "author" (sdict "name" (print $b) "icon_url" ($c)) "description" (print "**" $b "** has used the Swift mute towards " $qa "**.") "color" 0xf542d1))}}
 {{end}}
+{{/* https://github.com/Enigmx/YAGPDB-custom-commands/tree/main/CC%3A%20Swift%20Mute */}}
 {{/* made in chile */}}
