@@ -22,3 +22,5 @@
 {{end}}
 {{sendMessage $reportChannel (complexMessage "content" (print "<#" .Channel.ID ">,\n\nReport submitted by <@" .User.ID ">") "buttons" (cslice (sdict "emoji" (sdict "name" "✅") "label" "Concluded" "style" "grey" "custom_id" "reportEnigmaConcludeReport")) "embed" (cembed "color" 0xFF0000 "author" (sdict "name" ($.User.Username) "icon_url" ($.User.AvatarURL "512")) "description" .StrippedMsg))}}
 {{end}}
+{{/* https://github.com/Enigmx/YAGPDB-custom-commands/tree/main/CC%3A%20Report */}}
+{{/* made in chile */}}
