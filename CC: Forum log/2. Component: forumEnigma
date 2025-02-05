@@ -36,3 +36,5 @@ Done! changed the tags for that post.
 {{deleteResponse 5}}
 {{return}}
 {{end}}
+{{/* https://github.com/Enigmx/YAGPDB-custom-commands/tree/main/CC%3A%20Forum%20log */}}
+{{/* made in chile */}}
