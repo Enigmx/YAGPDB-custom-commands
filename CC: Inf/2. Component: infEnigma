@@ -39,3 +39,5 @@ This template doesn't exist anymore :(
 {{sendModal (sdict "title" "Delete template" "custom_id" "infEnigmaDeleteTemplate" "fields" (cslice (sdict "label" "Are you sure you want to erase this template?" "placeholder" "confirm" "required" true "style" 1 "max_length" 7)))}}
 {{return}}
 {{end}}
+{{/* https://github.com/Enigmx/YAGPDB-custom-commands/tree/main/CC%3A%20Inf */}}
+{{/* made in chile */}}
