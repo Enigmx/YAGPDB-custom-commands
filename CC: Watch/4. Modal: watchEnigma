@@ -37,3 +37,5 @@
 {{sendResponse nil "Modified the role list 👀"}}
 {{return}}
 {{end}}
+{{/* https://github.com/Enigmx/YAGPDB-custom-commands/tree/main/CC%3A%20Watch */}}
+{{/* made in chile */}}
