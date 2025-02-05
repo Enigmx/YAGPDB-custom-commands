@@ -66,3 +66,5 @@ Type "confirm" to delete the template. Just making sure you aren't making a mist
 {{end}}
 {{return}}
 {{end}}
+{{/* https://github.com/Enigmx/YAGPDB-custom-commands/tree/main/CC%3A%20Inf */}}
+{{/* made in chile */}}
