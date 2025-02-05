@@ -2,3 +2,5 @@
 {{if and (getChannel .Channel.ParentID).IsForum (eq .Channel.ID .Message.ID)}}
 {{execCC $autohelpCCID nil 0 (print .Channel.Name "\n" .Message.Content)}}
 {{end}}
+{{/* https://github.com/Enigmx/YAGPDB-custom-commands/tree/main/CC%3A%20Forum%20autohelp */}}
+{{/* made in chile */}}
