@@ -145,3 +145,5 @@ I could not tell what exactly are you trying to do. Try again?
 **-autohelp test [text]** Check which automatic messages would have been sent if the text was a new post.
 **-autohelp database** Retrieve the content of the bots database and how much it's being used.
 {{return}}
+{{/* https://github.com/Enigmx/YAGPDB-custom-commands/tree/main/CC%3A%20Forum%20autohelp */}}
+{{/* made in chile */}}
