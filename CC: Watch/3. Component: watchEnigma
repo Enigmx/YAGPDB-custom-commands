@@ -52,3 +52,5 @@ Admin configuration can only be done by those who have the **{{(getRole (toInt (
 {{sendModal (sdict "title" "Edit users" "custom_id" "watchEnigmaEditInmuneUsers" "fields" (sdict "value" ($db.Get "users") "label" "User ID - optional note" "placeholder" "1234567890 Bob\n0987654321 Tim" "required" false "style" 2))}}
 {{return}}
 {{end}}
+{{/* https://github.com/Enigmx/YAGPDB-custom-commands/tree/main/CC%3A%20Watch */}}
+{{/* made in chile */}}
