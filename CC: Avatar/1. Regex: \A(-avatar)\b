@@ -18,4 +18,5 @@ Seems like this person either left the server, or doesn't exist. Try again?
 {{else}}
 No idea what is it that you're trying to tell me. If you want to get your own avatar, run "-avatar", if you want to get someone else's avatar, run "-avatar @person".
 {{end}}
+{{/* https://github.com/Enigmx/YAGPDB-custom-commands/tree/main/CC%3A%20Avatar */}}
 {{/* made in chile */}}
