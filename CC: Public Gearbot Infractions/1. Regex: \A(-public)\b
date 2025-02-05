@@ -88,5 +88,5 @@ __Usage:__
 {{$string = reReplace "```" $string " "}}
 {{$string}}
 {{deleteTrigger 2}}
-
+{{/* https://github.com/Enigmx/YAGPDB-custom-commands/tree/main/CC%3A%20Public%20Gearbot%20Infractions */}}
 {{/* made in chile */}}
