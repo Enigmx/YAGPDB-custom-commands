@@ -49,3 +49,5 @@ I couldn't find an embed in the position {{add $select 1}}...
 {{end}}
 {{end}}
 {{sendMessage nil (complexMessage "content" $string "embed" (cembed "author" (sdict "name" ($.User.Username) "icon_url" ($.User.AvatarURL "512")) "color" 0xeb459f "description" "Here's the whole embed in one message"))}}
+{{/* https://github.com/Enigmx/YAGPDB-custom-commands/tree/main/CC%3A%20Extract */}}
+{{/* made in chile */}}
