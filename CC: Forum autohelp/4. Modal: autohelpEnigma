@@ -39,3 +39,5 @@
 {{sendResponse nil (complexMessage "content" (index .Values 0) "embed" (cembed "image" (sdict "url" (index .Values 2)) "title" (print $id " | Created Autohelp message by <@" .User.ID ">") "description" (index .Values 1) "color" 0xeb459f))}}
 {{dbSet 0 "autohelpEnigma" $db}}
 {{end}}
+{{/* https://github.com/Enigmx/YAGPDB-custom-commands/tree/main/CC%3A%20Forum%20autohelp */}}
+{{/* made in chile */}}
