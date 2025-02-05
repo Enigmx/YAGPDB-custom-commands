@@ -23,3 +23,5 @@
 {{sendMessage $forumLogChannel (complexMessage "content" (print .Channel.Mention " - Post created by: " .User.Mention "\nForum: <#" .Channel.ParentID ">") "menus" (cmenu "type" "text" "placeholder" "Post tags" "custom_id" "forumEnigmaTagsEdit" "options" $sdicts "max_values" (len (getChannel .Channel.ParentID).AvailableTags)) "embed" (cembed "image" (sdict "url" $attach) "color" 0xFF0000 "title" .Channel.Name "description" .Message.Content "author" (sdict "name" ($.User.Username) "icon_url" ($.User.AvatarURL "512"))) "buttons" (cslice (cbutton "label" "Concluded" "custom_id" "forumEnigmaConcludedLog" "emoji" (sdict "name" "✅") "style" "secondary") (cbutton "label" "Erase post" "custom_id" "forumEnigmaErasePostLog" "emoji" (sdict "name" "🗑️") "style" "secondary") (cbutton "label" "Rename" "custom_id" "forumEnigmaRenamePost" "emoji" (sdict "name" "✏️") "style" "secondary")))}}
 {{end}}
 {{end}}
+{{/* https://github.com/Enigmx/YAGPDB-custom-commands/tree/main/CC%3A%20Forum%20log */}}
+{{/* made in chile */}}
