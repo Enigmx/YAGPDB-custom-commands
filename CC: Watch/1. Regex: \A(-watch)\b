@@ -177,3 +177,5 @@ You cannot put a watch on this person :(
 {{sendMessage nil (complexMessage "content" "Wait a second..." "embed" (cembed "author" (sdict "name" ($.User.Username) "icon_url" ($.User.AvatarURL "512")) "color" 0xeb459f "description" (print $desc "\n\nYou have already put a watch on <@" $target ">, so I am going to be merging both the old and new keywords and wil be watching this now: ''" (joinStr ", " $keywords) "''. I will be overwriting the old duration for the new one, which will be for " $duration ".")))}}
 {{end}}
 {{scheduleUniqueCC .CCID $logchannel $duration.Seconds (print .User.ID "-" $target) (sdict "keywords" $keywords "target" $target "user" .User.ID)}}
+{{/* https://github.com/Enigmx/YAGPDB-custom-commands/tree/main/CC%3A%20Watch */}}
+{{/* made in chile */}}
