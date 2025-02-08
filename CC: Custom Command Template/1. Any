@@ -53,7 +53,6 @@
 {{end}}
 {{if not (eq (len $content) 0)}}
 {{sendMessage nil (complexMessage "content" $content "embed" (cembed $embed))}}
-{{$content}}
 {{else}}
 {{sendMessage nil (cembed $embed)}}
 {{end}}
