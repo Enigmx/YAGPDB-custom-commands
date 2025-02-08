@@ -163,7 +163,7 @@ This forum doesn't have the concluded tag 🧐
 {{return}}
 {{end}}
 {{editThread .Channel.ID (sdict "tags" $concludedTagName)}}
-Done! marked this post as concluded, the post will be closed and locked soon
+Done! marked this post as concluded, the post will be closed and locked in 12 hours 
 {{scheduleUniqueCC .CCID nil 43200 (print .Channel.ID "concluded") (cslice .Channel.ID "concluded")}}
 {{return}}
 {{else}}
