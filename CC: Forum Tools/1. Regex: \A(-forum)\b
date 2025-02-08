@@ -1,6 +1,6 @@
 {{$modRole := 0}}
 {{$logChannel := 0}}
-{{$concludedTagName := "concluded"}}
+{{$concludedTagName := ""}}
 {{$concludedChannelReport := 0}}
 {{$channelDeleteNotification := 0}}
 
