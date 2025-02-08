@@ -245,3 +245,5 @@ Done! this post will be deleted in ten seconds, to cancel, run "-forum delete" a
 {{end}}
 I couldn't tell what exactly is it that you wanna do, try again?
 {{end}}
+{{/* https://github.com/Enigmx/YAGPDB-custom-commands/tree/main/CC%3A%20Forum%20tools */}}
+{{/* made in chile */}}
