@@ -1,0 +1,41 @@
+{{/* Forum tools buttons */}}
+{{$concludedTagName := "test2"}}
+{{if eq .StrippedID "AcceptConcluded"}}
+{{if (in .Message.Content "accepted")}}
+Seems like this post was already marked as concluded by someone else...
+{{ephemeralResponse}}
+{{return}}
+{{end}}
+{{$embed := structToSdict (index .Message.Embeds 0)}}
+{{$embed.Set "color" 0x00FF00}}
+{{editMessage nil .Message.ID (complexMessageEdit "content" (print .Message.Content "\n\n" .User.Mention " has accepted the report and marked the post as concluded.") "embed" (cembed $embed))}}
+{{$channel := (index (reFindAll `\d+` .Message.Content) 1)}}
+{{if (getChannelOrThread $channel)}}
+{{editThread $channel (sdict "tags" $concludedTagName)}}
+Done! This post has been marked as concluded and will be closed automatically in 12 hours.
+{{$ccid := (dbGet 2 "forumToolsEnigma").Value}}
+{{scheduleUniqueCC (toInt $ccid) nil 43200 (print .Channel.ID "concluded") (cslice .Channel.ID "concluded")}}
+{{ephemeralResponse}}
+{{return}}
+{{else}}
+Oops, seems like this post was deleted...
+{{ephemeralResponse}}
+{{return}}
+{{end}}
+{{return}}
+{{end}}
+{{if eq .StrippedID "DeclineConcluded"}}
+{{if or (in .Message.Content "decline") (in .Message.Content "accepted")}}
+Seems like this post was already marked as concluded or declined by someone else...
+{{ephemeralResponse}}
+{{return}}
+{{end}}
+{{$embed := structToSdict (index .Message.Embeds 0)}}
+{{$embed.Set "color" 0x00FF00}}
+{{editMessage nil .Message.ID (complexMessageEdit "content" (print .Message.Content "\n\n" .User.Mention " has declined the report.") "embed" (cembed $embed))}}
+Done! This post has been marked as declined.
+{{ephemeralResponse}}
+{{return}}
+{{end}}
+{{/* https://github.com/Enigmx/YAGPDB-custom-commands/tree/main/CC%3A%20Forum%20tools */}}
+{{/* made in chile */}}
