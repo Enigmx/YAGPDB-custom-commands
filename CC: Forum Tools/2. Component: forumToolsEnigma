@@ -1,5 +1,6 @@
 {{/* Forum tools buttons */}}
-{{$concludedTagName := "test2"}}
+{{$concludedTagName := ""}}
+
 {{if eq .StrippedID "AcceptConcluded"}}
 {{if (in .Message.Content "accepted")}}
 Seems like this post was already marked as concluded by someone else...
