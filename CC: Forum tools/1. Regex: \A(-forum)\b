@@ -1,0 +1,247 @@
+{{$modRole := 0}}
+{{$logChannel := 0}}
+{{$concludedTagName := "concluded"}}
+{{$concludedChannelReport := 0}}
+{{$channelDeleteNotification := 0}}
+
+{{if .ExecData}}
+{{if eq (index .ExecData 1) "expire"}}
+{{closeThread (index .ExecData 0) true}}
+{{closeThread (index .ExecData 0)}}
+{{return}}
+{{end}}
+{{if eq (index .ExecData 1) "delete"}}
+{{$string := print "**" .User.Username "** has deleted **" .Channel.Name "**."}}
+{{if eq (len .ExecData) 4}}
+{{$member := getMember (index .ExecData 3)}}
+{{if $member}}}
+{{sendMessage $channelDeleteNotification (complexMessage "content" (print "<@" (index .ExecData 3) "> Your post has been removed from the forums. The moderator gave the following reason:") "embed" (cembed "author" (sdict "name" ($member.User.Username) "icon_url" ($member.User.AvatarURL "512")) "description" (print (index .ExecData 2))))}}
+{{end}}
+{{$string = print $string "\nReason: " (index .ExecData 2)}}
+{{end}}
+{{deleteForumPost (index .ExecData 0)}}
+{{sendMessage $logChannel (cembed "author" (sdict "name" ($.User.Username) "icon_url" ($.User.AvatarURL "512")) "color" 0xeb459f "description" $string "footer" (sdict "text" "Forum Custom Command notification"))}}
+{{return}}
+{{end}}
+{{if eq (index .ExecData 1) "concluded"}}
+{{closeThread (index .ExecData 0) true}}
+{{closeThread (index .ExecData 0)}}
+{{return}}
+{{end}}
+{{end}}
+{{if eq (len .Args) 1}}
+{{$concluded := "Disabled"}}
+{{if gt (len $concludedTagName) 0}}
+{{$concluded = "Enabled"}}
+{{end}}
+### Forum configuration
+Modifies the configuration for the current forum post.
+
+**__Usage:__**
+-forum tag [Name of the tag to add/remove]
+-forum close
+-forum lock
+-forum closelock
+-forum expiration [Time in which the post will be closed and locked automatically]
+-forum delete [Optional reason]
+-forum concluded
+
+**__Manual__**
+To use the "expire" setting, use a duration in this format:
+-forum expire 6h
+This example sets the expiration to 6h from now on. 
+
+The "concluded" setting is meant for tasks/support styled forums with a concluded/resolved tag. This setting will take away all tags, add the concluded/resolved tag, and set an automatic expiration of 12 hours. The post is closed and locked afterwards.
+In this server, this setting is **{{$concluded}}**. 
+{{return}}
+{{end}}
+
+{{if not (getChannel .Channel.ParentID).IsForum}}
+This command can only be used in forums :(
+{{return}}
+{{end}}
+{{if eq (len .Args) 2}}
+{{if eq (lower (index .Args 1)) "tag"}}
+{{if not (in .Member.Roles $modRole)}}
+Only moderators of the server can use this tool :(
+{{return}}
+{{end}}
+Which tag would you like to add or remove?
+**__Usage:__**
+-forum tag [Name]
+{{return}}
+{{end}}
+{{if eq (lower (index .Args 1)) "close"}}
+{{if not (in .Member.Roles $modRole)}}
+Only moderators of the server can use this tool :(
+{{return}}
+{{end}}
+{{sendMessage nil "👍 Thread will be closed"}}
+{{sleep 1}}
+{{closeThread nil}}
+{{sendMessage $logChannel (cembed "author" (sdict "name" ($.User.Username) "icon_url" ($.User.AvatarURL "512")) "color" 0xeb459f "description" (print "**" .User.Username "** has closed **" .Channel.Name "**.") "footer" (sdict "text" "Forum Custom Command notification"))}}
+{{return}}
+{{end}}
+{{if eq (lower (index .Args 1)) "lock"}}
+{{if not (in .Member.Roles $modRole)}}
+Only moderators of the server can use this tool :(
+{{return}}
+{{end}}
+{{sendMessage nil "👍 Thread will be locked"}}
+{{sleep 1}}
+{{closeThread nil true}}
+{{sendMessage $logChannel (cembed "author" (sdict "name" ($.User.Username) "icon_url" ($.User.AvatarURL "512")) "color" 0xeb459f "description" (print "**" .User.Username "** has locked **" .Channel.Name "**.") "footer" (sdict "text" "Forum Custom Command notification"))}}
+{{return}}
+{{end}}
+{{if eq (lower (index .Args 1)) "closelock"}}
+{{if not (in .Member.Roles $modRole)}}
+Only moderators of the server can use this tool :(
+{{return}}
+{{end}}
+{{sendMessage nil "👍 Thread will be closed and locked"}}
+{{sleep 1}}
+{{closeThread nil true}}
+{{closeThread nil}}
+{{sendMessage $logChannel (cembed "author" (sdict "name" ($.User.Username) "icon_url" ($.User.AvatarURL "512")) "color" 0xeb459f "description" (print "**" .User.Username "** has closed and locked **" .Channel.Name "**.") "footer" (sdict "text" "Forum Custom Command notification"))}}
+{{return}}
+{{end}}
+{{if eq (lower (index .Args 1)) "expire"}}
+{{if not (in .Member.Roles $modRole)}}
+Only moderators of the server can use this tool :(
+{{return}}
+{{end}}
+{{if (dbGet 0 "forumToolsEnigma")}}
+{{dbDel 0 "forumToolsEnigma"}}
+{{cancelScheduledUniqueCC .CCID (print .Channel.ID "expire")}}
+Expiration has been canceled for this post 👍
+{{sendMessage $logChannel (cembed "author" (sdict "name" ($.User.Username) "icon_url" ($.User.AvatarURL "512")) "color" 0xeb459f "description" (print "**" .User.Username "** has canceled the expiration date on **" .Channel.Name "**.") "footer" (sdict "text" "Forum Custom Command notification"))}}
+{{return}}
+{{end}}
+When exactly is this post meant to expire?
+
+**__Usage:__**
+-forum expire [duration]
+{{return}}
+{{end}}
+{{if eq (lower (index .Args 1)) "delete"}}
+{{if not (in .Member.Roles $modRole)}}
+Only moderators of the server can use this tool :(
+{{return}}
+{{end}}
+{{if (dbGet 1 "forumToolsEnigma")}}
+{{cancelScheduledUniqueCC .CCID (print .Channel.ID "delete")}}
+Canceled 👍
+{{return}}
+{{end}}
+{{scheduleUniqueCC .CCID nil 12 (print .Channel.ID "delete") (cslice .Channel.ID "delete")}}
+{{dbSetExpire 1 "forumToolsEnigma" 1 12}}
+Done! this post will be deleted in ten seconds, to cancel, run "-forum delete" again.
+{{return}}
+{{end}}
+{{if eq (lower (index .Args 1)) "concluded"}}
+{{if not (in .Member.Roles $modRole)}}
+{{if $concludedChannelReport}}
+{{sendMessage $concludedChannelReport (complexMessage "content" (print .User.Mention " has suggested that you mark this post as concluded: <#" .Channel.ID ">" ) "buttons" (cslice  (sdict "label" "Accept" "style" "green" "custom_id" "forumToolsEnigmaAcceptConcluded") (sdict "label" "Decline" "style" "red" "custom_id" "forumToolsEnigmaDeclineConcluded")) "embed" (cembed "title" .Channel.Name "description" (getMessage .Channel.ID .Channel.ID).Content "color" 0xFF0000))}}
+{{dbSet 2 "forumToolsEnigma" (toString .CCID)}}
+Sent the suggestions to the server moderators 👍
+{{return}}
+{{else}}
+You cannot mark not suggest posts to be marked as concluded :(
+{{return}}
+{{end}}
+{{end}}
+{{if $concludedTagName}}
+{{$tag := false}}
+{{range (getChannel .Channel.ParentID).AvailableTags}}
+{{if eq (lower .Name) $concludedTagName}}
+{{$tag = true}}
+{{break}}
+{{end}}
+{{end}}
+{{if not $tag}}
+This forum doesn't have the concluded tag 🧐
+{{return}}
+{{end}}
+{{editThread .Channel.ID (sdict "tags" $concludedTagName)}}
+Done! marked this post as concluded, the post will be closed and locked soon
+{{scheduleUniqueCC .CCID nil 43200 (print .Channel.ID "concluded") (cslice .Channel.ID "concluded")}}
+{{return}}
+{{else}}
+The server has not been configured to support this setting specifically.
+{{return}}
+{{end}}
+{{end}}
+I couldn't tell what exactly is it that you wanna do, try again?
+{{end}}
+{{if gt (len .Args) 2}}
+{{if not (in .Member.Roles $modRole)}}
+Only moderators of the server can use this tool :(
+{{return}}
+{{end}}
+{{if eq (lower (index .Args 1)) "tag"}}
+{{$arg := trimSpace (joinStr " " (slice .Args 2))}}
+{{$tag := false}}
+{{$tags := cslice}}
+{{range (getChannel .Channel.ParentID).AvailableTags}}
+{{if in $.Channel.AppliedTags .ID}}
+{{$tags = $tags.Append .ID}}
+{{end}}
+{{if eq (lower .Name) (lower $arg)}}
+{{$tag = .ID}}
+{{end}}
+{{end}}
+{{if not $tag}}
+It doesn't seem like **{{$arg}}** exists as a tag for this forum 🧐
+{{return}}
+{{end}}
+{{if (in $tags $tag)}}
+{{$newtags := cslice}}
+{{range $tags}}
+{{if eq . $tag}}
+{{continue}}
+{{end}}
+{{$newtags = $newtags.Append .}}
+{{end}}
+{{if gt (len $newtags) 0}}
+{{editThread nil (sdict "tags" $newtags)}}
+{{else}}
+You can't remove the only tag set for this post :(
+{{return}}
+{{end}}
+Done! removed **{{$arg}}** from the tags of the post.
+{{return}}
+{{else}}
+{{editThread nil (sdict "tags" ($tags.Append $tag))}}
+Done! Added **{{$arg}}** to the tags of the post.
+{{return}}
+{{end}}
+{{end}}
+{{if eq (lower (index .Args 1)) "expire"}}
+{{$duration := toDuration (index .Args 2)}}
+{{if $duration}}
+{{scheduleUniqueCC .CCID nil $duration.Seconds (print .Channel.ID "expire") (cslice .Channel.ID "expire")}}
+{{dbSetExpire 0 "forumToolsEnigma" "a" $duration}}
+Done! this post will expire in **{{$duration}}**.
+{{sendMessage $logChannel (cembed "author" (sdict "name" ($.User.Username) "icon_url" ($.User.AvatarURL "512")) "color" 0xeb459f "description" (print "**" .User.Username "** has set an expiration date on **" .Channel.Name "**.") "footer" (sdict "text" "Forum Custom Command notification"))}}
+{{return}}
+{{end}}
+The time provided was not correct :( Here are some examples in how does your time has to look like:
+10s: ten seconds
+10m: ten minutes
+10h: ten hours
+10d: ten days
+{{return}}
+{{end}}
+{{if eq (lower (index .Args 1)) "delete"}}
+{{if (dbGet 1 "forumToolsEnigma")}}
+{{cancelScheduledUniqueCC .CCID (print .Channel.ID "delete")}}
+Canceled 👍
+{{return}}
+{{end}}
+{{scheduleUniqueCC .CCID nil 12 (print .Channel.ID "delete") (cslice .Channel.ID "delete" (joinStr " " (slice .Args 2)) .Channel.OwnerID)}}
+{{dbSetExpire 1 "forumToolsEnigma" 1 12}}
+Done! this post will be deleted in ten seconds, to cancel, run "-forum delete" again.
+{{return}}
+{{end}}
+I couldn't tell what exactly is it that you wanna do, try again?
+{{end}}
