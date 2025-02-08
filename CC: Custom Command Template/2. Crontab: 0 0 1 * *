@@ -1,0 +1,22 @@
+{{$channel := .Channel.ID}}
+{{$db := (dbGet 0 "commandTemplateEnigmaTrack").Value}}
+{{if not $db}}
+{{sendMessage $channel (cembed "title" "Use of custom commands this month" "description" "Nothing was used..." "footer" (sdict "text" "Commands not used this month are not shown"))}}
+{{return}}
+{{end}}
+{{$string := ""}}
+{{$sort := cslice}}
+{{range $db}}
+{{$sort = $sort.Append (sdict "use" (index . 0) "command" (index . 1))}}
+{{end}}
+{{$a := sort $sort (sdict "key" "use" "reverse" true)}}
+{{range $a}}
+{{range $k, $v := .}}
+{{$string = print $string " " $v "**"}}
+{{end}}
+{{$string = print $string "\n"}}
+{{end}}
+{{sendMessage $channel (cembed "title" "Use of custom commands this month" "description" $string "footer" (sdict "text" "Commands not used this month are not shown"))}}
+{{dbDel 0 "commandTemplateEnigmaTrack"}}
+{{/* https://github.com/Enigmx/YAGPDB-custom-commands/tree/main/CC%3A%20Custom%20Command%20Template */}}
+{{/* made in chile */}}
