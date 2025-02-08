@@ -6,6 +6,9 @@
 
 {{if .ExecData}}
 {{if eq (index .ExecData 1) "expire"}}
+{{if not (getChannelOrThread (index .ExecData 0))}}
+{{return}}
+{{end}}
 {{closeThread (index .ExecData 0) true}}
 {{closeThread (index .ExecData 0)}}
 {{return}}
@@ -24,6 +27,9 @@
 {{return}}
 {{end}}
 {{if eq (index .ExecData 1) "concluded"}}
+{{if not (getChannelOrThread (index .ExecData 0))}}
+{{return}}
+{{end}}
 {{closeThread (index .ExecData 0) true}}
 {{closeThread (index .ExecData 0)}}
 {{return}}
