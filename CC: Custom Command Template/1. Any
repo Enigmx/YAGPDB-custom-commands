@@ -1,0 +1,72 @@
+{{$cooldown := 5}}
+{{/* 
+----- CONTENT -----
+----- CONTENT -----
+
+----- TITLE -----
+----- TITLE -----
+
+----- DESCRIPTION -----
+----- DESCRIPTION -----
+
+----- FOOTER -----
+----- FOOTER -----
+
+----- ATTACHMENT -----
+----- ATTACHMENT -----
+*/}}
+
+{{/* code from now on, do not edit */}}
+{{if (dbGet 0 "commandTemplateEnigma")}}
+{{return}}
+{{end}}
+{{$embed := sdict}}
+{{$text := (execAdmin "cc" .CCID "-raw").Content}}
+{{$content := index (split $text "----- CONTENT -----") 1}}
+{{$title := index (split $text "----- TITLE -----") 1}}
+{{$description := index (split $text "----- DESCRIPTION -----") 1}}
+{{$footer := index (split $text "----- FOOTER -----") 1}}
+{{$attachment := index (split $text "----- ATTACHMENT -----") 1}}
+{{if not (eq (len $title) 0)}}
+{{if ge (len $title) 250}}
+{{sendMessage nil "This custom command has been misconfigured: the title of the message cannot be longer than 250 characters."}}
+{{return}}
+{{end}}
+{{$embed.Set "title" $title}}
+{{end}}
+{{if not (eq (len $description) 0)}}
+{{if ge (len $description) 4000}}
+{{sendMessage nil "This custom command has been misconfigured: the description of the message cannot be longer than 4000 characters."}}
+{{return}}
+{{end}}
+{{$embed.Set "description" $description}}
+{{end}}
+{{if not (le (len $attachment) 2)}}
+{{$embed.Set "image" (sdict "url" $attachment)}}
+{{end}}
+{{if not (eq (len $footer) 0)}}
+{{if ge (len $footer) 2000}}
+{{sendMessage nil "This custom command has been misconfigured: the footer of the message cannot be longer than 2000 characters."}}
+{{return}}
+{{end}}
+{{$embed.Set "footer" (sdict "text" $footer)}}
+{{end}}
+{{if not (eq (len $content) 0)}}
+{{sendMessage nil (complexMessage "content" $content "embed" (cembed $embed))}}
+{{$content}}
+{{else}}
+{{sendMessage nil (cembed $embed)}}
+{{end}}
+{{dbSetExpire 0 "commandTemplateEnigma" 1 $cooldown}}
+{{$db := (dbGet 0 "commandTemplateEnigmaTrack").Value}}
+{{if not $db}}
+{{$db = sdict}}
+{{end}}
+{{if not ($db.Get (toString .CCID))}}
+{{$db.Set (toString .CCID) (cslice 0 .CCTrigger)}}
+{{end}}
+{{$count := (index ($db.Get (toString .CCID)) 0)}}
+{{$db.Set (toString .CCID) (cslice (add $count 1) .CCTrigger)}}
+{{dbSet 0 "commandTemplateEnigmaTrack" $db}}
+{{/* https://github.com/Enigmx/YAGPDB-custom-commands/tree/main/CC%3A%20Custom%20Command%20Template */}}
+{{/* made in chile */}}
