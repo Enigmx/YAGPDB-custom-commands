@@ -15,7 +15,7 @@ Seems like this post was already marked as concluded by someone else...
 {{editThread $channel (sdict "tags" $concludedTagName)}}
 Done! This post has been marked as concluded and will be closed automatically in 12 hours.
 {{$ccid := (dbGet 2 "forumToolsEnigma").Value}}
-{{scheduleUniqueCC (toInt $ccid) nil 43200 (print .Channel.ID "concluded") (cslice .Channel.ID "concluded")}}
+{{scheduleUniqueCC (toInt $ccid) nil 43200 (print $channel "concluded") (cslice $channel "concluded")}}
 {{ephemeralResponse}}
 {{return}}
 {{else}}
