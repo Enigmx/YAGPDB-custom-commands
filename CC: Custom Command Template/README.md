@@ -14,15 +14,24 @@ You can optionally configure the $cooldown. This sets how often can the custom c
 ![image](../ignore/customcommandtemplate2.png)
 
 Now you can start writing your custom command. You have to write your text between the boundaries; there are four boundaries  
---- CONTENT ---
---- CONTENT ---
---- TITLE ---
---- TITLE ---
+--- CONTENT ---  
+
+--- CONTENT ---  
+
+--- TITLE ---  
+
+--- TITLE ---  
+
 --- DESCRIPTION ---
+
 --- DESCRIPTION ---
+
 --- FOOTER ---
+
 --- FOOTER ---
+
 --- ATTACHMENT ---
+
 --- ATTACHMENT ---  
 
 You have to write your text between those boundaries, careful to not edit the boundaries themselves. For example, this is how I configured mine:  
