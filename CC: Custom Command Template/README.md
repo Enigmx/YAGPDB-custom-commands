@@ -32,34 +32,24 @@ Now you can start writing your custom command. You have to write your text betwe
 You have to write your text between those boundaries, careful to not edit the boundaries themselves. For example, this is how I configured mine:  
 
 ----- CONTENT -----  
-
 Message test  
-
 ----- CONTENT -----  
 
 ----- TITLE -----  
-
-Edit this to change the title  
-
+Edit this to change the title    
 ----- TITLE -----  
 
------ DESCRIPTION -----  
-
+----- DESCRIPTION -----    
 A nice description for your custom command.
 Supports images too  
-
 ----- DESCRIPTION -----  
 
 ----- FOOTER -----  
-
-Random text which serves no purpose  
-
+Random text which serves no purpose    
 ----- FOOTER -----  
 
 ----- ATTACHMENT -----  
-
-https://media.discordapp.net/attachments/427893900594774026/1336104331472142482/jupiter_great-red-spot-and-southern-hemisphere.sp.jpg?ex=67a297a0&is=67a14620&hm=09a64d6ae16980fe423f43417c03732542acc3735b2feebc29c9fb31c4e43a32&  
-
+https://media.discordapp.net/attachments/427893900594774026/1336104331472142482/jupiter_great-red-spot-and-southern-hemisphere.sp.jpg?ex=67a297a0&is=67a14620&hm=09a64d6ae16980fe423f43417c03732542acc3735b2feebc29c9fb31c4e43a32&    
 ----- ATTACHMENT -----
 
 
