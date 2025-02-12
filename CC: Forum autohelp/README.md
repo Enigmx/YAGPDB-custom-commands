@@ -2,7 +2,7 @@
 Automatically responds to new forum posts. You can configure the words it responds to, and what is the message that is sent.  
 
 # Use
-**-autohelp** List all tools
+**-autohelp** List all tools  
 **-autohelp list** List all the automatic messages and which words do they respond to  
 **-autohelp test [text]** test for yourself tye functionality of the command without having to open a new post in a forum channel.  
 **-autohelp database** Exposes the content in the database, while also showing how filled it is. There is a limit in how much you can add to the autohelp, so be checking the database every now and then.  
