@@ -28,5 +28,5 @@ This Custom Command has one line of code you have to change:
 
 ![image](../ignore/forumlog5.png)
 
-**{{$eraseLogChannel := 0}}** When you use the button to delete a post, that reason is sent in this channel tagging the owner of the post. Therefore you should make this a channel where everyone has, at least, read access. Can be left as zero if you don't want the reason to be sent anywhere.
+**{{$forumEraseLogChannel := 0}}** When you use the button to delete a post, that reason is sent in this channel tagging the owner of the post. Therefore you should make this a channel where everyone has, at least, read access. Can be left as zero if you don't want the reason to be sent anywhere.
 That's about it, the Custom Command should begin working as intented
