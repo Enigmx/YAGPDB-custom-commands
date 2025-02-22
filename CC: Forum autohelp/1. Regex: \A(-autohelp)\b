@@ -64,7 +64,7 @@ You didn't provide text to test the autohelp. Try again?
 {{end}}
 {{if eq (index .Args 1) "list"}}
 {{if not $db}}
-{{sendMessage nil (complexMessage "embed" (cembed "title" "Autohelp messages" "description" "Nothing here..." "color" 0xeb459f) "buttons" (sdict "label" "Create" "style" "green" "custom_id" "autohelpEnigmaCreateAutoMessage"))}}
+{{sendMessage nil (complexMessage "embed" (cembed "title" "Autohelp messages" "description" "Nothing here..." "color" 0xeb459f) "buttons" (sdict "label" "Create" "style" "green" "custom_id" "autohelpCreateAutoMessage"))}}
 {{return}}
 {{end}}
 {{$string := ""}}
@@ -73,7 +73,7 @@ You didn't provide text to test the autohelp. Try again?
 {{$string = print $string "**[" . "]** " (joinStr " **/** " (index ($db.Get (toInt64 .)) 0)) "\n\n"}}
 {{end}}
 {{end}}
-{{sendMessage nil (complexMessage "embed" (cembed "title" "Autohelp messages" "description" $string "color" 0xeb459f) "buttons" (sdict "label" "Create" "style" "green" "custom_id" "autohelpEnigmaCreateAutoMessage"))}}
+{{sendMessage nil (complexMessage "embed" (cembed "title" "Autohelp messages" "description" $string "color" 0xeb459f) "buttons" (sdict "label" "Create" "style" "green" "custom_id" "autohelpCreateAutoMessage"))}}
 {{return}}
 {{end}}
 {{end}}
@@ -101,7 +101,7 @@ I could not tell which automatic message to fetch. Try again?
 {{return}}
 {{end}}
 {{if ($db.Get (toInt64 $id))}}
-{{sendMessage nil (complexMessage "content" (joinStr " **/** " (index ($db.Get (toInt64 $id)) 0)) "embed" (cembed "title" (print $id " | Automatic message") "description" (index ($db.Get (toInt64 $id)) 1) "image" (sdict "url" (index ($db.Get (toInt64 $id)) 2)) "color" 0xeb459f) "buttons" (cslice (sdict "label" "Edit" "style" "green" "custom_id" "autohelpEnigmaEditAutoMessage")  (sdict "label" "Erase" "style" "red" "custom_id" "autohelpEnigmaEraseAutoMessage")))}}
+{{sendMessage nil (complexMessage "content" (joinStr " **/** " (index ($db.Get (toInt64 $id)) 0)) "embed" (cembed "title" (print $id " | Automatic message") "description" (index ($db.Get (toInt64 $id)) 1) "image" (sdict "url" (index ($db.Get (toInt64 $id)) 2)) "color" 0xeb459f) "buttons" (cslice (sdict "label" "Edit" "style" "green" "custom_id" "autohelpEditAutoMessage")  (sdict "label" "Erase" "style" "red" "custom_id" "autohelpEraseAutoMessage")))}}
 {{return}}
 {{else}}
 Seems like this ID does not point to anything. You could check which ones do exist by running -autohelp list.
@@ -127,7 +127,7 @@ Seems like you didn't provide a page number. Try again?
 {{$string = print $string "**[" . "]** " (joinStr " **/** " (index ($db.Get (toInt64 .)) 0)) "\n\n"}}
 {{end}}
 {{end}}
-{{sendMessage nil (complexMessage "embed" (cembed "title" (print "Autohelp messages: page " (index .Args 3)) "description" $string "color" 0xeb459f) "buttons" (sdict "label" "Create" "style" "green" "custom_id" "autohelpEnigmaCreateAutoMessage"))}} 
+{{sendMessage nil (complexMessage "embed" (cembed "title" (print "Autohelp messages: page " (index .Args 3)) "description" $string "color" 0xeb459f) "buttons" (sdict "label" "Create" "style" "green" "custom_id" "autohelpCreateAutoMessage"))}} 
 {{return}}
 {{end}}
 {{if eq (index .Args 1) "test"}}
