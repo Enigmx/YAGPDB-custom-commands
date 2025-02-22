@@ -12,7 +12,7 @@
 Seems like this automatic message has been erased already...
 {{return}}
 {{end}}
-{{sendModal (sdict "title" "Erase automatic message" "custom_id" "autohelpEnigmaEraseAutoMessage" "fields" (cslice (sdict "label" "Type ''confirm'' to erase:" "placeholder" "confirm" "required" true "style" 1 "max_length" 10)))}}
+{{sendModal (sdict "title" "Erase automatic message" "custom_id" "autohelpEraseAutoMessage" "fields" (cslice (sdict "label" "Type ''confirm'' to erase:" "placeholder" "confirm" "required" true "style" 1 "max_length" 10)))}}
 {{end}}
 {{if eq .StrippedID "EditAutoMessage"}}
 {{if not (in .Member.Roles $autohelpAdmin)}}
@@ -25,7 +25,7 @@ Seems like this automatic message has been erased already...
 Seems like this automatic message has been erased already...
 {{return}}
 {{end}}
-{{sendModal (sdict "title" "Edit automatic help" "custom_id" "autohelpEnigmaEditAutoMessage" "fields" (cslice (sdict "label" "Keywords" "value" (joinStr "/" (index ($db.Get (toInt64 $id)) 0)) "placeholder" "split your keywords using ''/''." "required" true "style" 1 "max_length" 1900) (sdict "label" "Automatic message" "value" (index ($db.Get (toInt64 $id)) 1) "placeholder" "This will be sent if there is a match" "required" true "style" 2 "max_length" 3900) (sdict "label" "Optional attachment" "placeholder" "https://media.discordapp.net/attachments/..." "value" (index ($db.Get (toInt64 $id)) 2)  "style" 1 "max_length" 900)))}}
+{{sendModal (sdict "title" "Edit automatic help" "custom_id" "autohelpEditAutoMessage" "fields" (cslice (sdict "label" "Keywords" "value" (joinStr "/" (index ($db.Get (toInt64 $id)) 0)) "placeholder" "split your keywords using ''/''." "required" true "style" 1 "max_length" 1900) (sdict "label" "Automatic message" "value" (index ($db.Get (toInt64 $id)) 1) "placeholder" "This will be sent if there is a match" "required" true "style" 2 "max_length" 3900) (sdict "label" "Optional attachment" "placeholder" "https://media.discordapp.net/attachments/..." "value" (index ($db.Get (toInt64 $id)) 2)  "style" 1 "max_length" 900)))}}
 {{return}}
 {{end}}
 {{if eq .StrippedID "CreateAutoMessage"}}
@@ -33,7 +33,7 @@ Seems like this automatic message has been erased already...
 {{sendResponse nil (complexMessage "content" "Only administrators of the bot can configure the automatic messages :(" "ephemeral" true)}}
 {{return}}
 {{end}}
-{{sendModal (sdict "title" "Create automatic help" "custom_id" "autohelpEnigmaCreateAutoMessage" "fields" (cslice (sdict "label" "Keywords" "placeholder" "split your keywords using ''/''." "required" true "style" 1 "max_length" 1900) (sdict "label" "Automatic message" "placeholder" "This will be sent if there is a match" "required" true "style" 2 "max_length" 3900) (sdict "label" "Optional attachment" "placeholder" "https://media.discordapp.net/attachments/..." "style" 1 "max_length" 900)))}}
+{{sendModal (sdict "title" "Create automatic help" "custom_id" "autohelpCreateAutoMessage" "fields" (cslice (sdict "label" "Keywords" "placeholder" "split your keywords using ''/''." "required" true "style" 1 "max_length" 1900) (sdict "label" "Automatic message" "placeholder" "This will be sent if there is a match" "required" true "style" 2 "max_length" 3900) (sdict "label" "Optional attachment" "placeholder" "https://media.discordapp.net/attachments/..." "style" 1 "max_length" 900)))}}
 {{return}}
 {{end}}
 {{/* https://github.com/Enigmx/YAGPDB-custom-commands/tree/main/CC%3A%20Forum%20autohelp */}}
