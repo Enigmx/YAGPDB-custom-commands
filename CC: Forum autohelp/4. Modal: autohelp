@@ -22,7 +22,6 @@
 {{$keywords := split (index .Values 0) "/"}}
 {{$automessage := index .Values 1}}
 {{$attachment := index .Values 2}}
-{{$attachment}}
 {{$db := (dbGet 0 "autohelpEnigma").Value}}
 {{if not $db}}
 {{$db = dict}}
