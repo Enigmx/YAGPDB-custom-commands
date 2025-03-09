@@ -1,0 +1,137 @@
+{{$maxDuration := "30m"}}
+
+{{if .ExecData}}
+{{range .ExecData}}
+{{if and (eq . 1) ($.Message.Activity)}}
+{{deleteTrigger 0}}
+{{return}}
+{{else if and (eq . 2) ($.Message.StickerItems)}}
+{{deleteTrigger 0}}
+{{return}}
+{{else if and (eq . 3) (eq $.Message.Type 0) (not (or $.Message.Content $.Message.Activity $.Message.Reference $.Message.MessageSnapshots $.Message.Attachments $.Message.StickerItems))}}
+{{deleteTrigger 0}}
+{{return}}
+{{else if and (eq . 4) (or ($.Message.Attachments) (reFind $.LinkRegex $.Message.Content))}}
+{{deleteTrigger 0}}
+{{return}}
+{{else if and (eq . 5) ($.Message.MessageSnapshots)}}
+{{deleteTrigger 0}}
+{{return}}
+{{end}}
+{{end}}
+{{return}}
+{{end}}
+{{$target := .Channel.ID}}
+{{if eq (len .Args) 1}}
+{{$str := "\nSwift AutoModeration is disabled for this channel."}}
+{{if $sam := dbGet .Channel.ID "swiftAutomoderation"}}
+{{$list := cslice}}
+{{range $sam.Value}}
+{{if eq (kindOf .) "int64"}}
+{{if eq . 1}}
+{{$list = $list.Append "_[Activity Messages]_"}}
+{{else if eq . 2}}
+{{$list = $list.Append "_[Sticker Messages]_"}}
+{{else if eq . 3}}
+{{$list = $list.Append "_[Poll Messages]_"}}
+{{else if eq . 4}}
+{{$list = $list.Append "_[Links & Attachments]_"}}
+{{else if eq . 5}}
+{{$list = $list.Append "_[Forwarded Messages]_"}}
+{{end}}
+{{else}}
+{{$list = $list.Append .}}
+{{end}}
+{{end}}
+{{$str = print "\nSwift AutoModeration is enabled for this channel:\n" (joinStr " **|** " $list)}} 
+{{end}}
+{{sendMessage nil (complexMessage "content" (print "### Swift AutoModeration \nTemporarily blacklist keywords or special messages, multiple keywords can be added by adding / between each. Defaults to 5m if a duration is not provided.\n\n**__Usage:__**\n-sam [Text/Text2/Text3...]\n-sam [Duration] [Text/Text2/Text3...]\n-sam [Channel] [Text/Text2/Text3...]\n-sam [Channel] [Duration] [Text/Text2/Text3...]"))}}
+{{return}}
+{{end}}
+{{$duration := 0}}
+{{$keywords := 0}}
+{{$channel := 0}}
+{{$count := 0}}
+{{range .Args}}
+{{if eq $count 3}}
+{{return}}
+{{end}}
+{{if and (not $duration) (toDuration .)}}
+{{$duration = (toDuration .)}}
+{{break}}
+{{else if $channel}}
+{{break}}
+{{end}}
+{{if and (not $channel) ($a := getChannel (reFind `\d+` .))}}
+{{$channel = $a.ID}}
+{{end}}
+{{$count = add $count 1}}
+{{if and (eq $count 2) (not $duration) (not $channel)}}
+{{break}}
+{{end}}
+{{end}}
+{{try}}
+{{if and $duration $channel}}
+{{$keywords = slice .Args 3}}
+{{else if (or $duration $channel)}}
+{{$keywords = slice .Args 2}}
+{{else}}
+{{$keywords = slice .Args 1}}
+{{end}}
+{{catch}}
+{{end}}
+{{if not $channel}}
+{{$channel = .Channel.ID}}
+{{end}}
+{{if not $keywords}}
+{{$str2 := "\nSwift AutoModeration is disabled for this channel."}}
+{{if $sam := dbGet $channel "swiftAutomoderation"}}
+{{$list := cslice}}
+{{range $sam.Value}}
+{{if eq (kindOf .) "int64"}}
+{{if eq . 1}}
+{{$list = $list.Append "_[Activity Messages]_"}}
+{{else if eq . 2}}
+{{$list = $list.Append "_[Sticker Messages]_"}}
+{{else if eq . 3}}
+{{$list = $list.Append "_[Poll Messages]_"}}
+{{else if eq . 4}}
+{{$list = $list.Append "_[Links & Attachments]_"}}
+{{else if eq . 5}}
+{{$list = $list.Append "_[Forwarded Messages]_"}}
+{{end}}
+{{else}}
+{{$list = $list.Append .}}
+{{end}}
+{{end}}
+{{$str2 = print "\nSwift AutoModeration is enabled for this channel:\n" (joinStr " **|** " $list)}} 
+{{end}}
+{{$str3 := $duration}}
+{{if not $str3}}
+{{$str3 = "5m"}}
+{{end}}
+{{if lt (toDuration $maxDuration) $duration}}
+{{sendMessage nil (print "This tool has been configured to use at most " $maxDuration " of duration :(")}}
+{{$str3 = toDuration $maxDuration}}
+{{end}}
+{{sendMessage nil (complexMessage "content" (print "Current channel: <#" $channel ">\nDuration suggested: " $str3 "\n" $str2) "menus" (cmenu "type" "text" "max_values" 5 "placeholder" "Special configuration" "custom_id" "swiftAutomodSpecialSam" "options" (cslice (sdict "label" "🕹️ Activities" "value" "swiftAutoMod1") (sdict "label" "🐦 Stickers" "value" "swiftAutoMod2") (sdict "label" "📊 Polls" "value" "swiftAutoMod3") (sdict "label" "🔗 Links & Attachments" "value" "swiftAutoMod4") (sdict "label" "🔄 Forwarded Messages" "value" "swiftAutoMod5"))) "buttons" (cslice (sdict "label" "Modify list" "style" "grey" "custom_id" "swiftAutomodModifyList") (sdict "label" "Delete Swift Automod" "style" "red" "custom_id" "swiftAutomodDeleteSam")))}}
+{{return}}
+{{end}}
+{{$sam := (dbGet $channel "swiftAutomoderation").Value}}
+{{$list := cslice}}
+{{range (split (joinStr " " $keywords) "/")}}
+{{if gt (len .) 0}}
+{{$list = $list.Append .}}
+{{end}}
+{{end}}
+{{if not $duration}}
+{{$duration = toDuration "5m"}}
+{{end}}
+{{if lt (toDuration $maxDuration) $duration}}
+{{sendMessage nil (print "This tool has been configured to use at most " $maxDuration " of duration :(")}}
+{{$duration = toDuration $maxDuration}}
+{{end}}
+{{dbSetExpire $channel "swiftAutomoderation" $list (toInt $duration.Seconds)}}
+{{sendMessage nil (complexMessage "content" (print "Current channel: <#" $channel ">\nAutomod duration: " $duration "\n\nDone! From now on, messages which contain the following terms:\n" (joinStr " **|** " $list) "\nWill be automatically erased from now on.") "menus" (cmenu "type" "text" "max_values" 5 "placeholder" "Special configuration" "custom_id" "swiftAutomodSpecialSam" "options" (cslice (sdict "label" "🕹️ Activities" "value" "swiftAutoMod1") (sdict "label" "🐦 Stickers" "value" "swiftAutoMod2") (sdict "label" "📊 Polls" "value" "swiftAutoMod3") (sdict "label" "🔗 Links & Attachments" "value" "swiftAutoMod4") (sdict "label" "🔄 Forwarded Messages" "value" "swiftAutoMod5"))) "buttons" (cslice (sdict "label" "Modify list" "style" "grey" "custom_id" "swiftAutomodModifyList") (sdict "label" "Delete Swift Automod" "style" "red" "custom_id" "swiftAutomodDeleteSam")))}}
+{{/* https://github.com/Enigmx/YAGPDB-custom-commands/tree/main/CC%3A%20Swift%20AutoModeration */}}
+{{/* made in chile */}}
