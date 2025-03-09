@@ -27,7 +27,7 @@
 {{sendMessage nil "### Automatic Support:\nI have read your issue and thought this may be helpful..."}}
 {{end}}
 {{$count = add $count 1}}
-{{sendMessage nil (complexMessage "embed" (cembed "description" (index $v 1) "image" (sdict "url" (index $v 2))))}}
+{{sendMessage nil (complexMessage "embed" (cembed "footer" (sdict "text" (print "Autohelp ID: " $k)) "description" (index $v 1) "image" (sdict "url" (index $v 2))))}}
 {{break}}
 {{end}}
 {{end}}
