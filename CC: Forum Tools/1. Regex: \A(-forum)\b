@@ -146,13 +146,15 @@ Done! this post will be deleted in ten seconds, to cancel, run "-forum delete" a
 {{end}}
 {{if eq (lower (index .Args 1)) "concluded"}}
 {{if not (in .Member.Roles $modRole)}}
-{{if $concludedChannelReport}}
+{{if and $concludedChannelReport (getMessage .Channel.ID .Channel.ID)}}
 {{sendMessage $concludedChannelReport (complexMessage "content" (print .User.Mention " has suggested that you mark this post as concluded: <#" .Channel.ID ">" ) "buttons" (cslice  (sdict "label" "Accept" "style" "green" "custom_id" "forumToolsAcceptConcluded") (sdict "label" "Decline" "style" "red" "custom_id" "forumToolsDeclineConcluded")) "embed" (cembed "title" .Channel.Name "description" (getMessage .Channel.ID .Channel.ID).Content "color" 0xFF0000))}}
 {{dbSet 2 "forumToolsEnigma" (toString .CCID)}}
 Sent the suggestions to the server moderators 👍
 {{return}}
+{{else if $concludedChannelReport}}
+{{sendMessage $concludedChannelReport (complexMessage "content" (print .User.Mention " has suggested that you mark this post as concluded: <#" .Channel.ID ">" ) "buttons" (cslice  (sdict "label" "Accept" "style" "green" "custom_id" "forumToolsEnigmaAcceptConcluded") (sdict "label" "Decline" "style" "red" "custom_id" "forumToolsEnigmaDeclineConcluded")) "embed" (cembed "title" .Channel.Name "description" "[Message was erased by the original poster]" "color" 0xFF0000))}}
 {{else}}
-You cannot mark not suggest posts to be marked as concluded :(
+You cannot mark nor suggest posts to be marked as concluded :(
 {{return}}
 {{end}}
 {{end}}
