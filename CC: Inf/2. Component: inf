@@ -1,0 +1,43 @@
+{{/* inf buttons */}}
+{{if eq .StrippedID "CreateTemplate"}}
+{{sendModal (sdict "title" "Create template" "custom_id" "infCreateTemplate" "fields" (cslice (sdict "label" "Keywords" "placeholder" "keyword|keyword|keyword" "required" true "style" 1 "max_length" 200) (sdict "label" "Message 1" "placeholder" "-mute [ID] 20m something" "required" true "style" 2 "max_length" 500) (sdict "label" "Message 2" "placeholder" "-ban [ID] something" "required" false "style" 2 "max_length" 500) (sdict "label" "Message 3" "placeholder" "?mute [ID] 40m something" "required" false "style" 2 "max_length" 500) (sdict "label" "Message 4" "placeholder" "[!ban/!mban] [ID] something" "required" false "style" 2 "max_length" 500)))}}
+{{end}}
+{{if eq .StrippedID "EditTemplate1"}}
+{{$db := (dbGet 0 "infEnigma").Value}}
+{{$keywords := ""}}
+{{$value := ""}}
+{{$ID := reFind `\d+` (structToSdict (index .Message.Embeds 0)).Title}}
+{{if not ($db.Get (toInt64 $ID))}}
+This template doesn't exist anymore :(
+{{return}}
+{{end}}
+{{range $k, $v := ($db.Get (toInt64 $ID))}}
+{{$value = $v}}
+{{$keywords = $k}}
+{{end}}
+{{$a := (index $value 2)}}
+{{sendModal (sdict "title" "Edit template" "custom_id" "infEditTemplate1" "fields" (cslice (sdict "label" "Keywords" "placeholder" "keyword|keyword|keyword" "required" true "style" 1 "max_length" 200 "value" $keywords) (sdict "label" "Message 1" "placeholder" "Leave empty to remove" "required" false "style" 2 "max_length" 500 "value" (index $value 0)) (sdict "label" "Message 2" "placeholder" "Leave empty to remove" "required" false "style" 2 "max_length" 500 "value" (index $value 1)) (sdict "label" "Message 3" "placeholder" "Leave empty to remove" "required" false "style" 2 "max_length" 500 "value" (index $value 2)) (sdict "label" "Message 4" "placeholder" "Leave empty to remove" "required" false "style" 2 "max_length" 500 "value" (index $value 3))))}}
+{{return}}
+{{end}}
+{{if eq .StrippedID "EditTemplate2"}}
+{{$db := (dbGet 0 "infEnigma").Value}}
+{{$keywords := ""}}
+{{$value := ""}}
+{{$ID := reFind `\d+` (structToSdict (index .Message.Embeds 0)).Title}}
+{{if not ($db.Get (toInt64 $ID))}}
+This template doesn't exist anymore :(
+{{return}}
+{{end}}
+{{range $k, $v := ($db.Get (toInt64 $ID))}}
+{{$value = $v}}
+{{$keywords = $k}}
+{{end}}
+{{sendModal (sdict "title" "Edit template" "custom_id" "infEditTemplate2" "fields" (cslice (sdict "label" "Message 5" "placeholder" "leave empty to remove" "required" false "style" 2 "max_length" 500 "value" (index $value 4)) (sdict "label" "Message 6" "placeholder" "Leave empty to remove" "required" false "style" 2 "max_length" 500 "value" (index $value 5)) (sdict "label" "Message 7" "placeholder" "Leave empty to remove" "required" false "style" 2 "max_length" 500 "value" (index $value 6)) (sdict "label" "Message 8" "placeholder" "Leave empty to remove" "required" false "style" 2 "max_length" 500 "value" (index $value 7)) (sdict "label" "Message 9" "placeholder" "Leave empty to remove" "required" false "style" 2 "max_length" 500 "value" (index $value 8))))}}
+{{return}}
+{{end}}
+{{if eq .StrippedID "DeleteTemplate"}}
+{{sendModal (sdict "title" "Delete template" "custom_id" "infDeleteTemplate" "fields" (cslice (sdict "label" "Are you sure you want to erase this template?" "placeholder" "confirm" "required" true "style" 1 "max_length" 7)))}}
+{{return}}
+{{end}}
+{{/* https://github.com/Enigmx/YAGPDB-custom-commands/tree/main/CC%3A%20Inf */}}
+{{/* made in chile */}}
