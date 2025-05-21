@@ -1,0 +1,156 @@
+{{$staffchat := 0}}
+
+{{$db := (dbGet 5769 "restrict").Value}}
+{{if not $db}}
+{{$db = sdict}}
+{{end}}
+{{if eq (len .Args) 1}}
+# Restrict
+Restricts users from the current channel
+__**Use**__
+-restrict [user] [duration]
+-restrict [user] [channel] [duration]
+
+**[user]**: Tag or user ID of the member to restrict
+**[duration]**: Number of days, defaults to 7 days if not provided
+**[channel]**: The channel to restrict them from. If not specified, defaults to current channel.
+{{return}}
+{{end}}
+{{if and (eq (index .Args 1) "admin") (eq (len .Args) 2)}}
+**__Admin tools__**
+**-restrict admin add [channel] [role]**
+Bonds a channel to a role, if the command is ran inside said channel, add that role to the target user. [channel] and [role] can be IDs or mentions.
+
+**-restrict admin add [keyword] [role]**
+Bonds regular text to a role, for non channel-based restrictions. [keyword] is just text, case insensitive, and [role] is role tag or ID.
+
+**-restrict admin remove [channel]**
+Removes a channel-role bond so the role is no longer given if that channel is specified.
+
+**-restrict admin remove [keyword]**
+Removes a keyword-role bond so the role is no longer given if that keyword is specified.
+
+**-restrict admin list**
+Show all pairs of channel-roles and keyword-roles.
+{{return}}
+{{end}}
+{{if eq (index .Args 1) "admin"}}
+{{if and (eq (index .Args 2) "remove") (eq (len .Args) 3)}}
+**__Use:__**
+-restrict admin remove [channel]
+-restrict admin remove [keyword]
+{{return}}
+{{end}}
+{{if and ( eq (index .Args 2) "add") (eq (len .Args) 3)}}
+**__Use:__**
+-restrict admin add [channel] [role]
+-restrict admin add [keyword] [role]
+{{return}}
+{{end}}
+{{if eq (index .Args 2) "list"}}
+{{$str := ""}}
+{{range $k, $v := $db}}
+{{if (getChannel (toInt $k))}}
+{{$str = print $str "\n<#" $k "> — <@&" $v ">"}}
+{{else}}
+{{$str = print $str "\n**" (lower $k) "** — <@&" $v ">"}}
+{{end}}
+{{end}}
+{{sendMessage nil (complexMessage "embed" (cembed "title" "Pairs available:" "description" $str))}}
+{{return}}
+{{end}}
+{{if (eq (len .Args) 4)}}
+{{if eq (index .Args 2) "add"}}
+To add a pair to the restrict command, you have to actually add two elements, a channel/keyword and a role. Seems like you only gave one of the two.
+
+__**Use:**__
+-restrict admin add [channel] [role]
+-restrict admin add [keyword] [role]
+{{return}}
+{{else if (eq (index .Args 2) "remove")}}
+{{if $e := getChannel (reFind `\d+` (index .Args 3))}}
+{{$db.Del (str $e.ID)}}
+Done! removed {{index .Args 3}} from the restrict command.
+{{dbSet 5769 "restrict" $db}}
+{{return}}
+{{end}}
+{{$db.Del (lower (index .Args 3))}}
+Done! removed {{index .Args 3}} from the restrict command.
+{{dbSet 5769 "restrict" $db}}
+{{return}}
+{{end}}
+{{return}}
+{{end}}
+{{if eq (len .Args) 5}}
+{{if eq (index .Args 2) "add"}}
+{{$role := false}}
+{{if $d := (getRole (reFind `\d+` (index .Args 4)))}}
+{{$role = str $d.ID}}
+{{else}}
+Seems like you didn't provide an actual role. Try again?
+{{return}}
+{{end}}
+{{if $c := (getChannel (reFind `\d+` (index .Args 3)))}}
+{{$db.Set (str $c.ID) $role}}
+{{else}}
+{{$db.Set (lower (index .Args 3)) $role}}
+{{end}}
+{{dbSet 5769 "restrict" $db}}
+Done! added the pair to the restrict command.
+{{return}}
+{{end}}
+{{return}}
+{{end}}
+I could not tell what is it that you're trying to do. Try again?
+{{return}}
+{{end}}
+{{deleteTrigger 0}}
+{{$users := cslice}}
+{{$key := (str .Channel.ID)}}
+{{$days := 30}}
+{{$IDs := reFindAll `\d+` .Message.Content}}
+{{range $IDs}}
+{{if and (getMember (toInt .)) (not (in $users (toInt .)))}}
+{{$users = $users.Append .}}
+{{else if (getChannel (toInt .))}}
+{{$key = .}}
+{{else if (lt (len .) 3)}}
+{{$days = .}}
+{{end}}
+{{end}}
+{{if eq $key (str .Channel.ID)}}
+{{range .Args}}
+{{if $db.Get (lower .)}}
+{{$key = (lower .)}}
+{{break}}
+{{end}}
+{{end}}
+{{end}}
+{{if and (eq $key (str .Channel.ID)) (getChannel .Channel.ParentID).IsForum}}
+{{$key = str .Channel.ParentID}}
+{{end}}
+{{if not $users}}
+{{sendMessage $staffchat (complexMessage "content" (print .User.Mention) "embed" (cembed "title" "Oops..." "description" "Seems like you didn't say who to restrict. Try again?"))}}
+{{return}}
+{{end}}
+{{$role := $db.Get $key}}
+{{if not $role}}
+{{if (getChannel (toInt $key))}}
+{{sendMessage $staffchat (complexMessage "content" (print .User.Mention) "embed" (cembed "title" "Oops..." "description" (print "You tried to restrict <@" (joinStr ">, <@" $users) "> from <#" $key ">, but it doesn't seem like this channel actually has any restriction role bonded to it. Try again?")))}}
+{{return}}
+{{else}}
+{{sendMessage $staffchat (complexMessage "content" (print .User.Mention) "embed" (cembed "title" "Oops..." "description" (print "You tried to restrict <@" (joinStr ">, <@" $users) "> based in this: " $key ", but it doesn't seem like this term actually has any restriction role bonded to it. Try again?")))}}
+{{return}}
+{{end}}
+{{end}}
+{{range $users}}
+{{giveRoleID (toInt .) $role}}
+{{takeRoleID (toInt .) $role (toDuration (print $days "d"))}}
+{{if (getChannel (toInt $key))}}
+{{sendMessage $staffchat (complexMessage "content" (print .) "embed" (cembed "color" 0xFF0000 "title" "Restriction added" "author" (sdict "name" $.User.Username "icon_url" ($.Member.AvatarURL "512")) "description" (print "Restricted from <#" $key ">\nGave <@&" $role "> to <@" . "> \nDuration: **" $days "d**.") "thumbnail" (sdict "url" ((getMember .).AvatarURL "512"))))}}
+{{else}}
+{{sendMessage $staffchat (complexMessage "content" (print .) "embed" (cembed "color" 0xFF0000 "title" "Restriction added" "author" (sdict "name" $.User.Username "icon_url" ($.Member.AvatarURL "512")) "description" (print "Restricted from " $key "\nGave <@&" $role "> to <@" . "> \nDuration: **" $days "d**.") "thumbnail" (sdict "url" ((getMember .).AvatarURL "512"))))}}
+{{end}}
+{{end}}
+{{/* https://github.com/Enigmx/YAGPDB-custom-commands/tree/main/CC%3A%20Restrict */}}
+{{/* made in chile */}}
