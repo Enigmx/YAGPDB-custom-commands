@@ -23,6 +23,8 @@ A custom command that adds a role which restrict channels from a channel or a sy
 # Set up
 First create a new custom command, configure the trigger type and trigger as follows:
 ![image](../ignore/restrict1.png)
+In the response box, copy and paste the code found in "1. Regex: \A(-restrict)\b.  
+
 Then, head over the code, you will have to configure the first line:
 ![image](../ignore/restrict2.png)
 **{{$staffchat := 0}}**: The channelID where notifications will be sent. Replace the number for the channel ID of your staff bots channel.
