@@ -1,149 +1,137 @@
-{{$db := (dbGet 0 "autohelpEnigma").Value}}
-{{if not $db}}
-{{$db = dict "ccid" .CCID}}
-{{dbSet 0 "autohelpEnigma" $db}}
-{{end}}
-{{if not ($db.Get "ccid")}}
-{{$db.Set "ccid" .CCID}}
-{{dbSet 0 "autohelpEnigma" $db}}
-{{end}}
-{{if not (eq ($db.Get "ccid") .CCID)}}
-{{$db.Set "ccid" .CCID}}
-{{dbSet 0 "autohelpEnigma" $db}}
-{{end}}
+{{$adminRole := 0}}
+{{$forumChannelID := 0}}
+
 {{if .ExecData}}
-{{$count := 0}}
-{{$content := .ExecData}}
+{{$db := (dbGet 0 "forumAutohelp").Value}}
+{{$times := 0}}
 {{range $k, $v := $db}}
-{{if eq $count 3}}
+{{range (split $k "/")}}
+{{if in (lower $.ExecData) (lower .)}}
+{{$db2 := (dbGet (toInt (index $v 0)) "forumAutohelp").Value}}
+{{$buttons := cslice (cbutton "label" "Save" "emoji" (sdict "name" "📩") "custom_id" "forumAutohelpSave" "style" "green")}}
+{{$buttons := $buttons.Append (cbutton "label" "Default" "custom_id" "forumAutohelpInForum:Default" "disabled" true "style" "grey")}}
+{{range $k2, $v2 := $db2}}
+{{if not (eq $k2 "Default")}}
+{{$buttons = $buttons.Append (cbutton "style" "grey" "label" $k2 "custom_id" (print "forumAutohelpInForum:" $k2))}}
+{{end}}
+{{end}}
+{{if eq $times 0}}
+{{sendMessage nil "### Automatic support \nI have read your issue and thought this may be helpful..."}}
+{{end}}
+{{sendMessage nil (complexMessage "buttons" $buttons "embed" (cembed "description" ($db2.Get "Default") "footer" (sdict "text" (print "Autohelp ID: " (index $v 0)))))}}
+{{if eq $times 2}}
+{{return}}
+{{else}}
+{{$times = add $times 1}}
+{{end}}
 {{break}}
 {{end}}
-{{if eq (kindOf $v) "int64"}}
+{{end}}
+{{end}}
+{{return}}
+{{end}}
+{{if not (getRole $adminRole)}}
+Seems like this command is not configured properly, no correct admin role has been set. Go to the bot control panel and configure $adminRole to use a role ID (people with this role can edit the automatic help).
+{{return}}
+{{end}}
+{{$db := (dbGet 0 "forumAutohelp").Value}}
+{{if not $db}}
+{{$db = sdict "forumAutohelpConfig" (cslice .CCID $adminRole $forumChannelID)}}
+{{end}}
+{{$db.Set "forumAutohelpConfig" (cslice .CCID $adminRole $forumChannelID)}}
+{{dbSet 0 "forumAutohelp" $db}}
+{{if eq (len .Args) 1}}
+{{$text := ""}}
+{{$buttons := cslice}}
+{{if in .Member.Roles $adminRole}}
+{{$text = "\nTo add a new automatic message, click ''Create'', you then specify a name, the keywords that will trigger this response, and then the response itself."}}
+{{$buttons = $buttons.Append (sdict "label" "Create" "custom_id" "forumAutohelpCreateMessage" "style" "green")}}
+{{end}}
+{{$string := "** **\n"}}
+{{$seq := cslice}}
+{{$sort := cslice}}
+{{range (seq 1 11)}}
+{{$seq = $seq.Append .}}
+{{end}}
+{{range $k, $v := $db}}
+{{if eq $k "forumAutohelpConfig"}}
 {{continue}}
 {{end}}
-{{range (index $v 0)}}
-{{if in $content .}}
-{{if eq $count 0}}
-{{sendMessage nil "### Automatic Support:\nI have read your issue and thought this may be helpful..."}}
+{{if in $seq (index $v 0)}}
+{{$sort = $sort.Append (sdict "autohelpOrder" (index $v 0) "name" (index $v 1))}}
 {{end}}
-{{$count = add $count 1}}
-{{sendMessage nil (complexMessage "embed" (cembed "footer" (sdict "text" (print "Autohelp ID: " $k)) "description" (index $v 1) "image" (sdict "url" (index $v 2))))}}
+{{end}}
+{{$final := sort $sort (sdict "key" "autohelpOrder")}}
+{{range $final}}
+{{$string = print $string "**[" ( .Get "autohelpOrder") "]**: " ( .Get "name") "\n\n"}}
+{{end}}
+{{range $k, $v := $db}}
+{{if eq $k "forumAutohelpConfig"}}
+{{continue}}
+{{end}}
+{{if in (seq 11 100) (index $v 0)}}
+{{$buttons = $buttons.AppendSlice (cslice (sdict "label" "Previous page" "custom_id" "forumAutohelpPreviousPageAutohelp" "disabled" true) (sdict "label" "Next page" "custom_id" "forumAutohelpNextPageAutohelp"))}}
 {{break}}
 {{end}}
 {{end}}
+{{sendMessage nil (complexMessage "buttons" $buttons "embed" (cembed "footer" (sdict "text" "Page 1") "title" "Forum automatic help" "color" 0x79c1ff "description" (print "Automatically reply to new posts based in keywords. \n**-autohelp [ID]**: check a specific automatic response.\n**-autohelp [Text]**: Test the automatic responder, explain an issue and the bot will respond to it if keywords match." $text "\n\n" $string)))}}
 {{end}}
-{{return}}
-{{end}}
-{{if eq (len .Args) 1}}
-{{$db.Set "ccid" .CCID}}
-### Forum autohelp
-Pick up keywords from new posts and send prefabricated messages. Good for repetitive questions.
-
-**__Usage:__**
-**-autohelp** List all tools.
-**-autohelp list** List all premade messages with their keywords, also used to create new autohelp messages.
-**-autohelp list [ID]** Use the ID of an autohelp message to list it's content and keywords, including options to edit and remove.
-**-autohelp list page [Number]** list a page of automatic message.
-**-autohelp test [text]** Check which automatic messages would have been sent if the text was a new post.
-**-autohelp database** Retrieve the content of the bots database and how much it's being used.
-{{return}}
-{{end}}
-{{if eq (len .Args) 2}}
-{{$db.Set "ccid" .CCID}}
-{{if eq (index .Args 1) "database"}}
-{{$database := dbGet 0 "autohelpEnigma"}}
-{{sendMessage nil (complexMessage "content" (print "Database used: " $database.ValueSize " out of 100 000.") "file" (json $db true) "filename" "autohelp")}}
-{{return}}
-{{end}}
-{{if eq (index .Args 1) "test"}}
-You didn't provide text to test the autohelp. Try again?
-
-**__Usage:__**
-**-autohelp test [Text]**
-{{return}}
-{{end}}
-{{if eq (index .Args 1) "list"}}
-{{if not $db}}
-{{sendMessage nil (complexMessage "embed" (cembed "title" "Autohelp messages" "description" "Nothing here..." "color" 0xeb459f) "buttons" (sdict "label" "Create" "style" "green" "custom_id" "autohelpCreateAutoMessage"))}}
-{{return}}
-{{end}}
-{{$string := ""}}
-{{range (seq 0 10)}}
-{{if $db.Get (toInt64 .)}}
-{{$string = print $string "**[" . "]** " (joinStr " **/** " (index ($db.Get (toInt64 .)) 0)) "\n\n"}}
+{{if gt (len .Args) 1}}
+{{if and (toInt (index .Args 1)) (eq (len .Args) 2)}}
+{{$buttons := cslice}}
+{{$a := dbGet (toInt (index .Args 1)) "forumAutohelp"}}
+{{$text := ""}}
+{{$keywords := ""}}
+{{$image := ""}}
+{{$id := 0}}
+{{$title := ""}}
+{{range $k, $v := $db}}
+{{if eq (toInt (index $v 0)) (toInt (index $.Args 1))}}
+{{$title = (index $v 1)}}
+{{$id = index $v 0}}
+{{$image = index $v 2}}
+{{$text = ((dbGet (toInt (index $v 0)) "forumAutohelp").Value).Get "Default"}}
+{{$keywords = $k}}
 {{end}}
 {{end}}
-{{sendMessage nil (complexMessage "embed" (cembed "title" "Autohelp messages" "description" $string "color" 0xeb459f) "buttons" (sdict "label" "Create" "style" "green" "custom_id" "autohelpCreateAutoMessage"))}}
-{{return}}
-{{end}}
-{{end}}
-{{if eq (len .Args) 3}}
-{{$db.Set "ccid" .CCID}}
-{{if eq (index .Args 2) "page"}}
-Which page would you like to fetch exactly?
-
-**__Usage:__**
--autohelp list page [Number]
-{{return}}
-{{end}}
-{{if eq (index .Args 1) "test"}}
-{{execCC .CCID nil 0 (index .Args 2)}}
-{{return}}
-{{end}}
-{{if (eq (index .Args 1) "list")}}
-{{$id := (reFind `\d+` (index .Args 2))}}
 {{if not $id}}
-I could not tell which automatic message to fetch. Try again?
-
-**__Usage:__**
--autohelp list [ID]
--autohelp list page [Number]
+Seems like an automatic response of ID **{{index .Args 1}}** does not exist. Check which ones exist by running -autohelp.
 {{return}}
 {{end}}
-{{if ($db.Get (toInt64 $id))}}
-{{sendMessage nil (complexMessage "content" (joinStr " **/** " (index ($db.Get (toInt64 $id)) 0)) "embed" (cembed "title" (print $id " | Automatic message") "description" (index ($db.Get (toInt64 $id)) 1) "image" (sdict "url" (index ($db.Get (toInt64 $id)) 2)) "color" 0xeb459f) "buttons" (cslice (sdict "label" "Edit" "style" "green" "custom_id" "autohelpEditAutoMessage")  (sdict "label" "Erase" "style" "red" "custom_id" "autohelpEraseAutoMessage")))}}
+{{$responses := cslice}}
+{{$db2 := (dbGet (toInt $id) "forumAutohelp").Value}}
+{{range $k, $v := $db2}}
+{{if eq $k "Default"}}
+{{continue}}
+{{end}}
+{{$responses = $responses.Append $k}}
+{{end}}
+{{$alt := cslice}}
+{{$row := cslice}}
+{{if in .Member.Roles $adminRole}}
+{{$buttons = $buttons.Append (cbutton "label" "Add alternative response" "custom_id" "forumAutohelpAddAlternativeAutoResponse" "style" "green")}}
+{{$buttons = $buttons.Append (cbutton "label" "Edit response" "custom_id" "forumAutohelpEditAutoResponse")}}
+{{$buttons = $buttons.Append (cbutton "label" "Delete response" "custom_id" "forumAutohelpDeleteAutoResponse" "style" "red")}} 
+{{end}}
+{{$row = $row.Append (cbutton "label" "Default" "custom_id" "forumAutohelpAlternativeAutoResponse:Default" "style" "grey" "disabled" true)}}
+{{range $responses}}
+{{$row = $row.Append (cbutton "label" . "custom_id" (print "forumAutohelpAlternativeAutoResponse:" .) "style" "grey")}}
+{{end}}
+{{$cslice := cslice}}
+{{if $buttons}}
+{{$cslice = $cslice.Append $buttons}}
+{{$cslice = $cslice.Append $row}}
+{{else}}
+{{$cslice = $cslice.Append $row}}
+{{end}}
+{{if (reFind .LinkRegex $image)}}
+{{sendMessage nil (complexMessage "components" $cslice "content" $keywords "embed" (cembed "description" $text "footer" (sdict "text" "Default") "image" (sdict "url" $image) "color" 0x79c1ff "title" (print $id ". " $title)))}}
+{{return}}
+{{end}}
+{{sendMessage nil (complexMessage "components" $cslice "content" $keywords "embed" (cembed "description" $text "footer" (sdict "text" "Default") "color" 0x79c1ff "title" (print $id ". " $title)))}}
 {{return}}
 {{else}}
-Seems like this ID does not point to anything. You could check which ones do exist by running -autohelp list.
+{{execCC .CCID nil 0 .StrippedMsg}}
+{{end}}
 {{return}}
 {{end}}
-{{end}}
-{{end}}
-{{if ge (len .Args) 3}}
-{{if and (eq (index .Args 1) "list") (eq (index .Args 2) "page")}}
-{{$id := ""}}
-{{if $z := (reFind `\d+` (index .Args 3))}}
-{{$id = toInt $z}}
-{{else}}
-Seems like you didn't provide a page number. Try again?
-
-**__Usage:__**
--autohelp list page [Number]
-{{return}}
-{{end}}
-{{$string := ""}} 
-{{range (seq (toInt (print (sub $id 1) "0")) (toInt (print $id "0")))}}
-{{if ($db.Get (toInt64 .))}}
-{{$string = print $string "**[" . "]** " (joinStr " **/** " (index ($db.Get (toInt64 .)) 0)) "\n\n"}}
-{{end}}
-{{end}}
-{{sendMessage nil (complexMessage "embed" (cembed "title" (print "Autohelp messages: page " (index .Args 3)) "description" $string "color" 0xeb459f) "buttons" (sdict "label" "Create" "style" "green" "custom_id" "autohelpCreateAutoMessage"))}} 
-{{return}}
-{{end}}
-{{if eq (index .Args 1) "test"}}
-{{execCC .CCID nil 0 (joinStr " " (slice .Args 2))}}
-{{return}}
-{{end}}
-{{end}}
-I could not tell what exactly are you trying to do. Try again?
-
-**__Usage:__**
-**-autohelp** List all tools.
-**-autohelp list** List all premade messages with their keywords, also used to create new autohelp messages.
-**-autohelp list [ID]** Use the ID of an autohelp message to list it's content and keywords, including options to edit and remove.
-**-autohelp list page [Number]** list a page of automatic message.
-**-autohelp test [text]** Check which automatic messages would have been sent if the text was a new post.
-**-autohelp database** Retrieve the content of the bots database and how much it's being used.
-{{return}}
-{{/* https://github.com/Enigmx/YAGPDB-custom-commands/tree/main/CC%3A%20Forum%20autohelp */}}
-{{/* made in chile */}}
