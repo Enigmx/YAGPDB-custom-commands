@@ -1,6 +1,7 @@
-{{$autohelpCCID := 0}}
-{{if and (getChannel .Channel.ParentID).IsForum (eq .Channel.ID .Message.ID)}}
-{{execCC $autohelpCCID nil 0 (print .Channel.Name "\n" .Message.Content)}}
+{{/* support section autohelp */}}
+{{$forumAutohelp := (dbGet 0 "forumAutohelp").Value}}
+{{if $forumAutohelp}}
+{{if and (eq .Channel.ParentID (index ($forumAutohelp.Get "forumAutohelpConfig") 2)) .Channel.IsThread (eq .Channel.ID .Message.ID) (not .IsEdited)}}
+{{execCC (index ($forumAutohelp.Get "forumAutohelpConfig") 0) nil 0 (print .Channel.Name " " .Message.Content)}}
 {{end}}
-{{/* https://github.com/Enigmx/YAGPDB-custom-commands/tree/main/CC%3A%20Forum%20autohelp */}}
-{{/* made in chile */}}
+{{end}}
