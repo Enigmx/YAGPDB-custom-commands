@@ -1,42 +1,100 @@
-{{/* autohelp modals */}}
-{{if eq .StrippedID "EraseAutoMessage"}}
-{{$db := (dbGet 0 "autohelpEnigma").Value}}
+{{if eq .StrippedID "DeleteAlternativeResponse"}}
+{{if not (eq (lower (index .Values 0)) "confirm")}}
+{{return}}
+{{end}}
+{{if (index .Message.Embeds 0).Image}}
+{{sendResponse nil (complexMessage "content" (print .User.Mention "\nDeleted this alternative automatic response sucessfully.") "embed" (cembed "title" (print (index .Message.Embeds 0).Title ": " (index .Message.Embeds 0).Footer.Text) "image" (index .Message.Embeds 0).Image "description" (index .Message.Embeds 0).Description "color" 0xFF0000))}}
+{{else}}
+{{sendResponse nil (complexMessage "content" (print .User.Mention "\nDeleted this alternative automatic response sucessfully.") "embed" (cembed "title" (print (index .Message.Embeds 0).Title ": " (index .Message.Embeds 0).Footer.Text) "description" (index .Message.Embeds 0).Description "color" 0xFF0000))}}
+{{end}}
 {{$id := toInt (reFind `\d+` (index .Message.Embeds 0).Title)}}
-{{if eq (lower (index .Values 0)) "confirm"}}
-{{sendResponse nil (complexMessage "content" (joinStr " **/** " (index ($db.Get (toInt64 $id)) 0)) "embed" (cembed "color" 0xeb459f "title" (print $id " | Erased by <@" .User.ID ">") "description" (index ($db.Get (toInt64 $id)) 1) "image" (sdict "url" (index ($db.Get (toInt64 $id)) 2))))}}
-{{$db.Del (toInt64 $id)}}
-{{dbSet 0 "autohelpEnigma" $db}}
+{{$db := (dbGet $id "forumAutohelp").Value}}
+{{$db.Del (index .Message.Embeds 0).Footer.Text}}
+{{dbSet $id "forumAutohelp" $db}}
+{{return}}
+{{end}}
+{{if eq .StrippedID "DeleteResponse"}}
+{{if not (eq (lower (index .Values 0)) "confirm")}}
+{{return}}
+{{end}}
+{{if (index .Message.Embeds 0).Image}}
+{{sendResponse nil (complexMessage "content" (print .User.Mention "\nDeleted this automatic response sucessfully.\n\n" .Message.Content) "embed" (cembed "title" (index .Message.Embeds 0).Title "image" (index .Message.Embeds 0).Image "description" (index .Message.Embeds 0).Description "color" 0xFF0000))}}
+{{else}}
+{{sendResponse nil (complexMessage "content" (print .User.Mention "\nDeleted this automatic response sucessfully.\n\n" .Message.Content) "embed" (cembed "title" (index .Message.Embeds 0).Title "description" (index .Message.Embeds 0).Description "color" 0xFF0000))}}
+{{end}}
+{{$db := (dbGet 0 "forumAutohelp").Value}}
+{{$id := toInt (reFind `\d+` (index .Message.Embeds 0).Title)}}
+{{range $k, $v := $db}}
+{{if eq $id (toInt (index $v 0))}}
+{{$db.Del $k}}
+{{dbDel (toInt $id) "forumAutohelp"}}
+{{dbSet 0 "forumAutohelp" $db}}
+{{end}}
+{{end}}
+{{return}}
+{{end}}
+{{if eq .StrippedID "AddAlternativeAutoResponse"}}
+{{$db := (dbGet (toInt (reFind `\d+` (index .Message.Embeds 0).Title)) "forumAutohelp").Value}}
+{{if ($db.Get (index .Values 0))}}
+{{sendResponse nil (complexMessage "content" (print .User.Mention "\nThis alternative response was not added because there seems to be another one that's using the same label: **" (index .Values 0) "**. If you need to change this alternative response, do so by clicking ''Edit response'', or if you need to delete it for replacing, click ''delete response'' and it will delete that alternative response, if it's currently selected.") "embed" (cembed "title" (index .Values 0) "description" (index .Values 1) "color" 0xFF0000))}}
+{{return}}
+{{end}}
+{{$db.Set (index .Values 0) (index .Values 1)}}
+{{sendResponse nil (complexMessage "content" (print "Done! added an alternative response. Members can now interact with it by clicking the **" (index .Values 0) "** button now available for this automated message.") "embed" (cembed "description" (index .Values 1) "footer" (sdict "text" (print "Added by " .User.Username)) "title" (index .Values 0) "color" 0x00FF00))}}
+{{dbSet (toInt (reFind `\d+` (index .Message.Embeds 0).Title)) "forumAutohelp" $db}}
+{{return}}
+{{end}}
+{{if eq .StrippedID "EditResponse"}}
+{{sendResponse nil (print  "Done! Modified **" (index (.Message.Embeds) 0).Footer.Text "** response, I will show the changes shortly.")}}
+{{$db := (dbGet 0 "forumAutohelp").Value}}
+{{$id := reFind `\d+` (index ( .Message.Embeds) 0).Title}}
+{{$db2 := (dbGet (toInt $id) "forumAutohelp").Value}}
+{{range $k, $v := $db}}
+{{if eq (toInt $id) (toInt (index $v 0))}}
+{{$db.Del $k}}
+{{break}}
+{{end}}
+{{end}}
+{{$keywords := ""}}
+{{range (split (index .Values 1) "/")}}
+{{if .}}
+{{$keywords = joinStr "/" $keywords (lower .)}}
+{{end}}
+{{end}}
+{{$db.Set $keywords (cslice (toInt $id) (index .Values 0) (index .Values 3))}}
+{{dbSet 0 "forumAutohelp" $db}}
+{{$db2.Set (index (.Message.Embeds) 0).Footer.Text (index .Values 2)}}
+{{dbSet (toInt $id) "forumAutohelp" $db2}}
+{{if (reFind .LinkRegex (index .Values 3))}}
+{{sendMessage nil (complexMessage "content" (index .Values 1) "embed" (cembed "title" (index .Values 0) "description" (index .Values 2) "image" (sdict "url" (index .Values 3)) "color" 0x00FF00 "footer" (sdict "text" (print (index (.Message.Embeds) 0).Footer.Text ": Edited by " .User.Username))))}}
+{{return}}
+{{else}}
+{{sendMessage nil (complexMessage "content" (index .Values 1) "embed" (cembed "title" (index .Values 0) "description" (index .Values 2) "color" 0x00FF00 "footer" (sdict "text" (print (index (.Message.Embeds) 0).Footer.Text ": Edited by " .User.Username))))}}
 {{return}}
 {{end}}
 {{end}}
-{{if eq .StrippedID "EditAutoMessage"}}
-{{$db := (dbGet 0 "autohelpEnigma").Value}}
-{{$id := toInt (reFind `\d+` (index .Message.Embeds 0).Title)}}
-{{dbSet 0 "autohelpEnigma" $db}}
-{{$db.Set (toInt64 $id) (cslice (split  (index .Values 0) "/") (index .Values 1) (index .Values 2))}}
-{{dbSet 0 "autohelpEnigma" $db}}
-{{sendResponse nil (complexMessage "content" (index .Values 0) "embed" (cembed "title" (print $id " | Edited by <@" .User.ID ">") "description" (index .Values 1) "image" (sdict "url" (index .Values 2)) "color" 0xeb459f))}}
-{{return}}
-{{end}}
-{{if eq .StrippedID "CreateAutoMessage"}}
-{{$keywords := split (index .Values 0) "/"}}
-{{$automessage := index .Values 1}}
-{{$attachment := index .Values 2}}
-{{$db := (dbGet 0 "autohelpEnigma").Value}}
-{{if not $db}}
-{{$db = dict}}
-{{end}}
+{{if eq .StrippedID "CreateMessage"}}
+{{$db := (dbGet 0 "forumAutohelp").Value}}
 {{$id := 0}}
-{{range (seq 0 100)}}
-{{if ($db.Get (toInt64 .))}}
-{{continue}}
+{{$ids := cslice}}
+{{$keywords := ""}}
+Done! **{{index .Values 0}}** has been created successfully.
+{{range $k, $v := $db}}
+{{$ids = $ids.Append (index $v 0)}}
 {{end}}
-{{$db.Set (toInt64 .) (cslice $keywords $automessage $attachment)}}
+{{range (seq 1 200)}}
+{{if not (in $ids .)}}
 {{$id = .}}
 {{break}}
 {{end}}
-{{sendResponse nil (complexMessage "content" (index .Values 0) "embed" (cembed "image" (sdict "url" (index .Values 2)) "title" (print $id " | Created Autohelp message by <@" .User.ID ">") "description" (index .Values 1) "color" 0xeb459f))}}
-{{dbSet 0 "autohelpEnigma" $db}}
 {{end}}
-{{/* https://github.com/Enigmx/YAGPDB-custom-commands/tree/main/CC%3A%20Forum%20autohelp */}}
-{{/* made in chile */}}
+{{range (split (index .Values 1) "/")}}
+{{if .}}
+{{$keywords = joinStr "/" $keywords (lower .)}}
+{{end}}
+{{end}}
+{{$db.Set $keywords (cslice $id (index .Values 0) (index .Values 3))}}
+{{dbSet 0 "forumAutohelp" $db}}
+{{dbSet $id "forumAutohelp" (sdict "Default" (index .Values 2))}}
+{{return}}
+{{end}}
