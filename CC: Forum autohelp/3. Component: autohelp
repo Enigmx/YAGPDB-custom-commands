@@ -1,40 +1,168 @@
-{{/* autohelp buttons */}}
-{{$autohelpAdmin := 0}}
-
-{{if eq .StrippedID "EraseAutoMessage"}}
-{{if not (in .Member.Roles $autohelpAdmin)}}
-{{sendResponse nil (complexMessage "content" "Only administrators of the bot can configure the automatic messages :(" "ephemeral" true)}}
+{{if in .StrippedID "InForum:"}}
+{{$a := index (split .StrippedID ":") 1}}
+{{$b := (toInt (reFind `\d+` (index .Message.Embeds 0).Footer.Text))}}
+{{$c := (dbGet $b "forumAutohelp").Value}}
+{{if not ($c.Get $a)}}
+{{sendResponse nil (complexMessage "content" "Seems like this information is no longer available..." "ephemeral" true)}}
 {{return}}
 {{end}}
-{{$db := (dbGet 0 "autohelpEnigma").Value}}
-{{$id := toInt (reFind `\d+` (index .Message.Embeds 0).Title)}}
-{{if not ($db.Get (toInt64 $id))}}
-Seems like this automatic message has been erased already...
+{{$d := cslice (cbutton "label" "Save" "emoji" (sdict "name" "📩") "custom_id" "forumAutohelpSave" "style" "green")}}
+{{range $k, $v := $c}}
+{{if not (eq $a $k)}}
+{{$d = $d.Append (cbutton "label" $k "custom_id" (print "forumAutohelpInForum:" $k) "style" "grey")}}
+{{else}}
+{{$d = $d.Append (cbutton "label" $k "custom_id" (print "forumAutohelpInForum:" $k) "style" "grey" "disabled" true)}}
+{{end}}
+{{end}}
+{{updateMessage (complexMessageEdit "components" $d "embed" (cembed "description" ($c.Get $a) "footer" (sdict "text" (print "Autohelp ID: " $b))))}}
 {{return}}
 {{end}}
-{{sendModal (sdict "title" "Erase automatic message" "custom_id" "autohelpEraseAutoMessage" "fields" (cslice (sdict "label" "Type ''confirm'' to erase:" "placeholder" "confirm" "required" true "style" 1 "max_length" 10)))}}
-{{end}}
-{{if eq .StrippedID "EditAutoMessage"}}
-{{if not (in .Member.Roles $autohelpAdmin)}}
-{{sendResponse nil (complexMessage "content" "Only administrators of the bot can configure the automatic messages :(" "ephemeral" true)}}
+{{if eq .StrippedID "Save"}}
+{{sendDM (complexMessage "content" .Message.Link "embed" (cembed (index .Message.Embeds 0)))}}
+{{sendResponse nil (complexMessage "content" "Sent to DMs! (if you have them turned on)" "ephemeral" true)}}
 {{return}}
 {{end}}
-{{$db := (dbGet 0 "autohelpEnigma").Value}}
-{{$id := toInt (reFind `\d+` (index .Message.Embeds 0).Title)}}
-{{if not ($db.Get (toInt64 $id))}}
-Seems like this automatic message has been erased already...
+{{if eq .StrippedID "DeleteAutoResponse"}}
+{{$db := (dbGet 0 "forumAutohelp").Value}}
+{{if not (in .Member.Roles (index ($db.Get "forumAutohelpConfig") 1))}}
+You don't have permission to configure the automatic help messages :(
+{{ephemeralResponse}}
 {{return}}
 {{end}}
-{{sendModal (sdict "title" "Edit automatic help" "custom_id" "autohelpEditAutoMessage" "fields" (cslice (sdict "label" "Keywords" "value" (joinStr "/" (index ($db.Get (toInt64 $id)) 0)) "placeholder" "split your keywords using ''/''." "required" true "style" 1 "max_length" 1900) (sdict "label" "Automatic message" "value" (index ($db.Get (toInt64 $id)) 1) "placeholder" "This will be sent if there is a match" "required" true "style" 2 "max_length" 3900) (sdict "label" "Optional attachment" "placeholder" "https://media.discordapp.net/attachments/..." "value" (index ($db.Get (toInt64 $id)) 2)  "style" 1 "max_length" 900)))}}
+{{if eq "Default" (index .Message.Embeds 0).Footer.Text}}
+{{sendModal (sdict "title" "Delete automatic response" "custom_id" "forumAutohelpDeleteResponse" "fields" (cslice (sdict "label" "Type ''confirm'' to delete" "placeholder" "WARNING: this will delete this automatic response and all its alternative responses." "required" true "style" 1 "max_length" 7)))}}
+{{else}}
+{{sendModal (sdict "title" "Delete automatic response" "custom_id" "forumAutohelpDeleteAlternativeResponse" "fields" (cslice (sdict "label" "Type ''confirm'' to delete" "placeholder" "This will delete this alternative response, keeping the rest functional. " "required" true "style" 1 "max_length" 7)))}}
+{{end}}
 {{return}}
 {{end}}
-{{if eq .StrippedID "CreateAutoMessage"}}
-{{if not (in .Member.Roles $autohelpAdmin)}}
-{{sendResponse nil (complexMessage "content" "Only administrators of the bot can configure the automatic messages :(" "ephemeral" true)}}
+{{if in .StrippedID "AlternativeAutoResponse:"}}
+{{$db := (dbGet (toInt (reFind `\d+` (index .Message.Embeds 0).Title)) "forumAutohelp").Value}}
+{{$response := (str (index (split .StrippedID ":") 1))}}
+{{$cslice := cslice}}
+{{$buttons := cslice}}
+{{$row := cslice}}
+{{$db2 := (dbGet 0 "forumAutohelp").Value}}
+{{if (in .Member.Roles (index ($db2.Get "forumAutohelpConfig") 1))}}
+{{$buttons = $buttons.Append (cbutton "label" "Add alternative response" "custom_id" "forumAutohelpAddAlternativeAutoResponse" "style" "green")}}
+{{$buttons = $buttons.Append (cbutton "label" "Edit response" "custom_id" "forumAutohelpEditAutoResponse")}}
+{{$buttons = $buttons.Append (cbutton "label" "Delete response" "custom_id" "forumAutohelpDeleteAutoResponse" "style" "red")}} 
+{{end}}
+{{if eq $response "Default"}}
+{{$row = $row.Append (cbutton "disabled" true "label" "Default" "custom_id" (print "forumAutohelpAlternativeAutoResponse:Default") "style" "grey")}}
+{{else}}
+{{$row = $row.Append (cbutton "label" "Default" "custom_id" (print "forumAutohelpAlternativeAutoResponse:Default") "style" "grey")}}
+{{end}}
+{{range $k, $v := $db}}
+{{if and (eq $k $response) (not (eq $k "Default"))}}
+{{$row = $row.Append (cbutton "label" $k "custom_id" (print "forumAutohelpAlternativeAutoResponse:" $k) "style" "grey" "disabled" true)}}
+{{else if not (eq $k "Default")}}
+{{$row = $row.Append (cbutton "label" $k "custom_id" (print "forumAutohelpAlternativeAutoResponse:" $k) "style" "grey")}}
+{{end}}
+{{end}}
+{{if $buttons}}
+{{$cslice = $cslice.Append $buttons}}
+{{end}}
+{{$cslice = $cslice.Append $row}}
+{{if (index .Message.Embeds 0).Image}}
+{{updateMessage (complexMessageEdit "content" .Message.Content "components" $cslice "embed" (cembed "description" ($db.Get $response) "image" (index .Message.Embeds 0).Image "color" 0x79c1ff "footer" (sdict "text" $response) "title" (index .Message.Embeds 0).Title))}}
+{{return}}
+{{else}}
+{{updateMessage (complexMessageEdit "content" .Message.Content "components" $cslice "embed" (cembed "description" ($db.Get $response) "color" 0x79c1ff "footer" (sdict "text" $response) "title" (index .Message.Embeds 0).Title))}}
 {{return}}
 {{end}}
-{{sendModal (sdict "title" "Create automatic help" "custom_id" "autohelpCreateAutoMessage" "fields" (cslice (sdict "label" "Keywords" "placeholder" "split your keywords using ''/''." "required" true "style" 1 "max_length" 1900) (sdict "label" "Automatic message" "placeholder" "This will be sent if there is a match" "required" true "style" 2 "max_length" 3900) (sdict "label" "Optional attachment" "placeholder" "https://media.discordapp.net/attachments/..." "style" 1 "max_length" 900)))}}
+{{end}}
+{{if eq .StrippedID "AddAlternativeAutoResponse"}}
+{{$db := (dbGet 0 "forumAutohelp").Value}}
+{{if not (in .Member.Roles (index ($db.Get "forumAutohelpConfig") 1))}}
+You don't have permission to configure the automatic help messages :(
+{{ephemeralResponse}}
 {{return}}
 {{end}}
-{{/* https://github.com/Enigmx/YAGPDB-custom-commands/tree/main/CC%3A%20Forum%20autohelp */}}
-{{/* made in chile */}}
+{{sendModal (sdict "title" "Add a new alternative response" "custom_id" "forumAutohelpAddAlternativeAutoResponse" "fields" (cslice (sdict "label" "Label of this response" "placeholder" "Add a name to this response. This will be shown in the button." "required" true "style" 1 "max_length" 70) (sdict "label" "Response" "style" 2 "required" true "placeholder" "Write here what is going to be shown once the button is clicked." "max_length" 4000)))}}
+{{return}}
+{{end}}
+{{if eq .StrippedID "EditAutoResponse"}}
+{{$db := (dbGet 0 "forumAutohelp").Value}}
+{{if not (in .Member.Roles (index ($db.Get "forumAutohelpConfig") 1))}}
+You don't have permission to configure the automatic help messages :(
+{{ephemeralResponse}}
+{{return}}
+{{end}}
+{{$id := reFind `\d+` (index ( .Message.Embeds) 0).Title}}
+{{$name := ""}}
+{{$keywords := ""}}
+{{$content := ""}}
+{{$attachment := ""}}
+{{range $k, $v := $db}}
+{{if eq (toInt $id) (toInt (index $v 0))}}
+{{$name = (index $v 1)}}
+{{$keywords = $k}}
+{{$attachment = (index $v 2)}}
+{{$db2 := (dbGet (toInt $id) "forumAutohelp").Value}}
+{{$content = $db2.Get (index ($.Message.Embeds) 0).Footer.Text}}
+{{break}}
+{{end}}
+{{end}}
+{{sendModal (sdict "title" "Edit response" "custom_id" "forumAutohelpEditResponse" "fields" (cslice (sdict "label" "Name of this response" "value" $name "required" true "style" 1 "max_length" 500) (sdict "label" "Keywords" "value" $keywords "required" true "style" 2 "max_length" 2000) (sdict "label" "Response" "value" $content "style" 2 "max_length" 4000) (sdict "label" "Attachment (optional)" "value" $attachment "style" 1 "max_length" 700)))}}
+{{return}}
+{{end}}
+{{if or (eq .StrippedID "PreviousPageAutohelp") (eq .StrippedID "NextPageAutohelp")}}
+{{$db := (dbGet 0 "forumAutohelp").Value}}
+{{$string := ""}}
+{{$text := ""}}
+{{$page := 0}}
+{{$sort := cslice}}
+{{$buttons := cslice}}
+{{$or := false}}
+{{$adminRole := index ($db.Get "forumAutohelpConfig") 1}}
+{{if in .Member.Roles $adminRole}}
+{{$text = "\nTo add a new automatic message, click ''Create'', you then specify a name, the keywords that will trigger this response, and then the response itself."}}
+{{$buttons = $buttons.Append (sdict "label" "Create" "custom_id" "forumAutohelpCreateMessage" "style" "green")}}
+{{end}}
+{{$start := 0}}
+{{$end := 0}}
+{{if eq .StrippedID "PreviousPageAutohelp"}}
+{{$page = sub (toInt (reFind `\d+` (index (.Message.Embeds) 0).Footer.Text )) 1}}
+{{$start = add (mult (sub $page 1) 10) 1}}
+{{$end = mult $page 10}}
+{{else}}
+{{$page = add (toInt (reFind `\d+` (index (.Message.Embeds) 0).Footer.Text )) 1}}
+{{$start = add (mult (sub $page 1) 10) 1}}
+{{$end = mult $page 10}}
+{{end}}
+{{range $k, $v := $db}}
+{{if in (seq $start (add $end 1)) (index $v 0)}}
+{{$sort = $sort.Append (sdict "autohelpOrder" (index $v 0) "name" (index $v 1))}}
+{{else if (in (seq (add $end 1) 100) (index $v 0))}}
+{{$or = true}}
+{{end}}
+{{end}}
+{{$final := sort $sort (sdict "key" "autohelpOrder")}}
+{{range $final}}
+{{$string = print $string "**[" ( .Get "autohelpOrder") "]**: " ( .Get "name") "\n\n"}}
+{{end}}
+{{if (eq .StrippedID "PreviousPageAutohelp")}}
+{{if eq $page 1}}
+{{$buttons = $buttons.Append (sdict "label" "Previous page" "custom_id" "forumAutohelpPreviousPageAutohelp" "disabled" true)}}
+{{else}}
+{{$buttons = $buttons.Append (sdict "label" "Previous page" "custom_id" "forumAutohelpPreviousPageAutohelp")}}
+{{end}}
+{{$buttons = $buttons.Append (sdict "label" "Next page" "custom_id" "forumAutohelpNextPageAutohelp")}}
+{{else}}
+{{$buttons = $buttons.Append (sdict "label" "Previous page" "custom_id" "forumAutohelpPreviousPageAutohelp")}}
+{{$buttons = $buttons.Append (sdict "label" "Next page" "custom_id" "forumAutohelpNextPageAutohelp" "disabled" true)}}
+{{end}}
+{{updateMessage (complexMessageEdit "buttons" $buttons "embed" (cembed "footer" (sdict "text" (print "Page " $page)) "title" "Forum automatic help" "color" 0x79c1ff "description" (print "Automatically reply to new posts based in keywords. \n**-autohelp [ID]**: check a specific automatic response.\n**-autohelp [Text]**: Test the automatic responder, explain an issue and the bot will respond to it if keywords match." $text "\n\n" $string)))}}
+{{return}}
+{{end}}
+{{if eq .StrippedID "CreateMessage"}}
+{{$db := (dbGet 0 "forumAutohelp").Value}}
+{{if not (in .Member.Roles (index ($db.Get "forumAutohelpConfig") 1))}}
+You don't have permission to configure the automatic help messages :(
+{{ephemeralResponse}}
+{{return}}
+{{end}}
+{{sendModal (sdict "title" "Create a new automatic message" "custom_id" "forumAutohelpCreateMessage" "fields" (cslice (sdict "required" true "label" "Name of this message" "max_length" 500) (sdict "max_length" 2000 "label" "Keywords" "style" 2 "required" true "placeholder" "Split each word/phrase using ''/''.") (sdict "style" 2 "placeholder" "Write the response that will be sent upon post creation." "required" true "label" "Automatic response" "max_length" 4000) (sdict "label" "Attachment (optional)" "placeholder" "Add an URL." "max_length" 700)))}}
+{{return}}
+{{end}}
