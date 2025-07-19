@@ -1,0 +1,55 @@
+{{$db := (dbGet 5769 "todo").Value}}
+{{if not $db}}
+{{$db := sdict}}
+{{dbSet 5769 "todo" $db}}
+{{end}}
+{{if not ($db.Get (str .User.ID))}}
+{{sendMessage nil (complexMessage "content" .User.Mention "components" (cslice (cmenu "type" "text" "placeholder" "How often to remind?" "custom_id" "todoIntervalConfiguration" "options" (cslice (sdict "label" "Do not remind me" "value" "0") (sdict "label" "Every day" "value" "1") (sdict "label" "Every 2 days" "value" "2") (sdict "label" "Every 3 days" "value" "3") (sdict "label" "Every 4 days" "value" "4") (sdict "label" "Every 5 days" "value" "5") (sdict "label" "Every 6 days" "value" "6") (sdict "label" "Every 7 days" "value" "7"))) (cmenu "type" "channel" "placeholder" "Channel to send reminders in:" "custom_id" "todoChannelConfiguration" "max_values" 1) (cbutton "label" "Configure" "custom_id" "todoConfigure" "style" "green")) "embed" (cembed "description" "Before using this command, first configure your preferences:\n\n**Reminder frequency**\nUse the first drop down menu to configure how often you would like to be reminded about your TODO. You can configured to not be reminded at all.\n\n**Where to remind**\nIn the second drop down menu, you can configure where your reminders will be sent. It has to be q channel.\n\n\nCurrent frequency set:\nCurrent channel configured:"))}}
+{{return}}
+{{end}}
+{{if eq (len .Args) 1}}
+{{$a := index ($db.Get (str .User.ID)) 3}}
+{{if eq (len $a) 0}}
+{{sendMessage nil (complexMessage "buttons" (sdict "label" "Configuration" "custom_id" "todoConfiguration" "style" "grey") "content" .User.Mention "embed" (cembed "description" "Nothing to do 🎉" "title" "Your TODO list (updated):" "footer" (sdict "text" "0/25 TODO slots used")))}}
+{{return}}
+{{end}}
+{{$b := ""}}
+{{range $a}}
+{{$b = print $b "\n- " .}}
+{{end}}
+{{$c := cslice}}
+{{$d := 0}}
+{{range $a}}
+{{$d = add $d 1}}
+{{$e := ""}}
+{{if gt (len (split . "")) 95}}
+{{range (split . "")}}
+{{$e = print $e .}}
+{{if eq (len $e) 95}}
+{{break}}
+{{end}}
+{{end}}
+{{$e = print $e "..."}}
+{{else}}
+{{$e = .}}
+{{end}}
+{{$c = $c.Append (sdict "label" $e "value" (str $d))}}
+{{end}}
+{{sendMessage nil (complexMessage "components" (cslice (cmenu "placeholder" "Mark as done:" "type" "text" "custom_id" "todoConcludeTodo" "max_values" $d "options" $c) (cbutton "label" "Configuration" "custom_id" "todoConfiguration" "style" "grey"))  "content" .User.Mention "embed" (cembed "description" $b "title" "Your TODO list:" "footer" (sdict "text" (print (len $a) "/25 TODO slots used"))))}}
+{{return}}
+{{end}}
+{{$string := $db.Get (str .User.ID)}}
+{{$e := ""}}
+{{if eq (len (index $string 3)) 25}}
+You can only have up to 25 TODOs :(
+{{return}}
+{{end}}
+{{$a := (index $string 3).Append (trimSpace .StrippedMsg)}}
+{{$db.Set (str .User.ID) (cslice (index $string 0) (index $string 1) (index $string 2) $a)}}
+{{dbSet 5769 "todo" $db}}
+{{range (index $string 3)}}
+{{$e = print $e "\n- " .}}
+{{end}}
+{{sendMessage nil (complexMessage "content" .User.Mention "embed" (cembed "title" "New TODO added" "description" (print .StrippedMsg "\n\n**__Your TODO list:__**\n" $e)))}}
+{{/* https://github.com/Enigmx/YAGPDB-custom-commands/tree/main/CC%3A%20todo */}}
+{{/* made in chile */}}
