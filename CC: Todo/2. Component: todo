@@ -1,0 +1,160 @@
+{{if eq .StrippedID "Configuration"}}
+{{updateMessage (complexMessageEdit "content" .User.Mention "components" (cslice (cmenu "type" "text" "placeholder" "How often to remind?" "custom_id" "todoIntervalConfiguration" "options" (cslice (sdict "label" "Do not remind me" "value" "0") (sdict "label" "Every day" "value" "1") (sdict "label" "Every 2 days" "value" "2") (sdict "label" "Every 3 days" "value" "3") (sdict "label" "Every 4 days" "value" "4") (sdict "label" "Every 5 days" "value" "5") (sdict "label" "Every 6 days" "value" "6") (sdict "label" "Every 7 days" "value" "7"))) (cmenu "type" "channel" "placeholder" "Channel to send reminders in:" "custom_id" "todoChannelConfiguration" "max_values" 1) (cbutton "label" "Configure" "custom_id" "todoConfigure" "style" "green")) "embed" (cembed "description" "Here you can configure your preferences:\n\n**Reminder frequency**\nUse the first drop down menu to configure how often you would like to be reminded about your TODO. You can configured to not be reminded at all.\n\n**Where to remind**\nIn the second drop down menu, you can configure where your reminders will be sent. It has to be a channel.\n\n\nCurrent frequency set:\nCurrent channel configured:"))}}
+{{return}}
+{{end}}
+{{if eq .StrippedID "ConcludeTodo"}}
+{{if not (eq .User.ID (toInt (reFind `\d+` .Message.Content)))}}
+You can't configure someone else's TODOs :(
+{{return}}
+{{end}}
+{{$a := (dbGet 5769 "todo").Value}}
+{{$b := 0}}
+{{$c := (index ($a.Get (str .User.ID)) 3)}}
+{{$d := ""}}
+{{$e := cslice}}
+{{range (split (index .Message.Embeds 0).Description "\n")}}
+{{$b = add $b 1}}
+{{if in $.Values (str $b)}}
+{{continue}}
+{{else}}
+{{$d = print $d "\n" .}}
+{{$f := ""}}
+{{$g := 0}}
+{{range (split . " ")}}
+{{$g = add $g 1}}
+{{if eq $g 1}}
+{{continue}}
+{{end}}
+{{$f = print $f " " .}}
+{{end}}
+{{$e = $e.Append (trimSpace $f)}}
+{{end}}
+{{end}}
+{{if eq (len $e) 0}}
+{{$a.Set (str .User.ID) (cslice (index ($a.Get (str .User.ID)) 0) (index ($a.Get (str .User.ID)) 1) (index ($a.Get (str .User.ID)) 2) (cslice))}}
+{{dbSet 5769 "todo" $a}}
+{{updateMessage (complexMessageEdit "buttons" (sdict "label" "Configuration" "custom_id" "todoConfiguration" "style" "grey") "content" .User.Mention "embed" (cembed "description" "Nothing to do 🎉" "title" "Your TODO list (updated):" "footer" (sdict "text" "0/25 TODO slots used")))}}
+{{return}}
+{{end}}
+{{$a.Set (str .User.ID) (cslice (index ($a.Get (str .User.ID)) 0) (index ($a.Get (str .User.ID)) 1) (index ($a.Get (str .User.ID)) 2) $e)}}
+{{dbSet 5769 "todo" $a}}
+{{$h := cslice}}
+{{$i := 0}}
+{{range $e}}
+{{$i = add $i 1}}
+{{$j := ""}}
+{{if gt (len (split . "")) 95}}
+{{range (split . "")}}
+{{$j = print $j .}}
+{{if eq (len $j) 95}}
+{{break}}
+{{end}}
+{{end}}
+{{$j = print $j "..."}}
+{{else}}
+{{$j = .}}
+{{end}}
+{{$h = $h.Append (sdict "label" $j "value" (str $i))}}
+{{end}}
+{{updateMessage (complexMessageEdit "components" (cslice (cmenu "placeholder" "Mark as done:" "type" "text" "custom_id" "todoConcludeTodo" "max_values" $i "options" $h) (cbutton "label" "Configuration" "custom_id" "todoConfiguration" "style" "grey")) "content" .User.Mention "embed" (cembed "footer" (sdict "text" (print (len $e) "/25 TODO slots used")) "description" $d "title" "Your TODO list (updated):"))}}
+{{return}}
+{{end}}
+{{if eq .StrippedID "Configure"}}
+{{$b := 0}}
+{{$c := 0}}
+{{range (split (index .Message.Embeds 0).Description "\n")}}
+{{if in . "Current frequency set"}}
+{{$a := split . ":"}}
+{{if not (index $a 1)}}
+You haven't configured your preferences yet
+{{ephemeralResponse}}
+{{return}}
+{{end}}
+{{if eq (index $a 1) " Every day."}}
+{{$b = 1}}
+{{else if in (index $a 1) "Do not"}}
+{{$b = 0}}
+{{else}}
+{{$b = toInt (reFind `\d+` (index $a 1))}}
+{{end}}
+{{else if in . "Current channel"}}
+{{$c = toInt (reFind `\d+` .)}}
+{{end}}
+{{end}}
+{{if eq $c 0}}
+{{if eq $b 0}}
+{{$db := (dbGet 5769 "todo").Value}}
+{{if ($db.Get (str $.User.ID))}}
+{{$db.Set (str $.User.ID) (cslice $c $b $b (index ($db.Get (str $.User.ID)) 3))}}
+{{else}}
+{{$db.Set (str $.User.ID) (cslice $c $b $b (cslice))}}
+{{end}}
+{{dbSet 5769 "todo" $db}}
+{{sendResponse nil "Done!!! your preferences have been set."}}
+{{return}}
+{{else}}
+You haven't configured your preferences yet
+{{ephemeralResponse}}
+{{return}}
+{{end}}
+{{end}}
+{{$db := (dbGet 5769 "todo").Value}}
+{{if ($db.Get (str $.User.ID))}}
+{{$db.Set (str $.User.ID) (cslice $c $b $b (index ($db.Get (str $.User.ID)) 3))}}
+{{else}}
+{{$db.Set (str $.User.ID) (cslice $c $b $b (cslice))}}
+{{end}}
+{{dbSet 5769 "todo" $db}}
+{{sendResponse nil "Done!!! your preferences have been set."}}
+{{return}}
+{{end}}
+{{if eq .StrippedID "ChannelConfiguration"}}
+{{if not (eq .User.ID (toInt (reFind `\d+` .Message.Content)))}}
+You can't configure someone else's preferences :(
+{{return}}
+{{end}}
+{{$c := getChannel (toInt (reFind `\d+` (index .Values 0)))}}
+{{if not (eq $c.Type 0)}}
+You can only configure channels, not forums or categories...
+{{ephemeralResponse}}
+{{return}}
+{{end}}
+{{$string := ""}}
+{{$count := 0}}
+{{range (split (index .Message.Embeds 0).Description "\n")}}
+{{$count = add $count 1}}
+{{if eq $count 11}}
+{{$string = print $string "\nCurrent channel configured: <#" (index $.Values 0) ">"}}
+{{else}}
+{{$string = print $string "\n" .}}
+{{end}}
+{{end}}
+{{updateMessage (complexMessageEdit "content" .Message.Content "components" (cslice (cmenu "type" "text" "placeholder" "How often to remind?" "custom_id" "todoIntervalConfiguration" "options" (cslice (sdict "label" "Do not remind me" "value" "0") (sdict "label" "Every day" "value" "1") (sdict "label" "Every 2 days" "value" "2") (sdict "label" "Every 3 days" "value" "3") (sdict "label" "Every 4 days" "value" "4") (sdict "label" "Every 5 days" "value" "5") (sdict "label" "Every 6 days" "value" "6") (sdict "label" "Every 7 days" "value" "7"))) (cmenu "type" "channel" "placeholder" "Channel to send reminders in:" "custom_id" "todoChannelConfiguration" "max_values" 1) (cbutton "label" "Configure" "custom_id" "todoConfigure" "style" "green")) "embed" (cembed "description" $string))}}
+{{return}}
+{{end}}
+{{if eq .StrippedID "IntervalConfiguration"}}
+{{if not (eq .User.ID (toInt (reFind `\d+` .Message.Content)))}}
+You can't configure someone else's preferences :(
+{{return}}
+{{end}}
+{{$string := ""}}
+{{$count := 0}}
+{{range (split (index .Message.Embeds 0).Description "\n")}}
+{{$count = add $count 1}}
+{{if eq $count 10}}
+{{if eq (toInt (index $.Values 0)) 0}}
+{{$string = print $string "\nCurrent frequency set: Do not remind."}}
+{{else if eq (toInt (index $.Values 0)) 1}}
+{{$string = print $string "\nCurrent frequency set: Every day."}}
+{{else}}
+{{$string = print $string "\nCurrent frequency set: Every " (str (index $.Values 0)) " days."}}
+{{end}}
+{{else}}
+{{$string = print $string "\n" .}}
+{{end}}
+{{end}}
+{{updateMessage (complexMessageEdit "Content" .Message.Content "components" (cslice (cmenu "type" "text" "placeholder" "How often to remind?" "custom_id" "todoIntervalConfiguration" "options" (cslice (sdict "label" "Do not remind me" "value" "0") (sdict "label" "Every day" "value" "1") (sdict "label" "Every 2 days" "value" "2") (sdict "label" "Every 3 days" "value" "3") (sdict "label" "Every 4 days" "value" "4") (sdict "label" "Every 5 days" "value" "5") (sdict "label" "Every 6 days" "value" "6") (sdict "label" "Every 7 days" "value" "7"))) (cmenu "type" "channel" "placeholder" "Channel to send reminders in:" "custom_id" "todoChannelConfiguration" "max_values" 1) (cbutton "label" "Configure" "custom_id" "todoConfigure" "style" "green")) "embed" (cembed "description" $string))}}
+{{return}}
+{{end}}
+{{/* https://github.com/Enigmx/YAGPDB-custom-commands/tree/main/CC%3A%20Todo */}}
+{{/* made in chile */}}
