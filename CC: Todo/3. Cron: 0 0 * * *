@@ -1,0 +1,29 @@
+{{$a := (dbGet 5769 "todo").Value}}
+{{range $k, $v := $a}}
+{{if eq $k "server"}}
+{{else}}
+{{if not (getMember (toInt $k))}}
+{{$a.Del $k}}
+{{continue}}
+{{end}}
+{{if eq (index $v 1) 0}}
+{{continue}}
+{{end}}
+{{$b := index $v 2}}
+{{$b = sub $b 1}}
+{{if eq $b 0}}
+{{$c := ""}}
+{{range (index $v 3)}}
+{{$c = print $c "\n- " .}}
+{{end}}
+{{sendMessage (index $v 0) (complexMessage "content" (print "<@" $k ">") "embed" (cembed "title" "Your TODO list:" "description" $c))}}
+{{$a.Set $k (cslice (index $v 0) (index $v 1) (index $v 1) (index $v 3))}}
+{{continue}}
+{{else}}
+{{$a.Set $k (cslice (index $v 0) (index $v 1) $b (index $v 3))}}
+{{end}}
+{{end}}
+{{end}}
+{{dbSet 5769 "todo" $a}}
+{{/* https://github.com/Enigmx/YAGPDB-custom-commands/tree/main/CC%3A%20Todo */}}
+{{/* made in chile */}}
