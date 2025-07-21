@@ -13,25 +13,17 @@ Seems like this channel doesn't exist anymore...
 {{editChannelName (toInt (reFind `\d+` .Message.Content)) (index .Values 0) }}
 {{$embed1 := structToSdict (index .Message.Embeds 0)}}
 {{$embed1.Set "title" (index .Values 0)}}
-{{editMessage nil .Message.ID (complexMessageEdit "content" ( print .Message.Content "\n\n" .User.Mention " Has changed the name of the post:\n" (index .Values 0)) "embed" $embed1)}}
-Done! Post has been renamed.
-{{deleteResponse 5}}
-{{ephemeralResponse}}
+{{updateMessage (complexMessageEdit "content" ( print .Message.Content "\n\n" .User.Mention " Has changed the name of the post:\n" (index .Values 0)) "embed" $embed1)}}
 {{return}}
 {{end}}
 {{if eq .StrippedID "ErasePostLog"}}
+{{updateMessage (complexMessageEdit "content" (print .Message.Content "\n\n" .User.Mention " has erased this post.") "embed" (cslice (index .Message.Embeds 0)))}}
 {{deleteForumPost (reFind `\d+` .Message.Content)}}
 {{if not (eq (len (index .Values 0)) 0)}}
 {{$user := getMember (index (reFindAll `\d+` .Message.Content) 1)}}
 {{sendMessage $forumEraseLogChannel (complexMessage "content" (print "<@" $user.User.ID "> Your post has been removed from the forums. The moderator gave the following reason:") "embed" (cembed "author" (sdict "name" ($user.User.Username) "icon_url" ($user.User.AvatarURL "512")) "description" (index .Values 0)))}}{{editMessage nil .Message.ID (complexMessageEdit "content" (print .Message.Content "\n\n" .User.Mention " has erased this post for the following reason:\n" (index .Values 0)) "embed" (cslice (index .Message.Embeds 0)))}}
-Done! Erased this post.
-{{deleteResponse 5}}{{ephemeralResponse}}
 {{return}}
 {{end}}
-{{editMessage nil .Message.ID (complexMessageEdit "content" (print .Message.Content "\n\n" .User.Mention " has erased this post.") "embed" (cslice (index .Message.Embeds 0)))}}
-Done! Erased this post.
-{{deleteResponse 5}}
-{{ephemeralResponse}}
 {{return}}
 {{end}}
 {{/* https://github.com/Enigmx/YAGPDB-custom-commands/tree/main/CC%3A%20Forum%20log */}}
