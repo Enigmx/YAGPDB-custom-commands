@@ -13,7 +13,11 @@ Seems like this channel doesn't exist anymore...
 {{editChannelName (toInt (reFind `\d+` .Message.Content)) (index .Values 0) }}
 {{$embed1 := structToSdict (index .Message.Embeds 0)}}
 {{$embed1.Set "title" (index .Values 0)}}
+{{try}}
 {{updateMessage (complexMessageEdit "content" ( print .Message.Content "\n\n" .User.Mention " Has changed the name of the post:\n" (index .Values 0)) "embed" $embed1)}}
+{{catch}}
+{{editMessage nil (complexMessageEdit "content" ( print .Message.Content "\n\n" .User.Mention " Has changed the name of the post:\n" (index .Values 0)) "embed" $embed1)}}
+{{end}}
 {{return}}
 {{end}}
 {{if eq .StrippedID "ErasePostLog"}}
