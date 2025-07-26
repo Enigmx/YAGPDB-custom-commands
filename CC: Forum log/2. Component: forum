@@ -1,11 +1,17 @@
 {{/* Forum log menu */}}
 {{if eq .StrippedID "RenamePost"}}
+{{try}}
 {{sendModal (sdict "title" "Change name" "custom_id" "forumRenamePost" "fields" (cslice (sdict "label" "New name:" "value" (index .Message.Embeds 0).Title "placeholder" "Write something that will replace the name for the post" "style" 1 "min_length" 1 "max_length" 100)))}}
+{{catch}}
+{{end}}
 {{return}}
 {{end}}
 {{if eq .StrippedID "ErasePostLog"}}
 {{if $a := (getChannelOrThread (reFind `\d+` .Message.Content))}}
+{{try}}
 {{sendModal (sdict "title" "Erase post" "custom_id" "forumErasePostLog" "fields" (cslice (sdict "label" "Reason (optional):" "placeholder" "leave empty to remove it silently" "style" 1 "max_length" 1000)))}}
+{{catch}}
+{{end}}
 {{return}}
 {{else}}
 Seems like this channel does not exist anymore
@@ -23,7 +29,11 @@ Seems like this post has already been marked as concluded...
 {{ephemeralResponse}}
 {{return}}
 {{end}}
+{{try}}
 {{updateMessage (complexMessageEdit "content" (print .Message.Content "\n\n" .User.Mention " Has marked this post as concluded.")  "embed" $embed )}}
+{{catch}}
+{{editMessage nil (complexMessageEdit "content" (print .Message.Content "\n\n" .User.Mention " Has marked this post as concluded.")  "embed" $embed )}}
+{{end}}
 {{return}}
 {{end}}
 {{if eq .StrippedID "TagsEdit"}}
