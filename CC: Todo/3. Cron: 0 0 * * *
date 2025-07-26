@@ -16,6 +16,9 @@
 {{range (index $v 3)}}
 {{$c = print $c "\n- " .}}
 {{end}}
+{{if not $c}}
+{{continue}}
+{{end}}
 {{sendMessage (index $v 0) (complexMessage "content" (print "<@" $k ">") "embed" (cembed "title" "Your TODO list:" "description" $c))}}
 {{$a.Set $k (cslice (index $v 0) (index $v 1) (index $v 1) (index $v 3))}}
 {{continue}}
