@@ -50,6 +50,10 @@ You can only have up to 25 TODOs :(
 {{range (index $string 3)}}
 {{$e = print $e "\n- " .}}
 {{end}}
-{{sendMessage nil (complexMessage "content" .User.Mention "embed" (cembed "title" "New TODO added" "description" (print .StrippedMsg "\n\n**__Your TODO list:__**\n" $e)))}}
+{{try}}
+{{addReactions "✅"}}
+{{catch}}
+Added to your TODO ✅
+{{end}}
 {{/* https://github.com/Enigmx/YAGPDB-custom-commands/tree/main/CC%3A%20Todo */}}
 {{/* made in chile */}}
