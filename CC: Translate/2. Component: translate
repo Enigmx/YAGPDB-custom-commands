@@ -1,0 +1,63 @@
+{{/* translate buttons */}}
+{{if eq .StrippedID "FromBinary"}}
+{{$s := .Message.ReferencedMessage.Content}}
+{{$a := trimSpace $s}}
+{{$d := cslice}}
+{{range (split $s " ")}}
+{{$b := 7}}
+{{$c := cslice}}
+{{range (split . "")}}
+{{if eq (toInt .) 1}}
+{{$c = $c.Append (toInt (pow 2 $b))}}
+{{end}}
+{{$b = sub $b 1}}
+{{end}}
+{{$e := 0}}
+{{range $c}}
+{{$e = add $e .}}
+{{end}}
+{{$d = $d.Append $e}}
+{{end}}
+{{$str := ""}}
+{{range $d}}
+{{$str = print $str (printf "%c" .)}}
+{{end}}
+{{try}}
+{{updateMessage (complexMessageEdit "embed" (cembed "description" $str "footer" (sdict "text" "translated from binary")))}}
+{{catch}}
+{{editMessage nil $.Message.ID (complexMessageEdit "embed" (cembed "description" $str "footer" (sdict "text" "translated from binary")))}}
+{{end}}
+{{return}}
+{{end}}
+{{if eq .StrippedID "FromMorse"}}
+{{$dict := sdict
+  "space"   " "
+  ".-"      "a"  "-..."  "b"  "-.-."  "c"  "-.."   "d"  "."     "e"
+  "..-."    "f"  "--."   "g"  "...."  "h"  ".."    "i"  ".---"  "j"
+  "-.-"     "k"  ".-.."  "l"  "--"    "m"  "-."    "n"  "---"   "o"
+  ".--."    "p"  "--.-"  "q"  ".-."   "r"  "..."   "s"  "-"     "t"
+  "..-"     "u"  "...-"  "v"  ".--"   "w"  "-..-"  "x"  "-.--"  "y"  "--.."  "z"
+  "-----"   "0"  ".----" "1"  "..---" "2"  "...--" "3"  "....-" "4"
+  "....."   "5"  "-...." "6"  "--..." "7"  "---.." "8"  "----." "9"
+  ".-.-.-"  "."  "--..--" ","  "..--.." "?"  ".----." "'"  "-.-.--" "!"
+  "-..-."   "/"  "-.--."  "("  "-.--.-" ")"  ".-..."  "&"  "---..." ":"
+  "-.-.-."  ";"  "-...-"  "="  ".-.-."  "+"  "-....-" "-"  "..--.-" "_"
+  ".-..-."  "\"" "...-..-" "$" ".--.-." "@"}}
+{{$a := cslice}}
+{{$b := ""}}
+{{range (split .Message.ReferencedMessage.Content " ")}}
+{{if or (eq . "......." "/")}}
+{{$b = print $b " "}}
+{{else}}
+{{if ($dict.Get .)}}
+{{$b = print $b ($dict.Get .)}}
+{{end}}
+{{end}}
+{{end}}
+{{try}}
+{{updateMessage (complexMessageEdit "embed" (cembed "description" $b "footer" (sdict "text" "translated from morse code")))}}
+{{catch}}
+{{editMessage nil $.Message.ID (complexMessageEdit "embed" (cembed "description" $b "footer" (sdict "text" "translated from morse code")))}}
+{{end}}
+{{return}}
+{{end}}
