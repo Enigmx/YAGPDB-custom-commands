@@ -1,4 +1,5 @@
 {{$maxDuration := "30m"}}
+{{$inmuneRoles := cslice 1266639961160155247}}
 
 {{if .ExecData}}
 {{range .ExecData}}
@@ -131,7 +132,7 @@
 {{sendMessage nil (print "This tool has been configured to use at most " $maxDuration " of duration :(")}}
 {{$duration = toDuration $maxDuration}}
 {{end}}
-{{dbSetExpire $channel "swiftAutomoderation" $list (toInt $duration.Seconds)}}
+{{dbSetExpire $channel "swiftAutomoderation" (cslice $list (cslice .CCID $inmuneRoles)) (toInt $duration.Seconds)}}
 {{sendMessage nil (complexMessage "content" (print "Current channel: <#" $channel ">\nAutomod duration: " $duration "\n\nDone! From now on, messages which contain the following terms:\n" (joinStr " **|** " $list) "\nWill be automatically erased from now on.") "menus" (cmenu "type" "text" "max_values" 5 "placeholder" "Special configuration" "custom_id" "swiftAutomodSpecialSam" "options" (cslice (sdict "label" "🕹️ Activities" "value" "swiftAutoMod1") (sdict "label" "🐦 Stickers" "value" "swiftAutoMod2") (sdict "label" "📊 Polls" "value" "swiftAutoMod3") (sdict "label" "🔗 Links & Attachments" "value" "swiftAutoMod4") (sdict "label" "🔄 Forwarded Messages" "value" "swiftAutoMod5"))) "buttons" (cslice (sdict "label" "Modify list" "style" "grey" "custom_id" "swiftAutomodModifyList") (sdict "label" "Delete Swift Automod" "style" "red" "custom_id" "swiftAutomodDeleteSam")))}}
 {{/* https://github.com/Enigmx/YAGPDB-custom-commands/tree/main/CC%3A%20Swift%20AutoModeration */}}
 {{/* made in chile */}}
