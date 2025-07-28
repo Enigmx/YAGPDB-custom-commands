@@ -10,7 +10,7 @@ The set up is a little complicated and I advise it is done only for those who ha
 ![image](../ignore/swiftAutomod1.png)  
 
 Then, copy the code found in the file #1 and paste it in the response box.  
-You can configure the maximum duration moderators can use in this Custom Command. Edit the first line of code, like shown here:  
+You can configure the maximum duration moderators can use in this Custom Command, as well as who is inmune to the automod. Edit the first lines of code, like shown here:  
 
 ![image](../ignore/swiftAutomod2.png)  
 
