@@ -1,15 +1,14 @@
 {{/* swift automoderation */}}
-{{$CustomCommandID := 0}} {{/* Replace 0 with the ID for the custom command "sam" */}}
-{{$InmuneRoles := cslice }} {{/* add the role ID for the roles which are inmune to automod */}}
-
 {{if $sam := (dbGet .Channel.ID "swiftAutomoderation").Value}}
+{{$InmuneRoles := index (index $sam 1) 1}}
+{{$CustomCommandID := index (index $sam 1) 0}}
 {{range $InmuneRoles}}
 {{if in $.Member.Roles .}}
 {{return}}
 {{end}}
 {{end}}
 {{$special := cslice}}
-{{range $sam}}
+{{range (index $sam 0)}}
 {{if eq (kindOf .) "int64"}}
 {{$special = $special.Append .}}
 {{continue}}
