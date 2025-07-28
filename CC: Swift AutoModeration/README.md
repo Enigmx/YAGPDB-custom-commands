@@ -15,6 +15,7 @@ You can configure the maximum duration moderators can use in this Custom Command
 ![image](../ignore/swiftAutomod2.png)  
 
 In this case, this is configured to allow a maximum duration of 30 minutes.  
+**{{$InmuneRoles := cslice}}** Here, you have to add the roles IDs which are going to be made inmune for the automod. Add your moderator roles here. If for example, your moderator and admin roles are 1234567890 and 0987654321, then you would add them to the inmune list like so: {{$InmuneRoles := cslice 1234567890 0987654321}}.  
 Afterwards, create a new Custom Command, configure the trigger type and trigger like shown here:  
 
 ![image](../ignore/swiftAutomod3.png)  
@@ -24,11 +25,6 @@ There are two lines of code which are necessary you configure, **{{$CustomComman
 
 ![image](../ignore/swiftAutomod4.png)  
 
-**{{$CustomCommandID := 0}}** Here, you must replace 0 for the ID of the custom command you added previously (#1). You can find the ID in the interface, like shown here:  
-
-![image](../ignore/swiftAutomod5.png)  
-
-**{{$InmuneRoles := cslice}}** Here, you have to add the roles IDs which are going to be made inmune for the automod. Add your moderator roles here. If for example, your moderator and admin roles are 1234567890 and 0987654321, then you would add them to the inmune list like so: {{$InmuneRoles := cslice 1234567890 0987654321}}.  
 Warning: If you already have a custom commmand running in all messages, it is recommended that you add this code into it; it should work in the end of the response.  
 After configuring this custom command, create another one, configure the trigger type and trigger as follows:  
 
