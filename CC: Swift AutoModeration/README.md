@@ -21,7 +21,6 @@ Afterwards, create a new Custom Command, configure the trigger type and trigger 
 ![image](../ignore/swiftAutomod3.png)  
 
 Then, copy the code found in file #2 and paste it in the response box.  
-There are two lines of code which are necessary you configure, **{{$CustomCommandID := 0}}** and **{{$InmuneRoles := cslice}}**.  
 
 ![image](../ignore/swiftAutomod4.png)  
 
