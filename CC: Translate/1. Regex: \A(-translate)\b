@@ -1,0 +1,9 @@
+{{if eq (len .Args) 1}}
+# Translate
+Translate text either from binary or morse code. Good to save time from opening an online website to do so.
+
+### Use
+!translate [text]
+{{return}}
+{{end}}
+{{sendMessage nil (complexMessage "reply" .Message.ID "content" "Which language do you need to translate this from?" "components" (cslice (cbutton "style" "grey" "label" "Binary" "custom_id" "translateFromBinary" "emoji" (sdict "name" "🤖")) (cbutton "label" "Morse" "custom_id" "translateFromMorse" "style" "grey" "emoji" (sdict "name" "📡"))))}}
