@@ -114,7 +114,7 @@ You don't have permission to configure the automatic help messages :(
 {{$page := 0}}
 {{$sort := cslice}}
 {{$buttons := cslice}}
-{{$or := false}}
+{{$or := true}}
 {{$adminRole := index ($db.Get "forumAutohelpConfig") 1}}
 {{if in .Member.Roles $adminRole}}
 {{$text = "\nTo add a new automatic message, click ''Create'', you then specify a name, the keywords that will trigger this response, and then the response itself."}}
@@ -135,7 +135,7 @@ You don't have permission to configure the automatic help messages :(
 {{if in (seq $start (add $end 1)) (index $v 0)}}
 {{$sort = $sort.Append (sdict "autohelpOrder" (index $v 0) "name" (index $v 1))}}
 {{else if (in (seq (add $end 1) 100) (index $v 0))}}
-{{$or = true}}
+{{$or = false}}
 {{end}}
 {{end}}
 {{$final := sort $sort (sdict "key" "autohelpOrder")}}
@@ -151,7 +151,7 @@ You don't have permission to configure the automatic help messages :(
 {{$buttons = $buttons.Append (sdict "label" "Next page" "custom_id" "forumAutohelpNextPageAutohelp")}}
 {{else}}
 {{$buttons = $buttons.Append (sdict "label" "Previous page" "custom_id" "forumAutohelpPreviousPageAutohelp")}}
-{{$buttons = $buttons.Append (sdict "label" "Next page" "custom_id" "forumAutohelpNextPageAutohelp" "disabled" true)}}
+{{$buttons = $buttons.Append (sdict "label" "Next page" "custom_id" "forumAutohelpNextPageAutohelp" "disabled" $or)}}
 {{end}}
 {{updateMessage (complexMessageEdit "buttons" $buttons "embed" (cembed "footer" (sdict "text" (print "Page " $page)) "title" "Forum automatic help" "color" 0x79c1ff "description" (print "Automatically reply to new posts based in keywords. \n**-autohelp [ID]**: check a specific automatic response.\n**-autohelp [Text]**: Test the automatic responder, explain an issue and the bot will respond to it if keywords match." $text "\n\n" $string)))}}
 {{return}}
