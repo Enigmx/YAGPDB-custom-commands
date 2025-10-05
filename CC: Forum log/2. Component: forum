@@ -32,7 +32,7 @@ Seems like this post has already been marked as concluded...
 {{try}}
 {{updateMessage (complexMessageEdit "content" (print .Message.Content "\n\n" .User.Mention " Has marked this post as concluded.")  "embed" $embed )}}
 {{catch}}
-{{editMessage nil .Message.ID (complexMessageEdit "content" (print .Message.Content "\n\n" .User.Mention " Has marked this post as concluded.")  "embed" $embed )}}
+{{editMessage nil $.Message.ID (complexMessageEdit "content" (print $.Message.Content "\n\n" $.User.Mention " Has marked this post as concluded.")  "embed" $embed )}}
 {{end}}
 {{return}}
 {{end}}
