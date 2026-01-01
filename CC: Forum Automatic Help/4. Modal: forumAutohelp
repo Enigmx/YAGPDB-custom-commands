@@ -98,3 +98,4 @@ Done! **{{index .Values 0}}** has been created successfully.
 {{dbSet $id "forumAutohelp" (sdict "Default" (index .Values 2))}}
 {{return}}
 {{end}}
+{{/* https://github.com/Enigmx/YAGPDB-custom-commands/tree/main/CC%3A%20Forum%20Automatic%20Help */}}
