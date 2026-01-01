@@ -1,7 +1,10 @@
+{{/* configuration */}}
 {{$adminRole := 0}}
 {{$forumChannelID := 0}}
 {{$customMessage := "I have read your issue and thought this might be helpful:"}}
+{{/* end of configuration */}}
 
+{{/* code */}}
 {{if .ExecData}}
 {{$db := (dbGet 0 "forumAutohelp").Value}}
 {{$times := 0}}
