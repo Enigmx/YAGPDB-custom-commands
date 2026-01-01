@@ -166,3 +166,4 @@ You don't have permission to configure the automatic help messages :(
 {{sendModal (sdict "title" "Create a new automatic message" "custom_id" "forumAutohelpCreateMessage" "fields" (cslice (sdict "required" true "label" "Name of this message" "max_length" 500) (sdict "max_length" 2000 "label" "Keywords" "style" 2 "required" true "placeholder" "Split each word/phrase using ''/''.") (sdict "style" 2 "placeholder" "Write the response that will be sent upon post creation." "required" true "label" "Automatic response" "max_length" 4000) (sdict "label" "Attachment (optional)" "placeholder" "Add an URL." "max_length" 700)))}}
 {{return}}
 {{end}}
+{{/* https://github.com/Enigmx/YAGPDB-custom-commands/tree/main/CC%3A%20Forum%20Automatic%20Help */}}
