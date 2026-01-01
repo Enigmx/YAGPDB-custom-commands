@@ -1,5 +1,6 @@
 {{$adminRole := 0}}
 {{$forumChannelID := 0}}
+{{$customMessage := "I have read your issue and thought this might be helpful:"}}
 
 {{if .ExecData}}
 {{$db := (dbGet 0 "forumAutohelp").Value}}
@@ -16,9 +17,13 @@
 {{end}}
 {{end}}
 {{if eq $times 0}}
-{{sendMessage nil "### Automatic support \nI have read your issue and thought this may be helpful..."}}
+{{sendMessage nil $customMessage}}
 {{end}}
+{{if (reFind $.LinkRegex (index $v 2))}}
+{{sendMessage nil (complexMessage "buttons" $buttons "embed" (cembed "description" ($db2.Get "Default") "image" (sdict "url" (index $v 2)) "footer" (sdict "text" (print "Autohelp ID: " (index $v 0)))))}}
+{{else}}
 {{sendMessage nil (complexMessage "buttons" $buttons "embed" (cembed "description" ($db2.Get "Default") "footer" (sdict "text" (print "Autohelp ID: " (index $v 0)))))}}
+{{end}}
 {{if eq $times 2}}
 {{return}}
 {{else}}
@@ -35,6 +40,106 @@ Seems like this command is not configured properly, no correct admin role has be
 {{return}}
 {{end}}
 {{$db := (dbGet 0 "forumAutohelp").Value}}
+{{if not $db}}
+{{$db = sdict "forumAutohelpConfig" (cslice .CCID $adminRole $forumChannelID)}}
+{{end}}
+{{$db.Set "forumAutohelpConfig" (cslice .CCID $adminRole $forumChannelID)}}
+{{dbSet 0 "forumAutohelp" $db}}
+{{if eq (len .Args) 1}}
+{{$text := ""}}
+{{$buttons := cslice}}
+{{if in .Member.Roles $adminRole}}
+{{$text = "\nTo add a new automatic message, click ''Create'', then specify a name, the keywords that will trigger this response, and then the response itself."}}
+{{$buttons = $buttons.Append (sdict "label" "Create" "custom_id" "forumAutohelpCreateMessage" "style" "green")}}
+{{end}}
+{{$string := "** **\n"}}
+{{$seq := cslice}}
+{{$sort := cslice}}
+{{range (seq 1 11)}}
+{{$seq = $seq.Append .}}
+{{end}}
+{{range $k, $v := $db}}
+{{if eq $k "forumAutohelpConfig"}}
+{{continue}}
+{{end}}
+{{if in $seq (index $v 0)}}
+{{$sort = $sort.Append (sdict "autohelpOrder" (index $v 0) "name" (index $v 1))}}
+{{end}}
+{{end}}
+{{$final := sort $sort (sdict "key" "autohelpOrder")}}
+{{range $final}}
+{{$string = print $string "**[" ( .Get "autohelpOrder") "]**: " ( .Get "name") "\n\n"}}
+{{end}}
+{{range $k, $v := $db}}
+{{if eq $k "forumAutohelpConfig"}}
+{{continue}}
+{{end}}
+{{if in (seq 11 100) (index $v 0)}}
+{{$buttons = $buttons.AppendSlice (cslice (sdict "label" "Previous page" "custom_id" "forumAutohelpPreviousPageAutohelp" "disabled" true) (sdict "label" "Next page" "custom_id" "forumAutohelpNextPageAutohelp"))}}
+{{break}}
+{{end}}
+{{end}}
+{{sendMessage nil (complexMessage "buttons" $buttons "embed" (cembed "footer" (sdict "text" "Page 1") "title" "Forum automatic help" "color" 0x79c1ff "description" (print "Automatically reply to new posts based in keywords. \n**-autohelp [ID]**: check a specific automatic response.\n**-autohelp [Text]**: Test the automatic responder, explain an issue and the bot will respond to it if keywords match." $text "\n\n" $string)))}}
+{{end}}
+{{if gt (len .Args) 1}}
+{{if and (toInt (index .Args 1)) (eq (len .Args) 2)}}
+{{$buttons := cslice}}
+{{$a := dbGet (toInt (index .Args 1)) "forumAutohelp"}}
+{{$text := ""}}
+{{$keywords := ""}}
+{{$image := ""}}
+{{$id := 0}}
+{{$title := ""}}
+{{range $k, $v := $db}}
+{{if eq (toInt (index $v 0)) (toInt (index $.Args 1))}}
+{{$title = (index $v 1)}}
+{{$id = index $v 0}}
+{{$image = index $v 2}}
+{{$text = ((dbGet (toInt (index $v 0)) "forumAutohelp").Value).Get "Default"}}
+{{$keywords = $k}}
+{{end}}
+{{end}}
+{{if not $id}}
+Seems like an automatic response of ID **{{index .Args 1}}** does not exist. Check which ones exist by running -autohelp.
+{{return}}
+{{end}}
+{{$responses := cslice}}
+{{$db2 := (dbGet (toInt $id) "forumAutohelp").Value}}
+{{range $k, $v := $db2}}
+{{if eq $k "Default"}}
+{{continue}}
+{{end}}
+{{$responses = $responses.Append $k}}
+{{end}}
+{{$alt := cslice}}
+{{$row := cslice}}
+{{if in .Member.Roles $adminRole}}
+{{$buttons = $buttons.Append (cbutton "label" "Add alternative response" "custom_id" "forumAutohelpAddAlternativeAutoResponse" "style" "green")}}
+{{$buttons = $buttons.Append (cbutton "label" "Edit response" "custom_id" "forumAutohelpEditAutoResponse")}}
+{{$buttons = $buttons.Append (cbutton "label" "Delete response" "custom_id" "forumAutohelpDeleteAutoResponse" "style" "red")}} 
+{{end}}
+{{$row = $row.Append (cbutton "label" "Default" "custom_id" "forumAutohelpAlternativeAutoResponse:Default" "style" "grey" "disabled" true)}}
+{{range $responses}}
+{{$row = $row.Append (cbutton "label" . "custom_id" (print "forumAutohelpAlternativeAutoResponse:" .) "style" "grey")}}
+{{end}}
+{{$cslice := cslice}}
+{{if $buttons}}
+{{$cslice = $cslice.Append $buttons}}
+{{$cslice = $cslice.Append $row}}
+{{else}}
+{{$cslice = $cslice.Append $row}}
+{{end}}
+{{if (reFind .LinkRegex $image)}}
+{{sendMessage nil (complexMessage "components" $cslice "content" $keywords "embed" (cembed "description" $text "footer" (sdict "text" "Default") "image" (sdict "url" $image) "color" 0x79c1ff "title" (print $id ". " $title)))}}
+{{return}}
+{{end}}
+{{sendMessage nil (complexMessage "components" $cslice "content" $keywords "embed" (cembed "description" $text "footer" (sdict "text" "Default") "color" 0x79c1ff "title" (print $id ". " $title)))}}
+{{return}}
+{{else}}
+{{execCC .CCID nil 0 .StrippedMsg}}
+{{end}}
+{{return}}
+{{end}}{{$db := (dbGet 0 "forumAutohelp").Value}}
 {{if not $db}}
 {{$db = sdict "forumAutohelpConfig" (cslice .CCID $adminRole $forumChannelID)}}
 {{end}}
