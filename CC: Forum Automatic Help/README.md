@@ -25,3 +25,47 @@ The command provides a simple interface where you can create, edit, and remove r
 **\-autohelp [text]**: Test the behavior of YAGPDB through text, YAGPDB will read it and send automatic responses if keywords match, just as if a new post is being created.  
 
 ## Set up instructions
+Four pieces of code have to be integrated as a custom command for each. Copy the code in each file and paste it in the response box of the corresponding custom command. Configure them as follows:  
+___
+
+### Code #1  
+**Trigger type**: Regex  
+**Trigger**: \A(-autohelp)\b  
+**Response**: Paste code from file #1  
+**Role restrictions**: None  
+**Channel restrictions**: Only enable in bot channel & support forum 
+  
+⚙️ **Extra configuration**: Configure the first line of the code as follows  
+- **{{$adminRole := 0}}**: Replace 0 for the role ID that will enable members to add, modify or delete automatic responses.
+- **{{forumChannelID := 0}}**: Replace 0 for the channel ID of the support forum.
+- **{{$customMessage := "I have read your issue and thought this might be helpful:"}}**: Optionally change the message sent when YAGPDB is about to send an automatic response.
+___   
+### Code #2  
+**Trigger type**: Regex  
+**Trigger**: \A  
+**Response**: Paste code from file #2  
+**Role restrictions**: None  
+**Channel restrictions**: At least enable in the support forum  
+
+⚙️ **Extra configuration**: None  
+❗ **Warning**: This code is designed to run every time a message is sent, if you already have a custom command running in every message sent, you can safely add this code at the end of the response.
+___  
+### Code #3  
+**Trigger type**: Component  
+**Trigger**: forumAutohelp  
+**Response**: Paste code from file #3  
+**Role restrictions**: None  
+**Channel restrictions**: None  
+
+⚙️ **Extra configuration**: None  
+___
+### Code #4  
+**Trigger type**: Modal  
+**Trigger**: forumAutohelp  
+**Response**: Paste code from file #4  
+**Role restrictions**: None  
+**Channel restrictions**: None  
+
+⚙️ **Extra configuration**: None
+___  
+You can begin use should everything be set up until this point.
