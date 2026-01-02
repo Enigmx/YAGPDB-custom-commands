@@ -7,7 +7,7 @@ Get your profile picture. Can also be used to get someone else's profile picture
 **-avatar [member]**: Get someone else's profile picture.
 
 ## Set up instructions  
-One pieces of code has to be integrated as a custom command. Copy the code in the file and paste it in the response box of the custom command. Configure it as follows:  
+One piece of code has to be integrated as a custom command. Copy the code in the file and paste it in the response box of the custom command. Configure it as follows:  
 ___
 ### Code #1  
 **Trigger type**: Regex    
@@ -18,3 +18,4 @@ ___
   
 ⚙️ **Extra configuration**: None  
 ___  
+You can begin use should everything be set up until this point.
