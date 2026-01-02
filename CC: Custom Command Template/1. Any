@@ -17,7 +17,7 @@
 */}}
 
 {{/* code from now on, do not edit */}}
-{{if (dbGet 0 "commandTemplateEnigma")}}
+{{if (dbGet 0 "commandTemplate")}}
 {{return}}
 {{end}}
 {{$embed := sdict}}
@@ -56,8 +56,8 @@
 {{else}}
 {{sendMessage nil (cembed $embed)}}
 {{end}}
-{{dbSetExpire 0 "commandTemplateEnigma" 1 $cooldown}}
-{{$db := (dbGet 0 "commandTemplateEnigmaTrack").Value}}
+{{dbSetExpire 0 "commandTemplate" 1 $cooldown}}
+{{$db := (dbGet 0 "commandTemplateTrack").Value}}
 {{if not $db}}
 {{$db = sdict}}
 {{end}}
@@ -66,6 +66,6 @@
 {{end}}
 {{$count := (index ($db.Get (toString .CCID)) 0)}}
 {{$db.Set (toString .CCID) (cslice (add $count 1) .CCTrigger)}}
-{{dbSet 0 "commandTemplateEnigmaTrack" $db}}
+{{dbSet 0 "commandTemplateTrack" $db}}
 {{/* https://github.com/Enigmx/YAGPDB-custom-commands/tree/main/CC%3A%20Custom%20Command%20Template */}}
 {{/* made in chile */}}
