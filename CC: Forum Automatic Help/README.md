@@ -35,7 +35,7 @@ ___
 **Role restrictions**: You choose
 **Channel restrictions**: You choose, at least enable in the support forum 
   
-⚙️ **Extra configuration**: Configure the first line of the code as follows  
+⚙️ **Extra configuration**: Configure the first section of the code as follows  
 - **{{$adminRole := 0}}**: Replace 0 for the role ID that will enable members to add, modify or delete automatic responses.
 - **{{forumChannelID := 0}}**: Replace 0 for the channel ID of the support forum.
 - **{{$customMessage := "I have read your issue and thought this might be helpful:"}}**: Optionally change the message sent when YAGPDB is about to send an automatic response.
