@@ -5,3 +5,16 @@ Get your profile picture. Can also be used to get someone else's profile picture
 **-avatar**: Get your profile picture.  
 
 **-avatar [member]**: Get someone else's profile picture.
+
+## Set up instructions  
+One pieces of code has to be integrated as a custom command. Copy the code in the file and paste it in the response box of the custom command. Configure it as follows:  
+___
+### Code #1  
+**Trigger type**: Regex    
+**Trigger**: \A(-avatar)\b   
+**Response**: Paste code from file #1    
+**Role restrictions**: None     
+**Channel restrictions**: None  
+  
+⚙️ **Extra configuration**: None  
+___  
