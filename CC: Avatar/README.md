@@ -13,8 +13,8 @@ ___
 **Trigger type**: Regex    
 **Trigger**: \A(-avatar)\b   
 **Response**: Paste code from file #1    
-**Role restrictions**: None     
-**Channel restrictions**: None  
+**Role restrictions**: You choose     
+**Channel restrictions**: You choose  
   
 ⚙️ **Extra configuration**: None  
 ___  
