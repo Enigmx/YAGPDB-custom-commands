@@ -1,5 +1,5 @@
 {{$channel := .Channel.ID}}
-{{$db := (dbGet 0 "commandTemplateEnigmaTrack").Value}}
+{{$db := (dbGet 0 "commandTemplateTrack").Value}}
 {{if not $db}}
 {{sendMessage $channel (cembed "title" "Use of custom commands this month" "description" "Nothing was used..." "footer" (sdict "text" "Commands not used this month are not shown"))}}
 {{return}}
@@ -17,6 +17,6 @@
 {{$string = print $string "\n"}}
 {{end}}
 {{sendMessage $channel (cembed "title" "Use of custom commands this month" "description" $string "footer" (sdict "text" "Commands not used this month are not shown"))}}
-{{dbDel 0 "commandTemplateEnigmaTrack"}}
+{{dbDel 0 "commandTemplateTrack"}}
 {{/* https://github.com/Enigmx/YAGPDB-custom-commands/tree/main/CC%3A%20Custom%20Command%20Template */}}
 {{/* made in chile */}}
