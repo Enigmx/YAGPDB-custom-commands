@@ -32,8 +32,8 @@ ___
 **Trigger type**: Regex  
 **Trigger**: \A(-autohelp)\b  
 **Response**: Paste code from file #1  
-**Role restrictions**: None
-**Channel restrictions**: At least enable in the support forum 
+**Role restrictions**: You choose
+**Channel restrictions**: You choose, at least enable in the support forum 
   
 ⚙️ **Extra configuration**: Configure the first line of the code as follows  
 - **{{$adminRole := 0}}**: Replace 0 for the role ID that will enable members to add, modify or delete automatic responses.
