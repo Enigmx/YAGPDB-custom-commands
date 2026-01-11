@@ -38,4 +38,13 @@ ___
 - **{{$supportSpecialTag := ""}}**: Fill the " "s with the name of the tag for the support forum that indicates the post has been resolved. Case sensitive. Once specified, this tool will become available for moderators and OPs use. Leave the " "s empty to keep this tool disabled.
 - **{{$reportChannel := 0}}**: If the support tool is enabled, replace 0 for the channel/thread ID where member reports are going to be forwarded to, for moderators review. Leave at 0 if you do not want to enable reports from regular members.
 ___
+### Code #2  
+**Trigger type**: Component   
+**Trigger**: forumTools   
+**Response**: Paste code from file #2    
+**Role restrictions**: Moderators only     
+**Channel restrictions**: None  
+  
+:gear: **Extra configuration**: None  
+___
 You can begin use should everything be set up until this point.
