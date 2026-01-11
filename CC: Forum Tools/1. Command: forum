@@ -1,0 +1,214 @@
+{{/* configuration */}}
+{{$mod := 0}}
+{{$notificationChannel := 1}}
+{{$supportSpecialTag := ""}}
+{{$reportChannel := 0}}
+{{/* end configuration */}}
+
+{{dbSet 0 "forumTools" $supportSpecialTag}}
+{{if .ExecData}}
+{{if eq (index .ExecData 1) "expire"}}
+{{if not (getChannelOrThread (index .ExecData 0))}}
+{{return}}
+{{end}}
+{{closeThread (index .ExecData 0) true}}
+{{closeThread (index .ExecData 0)}}
+{{return}}
+{{end}}
+{{if eq (index .ExecData 1) "delete"}}
+{{deleteForumPost (index .ExecData 0)}}
+{{if eq (len .ExecData) 4}}
+{{$member := getMember (index .ExecData 3)}}
+{{if $member}}}
+{{if eq $notificationChannel 1}}
+{{$o := 0}}
+{{range .Guild.Threads}}
+{{if and (bitwiseAnd .Flags 2) (eq $.Channel.ParentID .ParentID)}}
+{{$notificationChannel = .ID}}
+{{break}}
+{{end}}
+{{end}}
+{{end}}
+{{sendMessage $notificationChannel (complexMessage "content" (print "<@" (index .ExecData 3) ">") "embed" (cembed "color" 0xff0000 "title" "❗ A  moderator deleted your post" "description" (print "**__Reason:__**\n" (index .ExecData 2))))}}
+{{end}}
+{{end}}
+{{end}}
+{{return}}
+{{end}}
+{{if eq (len .Args) 1}}
+{{$str := ""}}
+{{if $supportSpecialTag}}
+{{$str = print "** " .ServerPrefix "forum " $supportSpecialTag "**: mark the post as " $supportSpecialTag " and close it after 12 hours"}}
+{{end}}
+## Tools available
+**{{.ServerPrefix}}forum tags**: Modify the post's tags
+**{{.ServerPrefix}}forum close**: Close the post
+**{{.ServerPrefix}}forum lock**: Lock the post
+**{{.ServerPrefix}}forum closelock**: Close and lock the post
+**{{.ServerPrefix}}forum expire [time]**: Close and lock the post after some time
+**{{.ServerPrefix}}forum delete [reason]**: Delete the post and optionally notify the creator why so
+{{$str}}
+{{return}}
+{{end}}
+{{if and (eq (len .Args) 2) (eq (index .Args 1) "tags")}}
+{{if not (in .Member.Roles $mod)}}
+Only moderators of the server can use this tool :(
+{{return}}
+{{end}}
+{{if not (getChannel .Channel.ParentID).IsForum}}
+Edit the tags of forum posts, must be used inside the post itself.
+{{return}}
+{{end}}
+{{if not (getChannel .Channel.ParentID).AvailableTags}}
+No tags exist in this forum...
+{{return}}
+{{end}}
+{{$aeiou := cslice}}
+{{$aoao := 0}}
+{{range (getChannel .Channel.ParentID).AvailableTags}}
+{{$tf := false}}
+{{if in $.Channel.AppliedTags .ID}}
+{{$tf = true}}
+{{end}}
+{{$aoao = add $aoao 1}}
+{{if .EmojiName}}
+{{$aeiou = $aeiou.Append (sdict "label" .Name "value" .Name "default" $tf "emoji" (sdict "name" .EmojiName))}}
+{{else}}
+{{$aeiou = $aeiou.Append (sdict "label" .Name "value" .Name "default" $tf)}}
+{{end}}
+{{end}}
+{{sendMessage nil (complexMessage "menus" (cmenu "type" "text" "placeholder" "Modify this post's tags" "custom_id" "forumToolsModifyTags"  "options" $aeiou "min_values" 1 "max_values" $aoao))}}
+{{return}}
+{{end}}
+{{if eq (lower (index .Args 1)) "close"}}
+{{if not (in .Member.Roles $mod)}}
+Only moderators of the server can use this tool :(
+{{return}}
+{{end}}
+{{if not (getChannel .Channel.ParentID).IsForum}}
+close a post, must be used inside the post itself.
+{{return}}
+{{end}}
+{{sendMessage nil "👍 Thread will be closed"}}
+{{sleep 1}}
+{{closeThread nil}}
+{{return}}
+{{end}}
+{{if eq (lower (index .Args 1)) "lock"}}
+{{if not (in .Member.Roles $mod)}}
+Only moderators of the server can use this tool :(
+{{return}}
+{{end}}
+{{if not (getChannel .Channel.ParentID).IsForum}}
+lock a post, must be used inside the post itself.
+{{return}}
+{{end}}
+{{sendMessage nil "👍 Thread will be locked"}}
+{{sleep 1}}
+{{closeThread nil true}}
+{{return}}
+{{end}}
+{{if eq (lower (index .Args 1)) "closelock"}}
+{{if not (in .Member.Roles $mod)}}
+Only moderators of the server can use this tool :(
+{{return}}
+{{end}}
+{{if not (getChannel .Channel.ParentID).IsForum}}
+Close and lock a post, must be used inside the post itself.
+{{return}}
+{{end}}
+{{sendMessage nil "👍 Thread will be closed and locked"}}
+{{sleep 1}}
+{{closeThread nil true}}
+{{closeThread nil}}
+{{return}}
+{{end}}
+{{if eq (lower (index .Args 1)) "expire"}}
+{{if not (in .Member.Roles $mod)}}
+Only moderators of the server can use this tool :(
+{{return}}
+{{end}}
+{{if not (getChannel .Channel.ParentID).IsForum}}
+Close and lock a post after some time, must be used inside the post itself.
+{{return}}
+{{end}}
+{{if ge (len .Args) 3}}
+{{$e := toDuration (index .Args 2)}}
+{{if $e}}
+{{scheduleUniqueCC .CCID nil $e.Seconds (print .Channel.ID "expire") (cslice .Channel.ID "expire")}}
+{{dbSetExpire .Channel.ID "forumToolsExpire" "a" (toInt $e.Seconds)}}
+Done! this post will expire in **{{$e}}**.
+{{return}}
+{{end}}
+{{end}}
+{{if (dbGet .Channel.ID "forumToolsExpire")}}
+{{dbDel .Channel.ID "forumToolsExpire"}}
+{{cancelScheduledUniqueCC .CCID (print .Channel.ID "expire")}}
+This post will no longer expire 👍
+{{return}}
+{{else}}
+When should this post close?
+
+**__Use:__**
+{{.ServerPrefix}}forum expire [time]
+-# example: {{.ServerPrefix}}forum expire 12h
+{{return}}
+{{end}}
+{{end}}
+{{if eq (lower (index .Args 1)) "delete"}}
+{{if not (in .Member.Roles $mod)}}
+Only moderators of the server can use this tool :(
+{{return}}
+{{end}}
+{{if not (getChannel .Channel.ParentID).IsForum}}
+Delete a post, must be used inside the post itself.
+{{return}}
+{{end}}
+{{if (dbGet .Channel.ID "forumToolsDelete")}}
+{{cancelScheduledUniqueCC .CCID (print .Channel.ID "delete")}}
+{{dbDel .Channel.ID "forumToolsDelete"}}
+Canceled 👍
+{{return}}
+{{else}}
+{{try}}
+{{scheduleUniqueCC .CCID nil 12 (print .Channel.ID "delete") (cslice .Channel.ID "delete" (joinStr " " (slice .Args 2)) .Channel.OwnerID)}}
+{{catch}}
+{{scheduleUniqueCC $.CCID nil 12 (print $.Channel.ID "delete") (cslice $.Channel.ID "delete")}}
+{{end}}
+{{dbSetExpire .Channel.ID "forumToolsDelete" 1 12}}
+Done! this post will be deleted in ten seconds, to cancel, run "-forum delete" again.
+{{return}}
+{{end}}
+{{end}}
+{{if and (eq (index .Args 1) $supportSpecialTag) $supportSpecialTag}}
+{{$f := false}}
+{{range (getChannel .Channel.ParentID).AvailableTags }}
+{{if eq .Name $supportSpecialTag}}
+{{$f = true}}
+{{break}}
+{{end}}
+{{end}}
+{{if not $f}}
+This tool can only be used in forum channels with the **{{$supportSpecialTag}}** tag :(
+{{return}}
+{{end}}
+{{if and (not (in .Member.Roles $mod)) (not (eq .User.ID .Channel.OwnerID)) }}
+{{if and (getMessage .Channel.ID .Channel.ID) (getChannel $reportChannel)}}
+{{sendMessage $reportChannel (complexMessage "content" (print .User.Mention " notified this post has to be marked as " $supportSpecialTag ": <#" .Channel.ID ">" ) "buttons" (cslice  (sdict "label" "Accept" "style" "green" "custom_id" "forumToolsAcceptConcluded") (sdict "label" "Decline" "style" "red" "custom_id" "forumToolsDeclineConcluded")) "embed" (cembed "title" .Channel.Name "description" (getMessage .Channel.ID .Channel.ID).Content "color" 0xFF0000))}}
+Notified server moderators 👍
+{{return}}
+{{else if (getChannel $reportChannel)}}
+{{sendMessage $reportChannel (complexMessage "content" (print .User.Mention " notified that this post has to be marked as " $supportSpecialTag ": <#" .Channel.ID ">" ) "buttons" (cslice  (sdict "label" "Accept" "style" "green" "custom_id" "forumToolsAcceptConcluded") (sdict "label" "Decline" "style" "red" "custom_id" "forumToolsDeclineConcluded")) "embed" (cembed "title" .Channel.Name "description" "Unknown... original message has been deleted" "color" 0xFF0000))}}
+Notified server moderators 👍
+{{return}}
+{{else}}
+Only moderators of the server and post creator can use this tool :(
+{{return}}
+{{end}}
+{{end}}
+{{scheduleUniqueCC .CCID nil 43200 (print .Channel.ID "expire") (cslice .Channel.ID "expire")}}
+{{dbSetExpire .Channel.ID "forumToolsExpire" "a" (toInt 43200)}}
+{{editThread .Channel.ID (sdict "tags" $supportSpecialTag)}}
+Done! this post has been marked as {{$supportSpecialTag}} and will close in 12 hours.
+{{return}}
+{{end}}
