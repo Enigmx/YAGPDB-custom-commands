@@ -1,42 +1,33 @@
-{{/* Forum tools buttons */}}
-{{$concludedTagName := ""}}
-
-{{if eq .StrippedID "AcceptConcluded"}}
-{{if (in .Message.Content "accepted")}}
-Seems like this post was already marked as concluded by someone else...
-{{ephemeralResponse}}
-{{return}}
-{{end}}
-{{$embed := structToSdict (index .Message.Embeds 0)}}
-{{$embed.Set "color" 0x00FF00}}
-{{editMessage nil .Message.ID (complexMessageEdit "content" (print .Message.Content "\n\n" .User.Mention " has accepted the report and marked the post as concluded.") "embed" (cembed $embed))}}
-{{$channel := (index (reFindAll `\d+` .Message.Content) 1)}}
-{{if (getChannelOrThread $channel)}}
-{{editThread $channel (sdict "tags" $concludedTagName)}}
-Done! This post has been marked as concluded and will be closed automatically in 12 hours.
-{{$ccid := (dbGet 2 "forumToolsEnigma").Value}}
-{{scheduleUniqueCC (toInt $ccid) nil 43200 (print $channel "concluded") (cslice $channel "concluded")}}
-{{ephemeralResponse}}
-{{return}}
-{{else}}
-Oops, seems like this post was deleted...
-{{ephemeralResponse}}
-{{return}}
-{{end}}
-{{return}}
-{{end}}
 {{if eq .StrippedID "DeclineConcluded"}}
-{{if or (in .Message.Content "decline") (in .Message.Content "accepted")}}
-Seems like this post was already marked as concluded or declined by someone else...
-{{ephemeralResponse}}
+{{$embed := structToSdict (index .Message.Embeds 0)}}
+{{$embed.Set "color" 0x00FF00}}
+{{try}}
+{{updateMessage (complexMessageEdit "content" (print .Message.Content "\n\n" .User.Mention " has declined the report.") "buttons" (cslice  (sdict "disabled" true "label" "Accept" "style" "green" "custom_id" "forumToolsAcceptConcluded") (sdict "disabled" true "label" "Decline" "style" "red" "custom_id" "forumToolsDeclineConcluded")) "embed" (cembed $embed))}}
+{{catch}}
+{{editMessage $.Channel.ID $.Message.ID (complexMessageEdit "content" (print .Message.Content "\n\n" .User.Mention " has declined the report.") "buttons" (cslice  (sdict "disabled" true "label" "Accept" "style" "green" "custom_id" "forumToolsAcceptConcluded") (sdict "disabled" true "label" "Decline" "style" "red" "custom_id" "forumToolsDeclineConcluded")) "embed" (cembed $embed))}}
+{{end}}
 {{return}}
+{{end}}
+{{if eq .StrippedID "AcceptConcluded"}}
+{{$channel := (index (reFindAll `\d{16,20}` .Message.Content) 1)}}
+{{if (getChannelOrThread (toInt $channel))}}
+{{editThread (toInt $channel) (sdict "tags" (cslice (dbGet 0 "forumTools").Value))}} 
 {{end}}
 {{$embed := structToSdict (index .Message.Embeds 0)}}
 {{$embed.Set "color" 0x00FF00}}
-{{editMessage nil .Message.ID (complexMessageEdit "content" (print .Message.Content "\n\n" .User.Mention " has declined the report.") "embed" (cembed $embed))}}
-Done! This post has been marked as declined.
-{{ephemeralResponse}}
+{{try}}
+{{updateMessage (complexMessageEdit "content" (print .Message.Content "\n\n" .User.Mention " has accepted the report and marked the post as " (dbGet 0 "forumTools").Value ".") "buttons" (cslice  (sdict "disabled" true "label" "Accept" "style" "green" "custom_id" "forumToolsAcceptConcluded") (sdict "disabled" true "label" "Decline" "style" "red" "custom_id" "forumToolsDeclineConcluded")) "embed" (cembed $embed))}}
+{{catch}}
+{{editMessage $.Channel.ID $.Message.ID (complexMessageEdit "content" (print .Message.Content "\n\n" .User.Mention " has accepted the report and marked the post as " (dbGet 0 "forumTools").Value ".") "buttons" (cslice  (sdict "disabled" true "label" "Accept" "style" "green" "custom_id" "forumToolsAcceptConcluded") (sdict "disabled" true "label" "Decline" "style" "red" "custom_id" "forumToolsDeclineConcluded")) "embed" (cembed $embed))}}
+{{end}}
 {{return}}
 {{end}}
-{{/* https://github.com/Enigmx/YAGPDB-custom-commands/tree/main/CC%3A%20Forum%20tools */}}
-{{/* made in chile */}}
+{{if eq .StrippedID "ModifyTags"}}
+{{editThread .Channel.ID (sdict "tags" .Values)}}
+{{try}}
+{{updateMessage (complexMessageEdit "content" "Done! modified this post's tags.")}}
+{{catch}}
+{{editMessage $.Channel.ID $.Message.ID  (complexMessageEdit "content" "Done! modified this post's tags.")}}
+{{end}}
+{{return}}
+{{end}}
