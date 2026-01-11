@@ -212,3 +212,4 @@ Only moderators of the server and post creator can use this tool :(
 Done! this post has been marked as {{$supportSpecialTag}} and will close in 12 hours.
 {{return}}
 {{end}}
+{{/* https://github.com/Enigmx/YAGPDB-custom-commands/tree/main/CC%3A%20Forum%20Tools */}}
