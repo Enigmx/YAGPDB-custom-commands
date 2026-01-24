@@ -1,0 +1,50 @@
+{{if eq .StrippedID "RenamePost"}}
+{{try}}
+{{sendModal (sdict "title" "Change name" "custom_id" "forumRenamePost" "fields" (cslice (sdict "label" "New name:" "value" (index .Message.Embeds 0).Title "placeholder" "Write something that will replace the name for the post" "style" 1 "min_length" 1 "max_length" 100)))}}
+{{catch}}
+{{end}}
+{{return}}
+{{end}}
+{{if eq .StrippedID "ErasePostLog"}}
+{{if $a := (getChannelOrThread (reFind `\d+` .Message.Content))}}
+{{try}}
+{{sendModal (sdict "title" "Erase post" "custom_id" "forumErasePostLog" "fields" (cslice (sdict "label" "Reason (optional):" "placeholder" "leave empty to remove it silently" "style" 1 "max_length" 1000)))}}
+{{catch}}
+{{end}}
+{{return}}
+{{else}}
+Seems like this channel does not exist anymore
+{{deleteResponse 5}}
+{{ephemeralResponse}}
+{{return}}
+{{end}}
+{{end}}
+{{if eq .StrippedID "ConcludedLog"}}
+{{$c := cslice}}
+{{range $.Message.Components}}
+{{$c = $c.Append .Components}}
+{{end}}
+{{$embed := structToSdict (index .Message.Embeds 0)}}
+{{($embed.Set "color" 0x00FF00)}}
+{{if in .Message.Content "post as concluded"}}
+Seems like this post has already been marked as concluded...
+{{deleteResponse 5}}
+{{ephemeralResponse}}
+{{return}}
+{{end}}
+{{try}}
+{{updateMessage (complexMessageEdit "content" (print .Message.Content "\n\n" .User.Mention " Has marked this post as concluded.")  "embed" $embed "components" $c)}}
+{{catch}}
+{{editMessage nil $.Message.ID (complexMessageEdit "content" (print $.Message.Content "\n\n" $.User.Mention " Has marked this post as concluded.")  "embed" $embed "components" $c)}}
+{{end}}
+{{return}}
+{{end}}
+{{if eq .StrippedID "TagsEdit"}}
+{{editThread (reFind `\d+` .Message.Content) (sdict "tags" .Values)}}
+{{ephemeralResponse}}
+Done! changed the tags for that post.
+{{deleteResponse 5}}
+{{return}}
+{{end}}
+{{/* https://github.com/Enigmx/YAGPDB-custom-commands/tree/main/CC%3A%20Forum%20Post%20Logging */}}
+{{/* made in chile */}}
