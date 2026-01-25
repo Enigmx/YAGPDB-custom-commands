@@ -1,7 +1,7 @@
 {{if eq (len .Args) 1}}
 ### Automatically generate an infraction list
 __Usage:__
--publicize [Infraction text]
+{{.ServerPrefix}}publicize [Infraction text]
 {{return}}
 {{end}}
 {{$count := 0}}
