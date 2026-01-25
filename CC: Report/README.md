@@ -4,12 +4,12 @@ Submit a report directly to the server moderators. Members can report messages b
 When a report is submitted, YAGPDB forwards it to a private moderation channel along with an interactive button menu. Moderators can then delete the reported message or post, time out the reported member, or mark the report as concluded so other moderators know it has already been handled.
 
 ## Use manual
-**-report**: Submit a report to the moderation team.  
+**-report [reason]**: Submit a report to the moderation team.  
 - If used while replying to a message, the reported message and its context are included automatically.  
 - If used on a forum post, the post itself is reported.
 
 ## Set up instructions
-Four pieces of code are provided. Three must be added as custom commands, and one must be added to the Timeout configuration in YAGPDB’s control panel. Configure them as follows:
+Four pieces of code are provided. Three must be added as custom commands, and one must be added to the Timeout DM configuration in YAGPDB’s control panel. Configure them as follows:
 ___
 
 ### Code #1
@@ -42,7 +42,7 @@ ___
 
 ⚙️ **Extra configuration**: Configure the first section of the code as follows:
 - **{{$forumEraseReportChannel := 0}}**: Replace `0` with the channel or thread ID where members will receive delete reasons when their forum post is removed by a moderator.  
-  You may replace `0` with `1` to use the pinned post of the current forum instead.  
+  Replace `0` with `1` to use the pinned post of the current forum instead.  
   Leave at `0` if you do not want members to receive deletion notifications.
 ___
 
