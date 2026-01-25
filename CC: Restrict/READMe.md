@@ -1,31 +1,42 @@
 # Restrict
-A custom command that adds a role which restrict channels from a channel or a system. You link a channel to a role, and then the command begins working. You can either run the command directly in the channel to restrict the member from, or specify it in the command. This tool will add the role temporarily, by default 30 days, and then will take it away.
+Restrict members from accessing specific channels or systems by temporarily assigning a role. Each restriction is based on a link between a channel or keyword and a role. You can run the command directly in the channel you want to restrict access to, or specify a channel or keyword manually.
 
-# Use
-**-restrict [user] [days]**: Restricts the targeted member from the current channel. Days is optional, defaulting to 30 if it's not specified.
+By default, restrictions last 30 days, after which the role is automatically removed.
 
-**-restrict [user] [channel] [days]**: Restricts the targeted member from the channel specified, rather than current one. Days is optional, defaulting to 30 if it's not provided.
+## Use manual
+**-restrict [user] [days]**: Restrict the specified member from the current channel. The duration is optional and defaults to 30 days.
 
-**-restrict [user] [keyword] [days]**: Restricts the targeted member from whatever system that isn't channel based. 
+**-restrict [user] [channel] [days]**: Restrict the specified member from a specific channel instead of the current one. The duration is optional and defaults to 30 days.
 
-**-restrict admin**: Configure bonds between channels and roles.
+**-restrict [user] [keyword] [days]**: Restrict the specified member from a non-channel-based system associated with a keyword.
 
-**-restrict admin list**: Show all configured pairs.
+**-restrict admin**: Open the configuration tools used to manage restriction bindings.
 
-**-restrict admin add [channel] [role]**: Add a new bond, if the member is restricted from this channel, then add that role. Channel can be a #channel mention or channel ID, role can be @role mention or role ID.
+### Admin tools
+**-restrict admin list**: Display all configured channel and keyword bindings.
 
-**-restrict admin add [keyword] [role]**: Add a new bond between a keyword and a role, for non-channel based restrictions. 
+**-restrict admin add [channel] [role]**: Create a new binding between a channel and a role.  
+The channel can be provided as a channel mention or channel ID, and the role as a role mention or role ID.
 
-**-restrict admin remove [channel]**: Removes the bond between the channel and whatever role was associated to it. After this, the command can no longer be used to restrict a person from that channel, unless reconfigured.
+**-restrict admin add [keyword] [role]**: Create a new binding between a keyword and a role for non-channel-based restrictions.
 
-**-restrict admin remove [keyword]**: Removes the bond between a keyword and it's associated role.
+**-restrict admin remove [channel]**: Remove the binding between a channel and its associated role. Once removed, members can no longer be restricted from that channel unless it is reconfigured.
 
-# Set up
-First create a new custom command, configure the trigger type and trigger as follows:
-![image](../ignore/restrict1.png)
-In the response box, copy and paste the code found in "1. Regex: \A(-restrict)\b.  
+**-restrict admin remove [keyword]**: Remove the binding between a keyword and its associated role.
 
-Then, head over the code, you will have to configure the first line:
-![image](../ignore/restrict2.png)
-**{{$staffchat := 0}}**: The channelID where notifications will be sent. Replace the number for the channel ID of your staff bots channel.
-That's it, you can now begin use, first configure your channel-role pairs and it will begin working.
+## Set up instructions
+One piece of code has to be integrated as a custom command. Copy the code from the file and paste it into the response box of the custom command. Configure it as follows:  
+___
+
+### Code #1
+**Trigger type**: Command  
+**Trigger**: restrict  
+**Response**: Paste code from file #1  
+**Role restrictions**: Server moderators only  
+**Channel restrictions**: None  
+
+⚙️ **Extra configuration**: Configure the first section of the code as follows:
+- **{{$staffchat := 0}}**: Replace `0` with the channel ID where restriction notifications will be sent.
+
+___
+You can begin use should everything be set up until this point.
