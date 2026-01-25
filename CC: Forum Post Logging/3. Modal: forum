@@ -1,6 +1,6 @@
 {{/* forum log modals */}}
 {{/* configuration */}}
-{{$deleteNotificationChannel := 1}}
+{{$deleteNotificationChannel := 0}}
 {{/* end configuration */}}
 
 {{if eq $deleteNotificationChannel 1}}
