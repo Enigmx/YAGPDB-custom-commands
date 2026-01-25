@@ -10,8 +10,8 @@
 # Restrict
 Restricts users from the current channel
 __**Use**__
--restrict [user] [duration]
--restrict [user] [channel] [duration]
+{{.ServerPrefix}}restrict [user] [duration]
+{{.ServerPrefix}}restrict [user] [channel] [duration]
 
 **[user]**: Tag or user ID of the member to restrict
 **[duration]**: Number of days, defaults to 7 days if not provided
@@ -20,33 +20,33 @@ __**Use**__
 {{end}}
 {{if and (eq (index .Args 1) "admin") (eq (len .Args) 2)}}
 **__Admin tools__**
-**-restrict admin add [channel] [role]**
+**{{.ServerPrefix}}restrict admin add [channel] [role]**
 Bonds a channel to a role, if the command is ran inside said channel, add that role to the target user. [channel] and [role] can be IDs or mentions.
 
-**-restrict admin add [keyword] [role]**
+**{{.ServerPrefix}}restrict admin add [keyword] [role]**
 Bonds regular text to a role, for non channel-based restrictions. [keyword] is just text, case insensitive, and [role] is role tag or ID.
 
-**-restrict admin remove [channel]**
+**{{.ServerPrefix}}restrict admin remove [channel]**
 Removes a channel-role bond so the role is no longer given if that channel is specified.
 
-**-restrict admin remove [keyword]**
+**{{.ServerPrefix}}restrict admin remove [keyword]**
 Removes a keyword-role bond so the role is no longer given if that keyword is specified.
 
-**-restrict admin list**
+**{{.ServerPrefix}}restrict admin list**
 Show all pairs of channel-roles and keyword-roles.
 {{return}}
 {{end}}
 {{if eq (index .Args 1) "admin"}}
 {{if and (eq (index .Args 2) "remove") (eq (len .Args) 3)}}
 **__Use:__**
--restrict admin remove [channel]
--restrict admin remove [keyword]
+{{.ServerPrefix}}restrict admin remove [channel]
+{{.ServerPrefix}}restrict admin remove [keyword]
 {{return}}
 {{end}}
 {{if and ( eq (index .Args 2) "add") (eq (len .Args) 3)}}
 **__Use:__**
--restrict admin add [channel] [role]
--restrict admin add [keyword] [role]
+{{.ServerPrefix}}restrict admin add [channel] [role]
+{{.ServerPrefix}}restrict admin add [keyword] [role]
 {{return}}
 {{end}}
 {{if eq (index .Args 2) "list"}}
@@ -66,8 +66,8 @@ Show all pairs of channel-roles and keyword-roles.
 To add a pair to the restrict command, you have to actually add two elements, a channel/keyword and a role. Seems like you only gave one of the two.
 
 __**Use:**__
--restrict admin add [channel] [role]
--restrict admin add [keyword] [role]
+{{.ServerPrefix}}restrict admin add [channel] [role]
+{{.ServerPrefix}}restrict admin add [keyword] [role]
 {{return}}
 {{else if (eq (index .Args 2) "remove")}}
 {{if $e := getChannel (reFind `\d+` (index .Args 3))}}
