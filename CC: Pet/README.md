@@ -1,18 +1,37 @@
 # Pet
-Send a randomly selected photo of someone's pet. Photos are manually added and removed by server moderators.
+Send a randomly selected photo of someone’s pet. Images are manually added and removed by server moderators, allowing you to build and manage your own pet gallery.
 
-# Usage
-**-pet** Send a random picture and a fact.  
-**-pet admin** Admin tools where you can add or remove pictures  
-**-pet admin database** secret command used to send the database of the bot where pictures are stored. May be useful for debugging but you shouldn't encounter an issue.
+## Use manual
+**-pet**: Send a random pet picture along with a short fact.  
 
-# Set up
-Copy and paste the code "Regex: \A(-pet)\b" into a new custom command code box. As the title of the file implies, the trigger type must be set as "Regex", and the trigger must be set as "\A(-pet)\b". 
+**-pet admin**: Open the admin tools menu used to manage pet pictures.  
 
-![pic](../ignore/pet1.png)
+**-pet admin add [Name] [Picture attachment]**: Add a new pet picture to the server. The image must be attached to the message.
 
-The code has two lines of code at the beginning which can also be edited.  
-{{$admin := cslice 0}} : IDs of the role which will have permission to add and remove pictures. Replace 0 with your role ID , for example, {{$admin := cslice 1234567890 0987654321}}.  
-{{$channels := cslice 0}} IDs of the channels where regular members can use the command. Admins will be able to use the command anywhere else (unless you configure "Ignore the following channels" in the interface). Replace 0 with the channel IDs, for example, {{$channels := cslice 1234567890 0987654321}}.  
+**-pet admin remove [ID]**: Remove a pet picture from the server using its ID.
 
-![pic](../ignore/pet2.jpg)
+**-pet admin list [ID]**: Show a specific pet picture based on its ID.
+
+**-pet admin list page [Page number]**: Display a paginated list of pet pictures along with their IDs.
+
+**-pet admin database**: Send the internal database where all pet pictures are stored. This command is mainly intended for debugging purposes.
+
+## Set up instructions
+One piece of code has to be integrated as a custom command. Copy the code from the file and paste it into the response box of the custom command. Configure it as follows:  
+___
+
+### Code #1
+**Trigger type**: Regex  
+**Trigger**: \A(-pet)\b  
+**Response**: Paste code from file #1  
+**Role restrictions**: You choose  
+**Channel restrictions**: You choose  
+
+⚙️ **Extra configuration**: Configure the first section of the code as follows:
+- **{{$admin := cslice 0}}**: Replace `0` with the role IDs that will have permission to add and remove pet pictures.  
+  Example: `{{$admin := cslice 1234567890 0987654321}}`
+- **{{$channels := cslice 0}}**: Replace `0` with the channel IDs where regular members are allowed to use the command. Administrators will be able to use the command in any channel unless additional channel restrictions are set in the interface.  
+  Example: `{{$channels := cslice 1234567890 0987654321}}`
+
+___
+You can begin use should everything be set up until this point.
