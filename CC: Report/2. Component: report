@@ -1,4 +1,3 @@
-{{/* report buttons */}}
 {{if eq .StrippedID "EraseMessage"}}
 {{$a := reFindAll `\d+` .Message.Content}}
 {{deleteMessage (index $a 3) (index $a 4) 0}}
@@ -32,7 +31,7 @@ Done! Timed out the person who got reported for 5 minutes. Take a proper decisio
 {{end}}
 {{if eq .StrippedID "ErasePostReport"}}
 {{if $a := (getChannelOrThread (reFind `\d+` .Message.Content))}}
-{{sendModal (sdict "title" "Erase post" "custom_id" "reportEnigmaErasePostReport" "fields" (cslice (sdict "label" "Reason (optional):" "placeholder" "leave empty to remove it silently" "style" 1 "max_length" 1000)))}}
+{{sendModal (sdict "title" "Erase post" "custom_id" "reportErasePostReport" "fields" (cslice (sdict "label" "Reason (optional):" "placeholder" "leave empty to remove it silently" "style" 1 "max_length" 1000)))}}
 {{return}}
 {{else}}
 Seems like this channel does not exist anymore
