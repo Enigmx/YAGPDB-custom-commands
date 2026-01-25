@@ -1,4 +1,6 @@
+{{/* configuration */}}
 {{$staffchat := 0}}
+{{/* end configuration */}}
 
 {{$db := (dbGet 5769 "restrict").Value}}
 {{if not $db}}
