@@ -1,0 +1,33 @@
+{{/* configuration */}}
+{{$reportChannel := 0}}
+{{/* end configuration */}}
+
+{{$attach := ""}}
+{{deleteTrigger 0}}
+{{if eq (len .Args) 1}}
+{{sendDM (print "**__Usage:__**\n" .ServerPrefix "report [reason]\n\nYou can optionally reply to a message while reporting, which will be sent with the report.")}}
+{{return}}
+{{end}}
+{{if (getChannel .Channel.ParentID).IsForum}}
+{{$b := (getMessage .Channel.ID .Channel.ID)}}
+{{if not $b}}
+{{sendMessage $reportChannel (complexMessage "content" (print "<#" .Channel.ID ">\n\nReport submitted by <@" .User.ID ">") "buttons" (cslice (sdict "emoji" (sdict "name" "✅") "label" "Concluded" "style" "grey" "custom_id" "reportConcludeReport")) "embed" (cembed "color" 0xFF0000 "author" (sdict "name" ($.User.Username) "icon_url" ($.User.AvatarURL "512")) "description" .StrippedMsg))}}
+{{return}}
+{{end}}
+{{if $b.Attachments}}
+{{$attach = (index $b 0).URL}}
+{{end}}
+{{$message := $b}}
+{{$member := getMember $message.Author}}
+{{sendMessage $reportChannel (complexMessage "content" (print "<#" .Channel.ID ">, Post opened by <@" $message.Author.ID ">\nForum: <#" .Channel.ParentID "> \n\nReport submitted by <@" .User.ID ">") "buttons" (cslice (sdict "emoji" (sdict "name" "✅") "label" "Concluded" "style" "grey" "custom_id" "reportConcludeReport") (sdict "label" "Erase Post" "emoji" (sdict "name" "🗑️") "style" "grey" "custom_id" "reportErasePostReport") (sdict "emoji" (sdict "name" "🛑") "label" "Timeout" "style" "grey" "custom_id" "reportTimeoutMember")) "embed" (cslice (cembed "image" (sdict "url" $attach) "color" 0xFF0000 "title" .Channel.Name "description" $message.Content "author" (sdict "name" ($member.User.Username) "icon_url" ($member.User.AvatarURL "512"))) (cembed "author" (sdict "name" ($.User.Username) "icon_url" ($.User.AvatarURL "512")) "description" .StrippedMsg) ))}}
+{{else}}
+{{if .Message.Reference}}
+{{$message := getMessage nil (.Message.Reference.MessageID)}}
+{{$member := getMember $message.Author.ID}}
+{{sendMessage $reportChannel (complexMessage "content" (print "<#" .Channel.ID ">, Message sent by <@" $message.Author.ID ">, link: https://discord.com/channels/" .Guild.ID "/" .Channel.ID "/" .Message.Reference.MessageID "\n\nReport submitted by <@" .User.ID ">") "buttons" (cslice (sdict "emoji" (sdict "name" "✅") "label" "Concluded" "style" "grey" "custom_id" "reportConcludeReport") (sdict "label" "Erase Message" "emoji" (sdict "name" "🚮") "style" "grey" "custom_id" "reportEraseMessage") (sdict "emoji" (sdict "name" "🛑") "label" "Timeout" "style" "grey" "custom_id" "reportTimeoutMember")) "embed" (cslice (cembed "color" 0xFF0000 "description" $message.Content "author" (sdict "name" ($member.User.Username) "icon_url" ($member.User.AvatarURL "512"))) (cembed "author" (sdict "name" ($.User.Username) "icon_url" ($.User.AvatarURL "512")) "description" .StrippedMsg) ))}}
+{{return}}
+{{end}}
+{{sendMessage $reportChannel (complexMessage "content" (print "<#" .Channel.ID ">\n\nReport submitted by <@" .User.ID ">") "buttons" (cslice (sdict "emoji" (sdict "name" "✅") "label" "Concluded" "style" "grey" "custom_id" "reportConcludeReport")) "embed" (cembed "color" 0xFF0000 "author" (sdict "name" ($.User.Username) "icon_url" ($.User.AvatarURL "512")) "description" .StrippedMsg))}}
+{{end}}
+{{/* https://github.com/Enigmx/YAGPDB-custom-commands/tree/main/CC%3A%20Report */}}
+{{/* made in chile */}}
