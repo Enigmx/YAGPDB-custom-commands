@@ -12,7 +12,6 @@ By default, restrictions last 30 days, after which the role is automatically rem
 
 **-restrict admin**: Open the configuration tools used to manage restriction bindings.
 
-### Admin tools
 **-restrict admin list**: Display all configured channel and keyword bindings.
 
 **-restrict admin add [channel] [role]**: Create a new binding between a channel and a role.  
