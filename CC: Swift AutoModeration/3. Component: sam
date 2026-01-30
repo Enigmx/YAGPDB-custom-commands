@@ -1,0 +1,184 @@
+{{if eq .StrippedID "PreviousPageSam"}}
+{{$p := reFind `\d+` (index (index .Message.Components 0).Components 2).Content}}
+{{$db := (dbGet 1 "swiftAutomod").Value}}
+{{$db1 := (dbGet 0 "swiftAutomod").Value}}
+{{$a := componentBuilder}}
+{{$a.AddSlice "container" .Message.Components}}
+{{try}}
+{{updateMessage $a}}
+{{catch}}
+{{end}}
+{{execCC (index ($db1.Get "configuration") 1) nil 0 (cslice "template" $.Message.ID $.Channel.ID (sub (toInt $p) 1))}}
+{{return}}
+{{end}}
+{{if eq .StrippedID "NextPageSam"}}
+{{$p := reFind `\d+` (index (index .Message.Components 0).Components 2).Content}}
+{{$db := (dbGet 1 "swiftAutomod").Value}}
+{{$db1 := (dbGet 0 "swiftAutomod").Value}}
+{{$a := componentBuilder}}
+{{$a.AddSlice "container" .Message.Components}}
+{{try}}
+{{updateMessage $a}}
+{{catch}}
+{{end}}
+{{execCC (index ($db1.Get "configuration") 1) nil 0 (cslice "template" $.Message.ID $.Channel.ID (add 1 (toInt $p)))}}
+{{return}}
+{{end}}
+{{if in .StrippedID "ConfirmSamTemplate"}}
+{{$db := (dbGet 1 "swiftAutomod").Value}}
+{{$db1 := (dbGet 0 "swiftAutomod").Value}}
+⚙️ {{.User.Mention}} **has deleted template {{(reFind `\d+` .StrippedID)}}**: 
+{{$db.Get (reFind `\d+` .StrippedID)}}
+{{$db.Del (reFind `\d+` .StrippedID)}}
+{{dbSet 1 "swiftAutomod" $db}}
+{{execCC (index ($db1.Get "configuration") 1) nil 0 (cslice "template" $.Message.ID $.Channel.ID (index (reFindAll `\d+` .StrippedID) 1))}}
+{{return}}
+{{end}}
+{{if in .StrippedID "DeleteSamTemplate"}}
+{{$p := reFind `\d+` (index (index .Message.Components 0).Components 2).Content}}
+{{$db := (dbGet 1 "swiftAutomod").Value}}
+{{$a := componentBuilder}}
+{{$a.Add "text" "# Swift Automoderation: Templates"}}
+{{$a.Add "separator" false}}
+{{$a.Add "text" (print "**Are you sure you want to delete template " (reFind `\d+` .StrippedID) "?**\n\n " ($db.Get (reFind `\d+` .StrippedID)))}}
+{{$a.Add "separator" false}}
+{{$a.Add "buttons" (cslice (cbutton "label" "Cancel" "custom_id" "samUseTemplate" "style" "grey") (cbutton "label" "Delete" "custom_id" (print "samConfirmSamTemplate" (reFind `\d+` .StrippedID) "-" $p) "style" "red"))}}
+{{$b := componentBuilder "container" (sdict "components" $a)}}
+{{try}}
+{{updateMessage $b}}
+{{catch}}
+{{editMessage $.Channel.ID $.Message.ID $b}}
+{{end}}
+{{return}}
+{{end}}
+{{if in .StrippedID "EditSamTemplate"}}
+{{$db := (dbGet 1 "swiftAutomod").Value}}
+{{$a := modalBuilder (print "samEditSamTemplate" (reFind `\d+` .StrippedID)) "Edit template" (clabel "label" "💬 Words to automoderate" "description" "Split each word or phrase using /, for example: word1/word2/word3..." "component" (ctextInput "value" ($db.Get (reFind `\d+` .StrippedID)) "custom_id" "samNewTemplate" "style" 1 ))}}
+{{sendModal $a}}
+{{return}}
+{{end}}
+{{if eq .StrippedID "NewSamTemplate"}}
+{{$p := reFind `\d+` (index (index .Message.Components 0).Components 2).Content}}
+{{$a := modalBuilder (print "samNewSamTemplate" $p) "Add template" (clabel "label" "💬 Words to automoderate" "description" "Split each word or phrase using /, for example: word1/word2/word3..." "component" (ctextInput "custom_id" "samNewTemplate" "style" 1 ))}}
+{{sendModal $a}}
+{{return}}
+{{end}}
+{{if eq .StrippedID "UseTemplate"}}
+{{$db1 := (dbGet 0 "swiftAutomod").Value}}
+{{$db := (dbGet 1 "swiftAutomod").Value}}
+{{$a := componentBuilder}}
+{{$a.AddSlice "container" .Message.Components}}
+{{updateMessage $a}}
+{{execCC (index ($db1.Get "configuration") 1) nil 0 (cslice "template" $.Message.ID $.Channel.ID 1)}}
+{{return}}
+{{end}}
+{{if in .StrippedID "DisableSam"}}
+{{$db := (dbGet 0 "swiftAutomod").Value}}
+{{$db.Del (str (reFind `\d+` .StrippedID))}}
+{{dbSet 0 "swiftAutomod" $db}}
+{{execCC (index ($db.Get "configuration") 1) nil 0 (cslice "refresh" $.Message.ID $.Channel.ID)}}
+{{.User.Mention}}
+⚙️ Disabled automoderation in <#{{(reFind `\d+` .StrippedID)}}>
+{{return}}
+{{end}}
+{{if eq .StrippedID "GoBackSam"}}
+{{$db := (dbGet 0 "swiftAutomod").Value}}
+{{$a := componentBuilder}}
+{{$a.AddSlice "container" .Message.Components}}
+{{updateMessage $a}}
+{{execCC (index ($db.Get "configuration") 1) nil 0 (cslice "refresh" $.Message.ID $.Channel.ID)}}
+{{return}}
+{{end}}
+{{if or (eq .StrippedID "SamConfig") (eq .StrippedID "ConfigRoles") (eq .StrippedID "ConfigMaxDuration")}}
+{{$db := (dbGet 0 "swiftAutomod").Value}}
+{{if not (in .Member.Roles (index ($db.Get "configuration") 0))}}
+{{ephemeralResponse}}
+Only <@&{{(index ($db.Get "configuration") 0)}}> can configure swift automoderation :(
+{{return}}
+{{end}}
+{{if eq .StrippedID "ConfigRoles"}}
+{{$db.Set "configuration" (cslice (index ($db.Get "configuration") 0) (index ($db.Get "configuration") 1) .Values (index ($db.Get "configuration") 3))}}
+{{dbSet 0 "swiftAutomod" $db}}
+{{end}}
+{{if eq .StrippedID "ConfigMaxDuration"}}
+{{$db.Set "configuration" (cslice (index ($db.Get "configuration") 0) (index ($db.Get "configuration") 1) (index ($db.Get "configuration") 2) (index .Values 0))}}
+{{dbSet 0 "swiftAutomod" $db}}
+{{end}}
+{{$a := componentBuilder}}
+{{$a.Add "text" "# Swift Automoderation: configuration"}}
+{{$a.Add "separator" false}}
+{{$a.Add "text" (print "**Maximum duration**: " (reFind `\d+` (index ($db.Get "configuration") 3)) " minutes\nKeep moderators from abusing the tool by adding automoderation for too long")}}
+{{$a.Add "menus" (cmenu "custom_id" "samConfigMaxDuration" "options" (cslice (sdict "label" "60 minutes" "value" "60m")  (sdict "label" "50 minutes" "value" "50m")  (sdict "label" "40 minutes" "value" "40m")  (sdict "label" "30 minutes" "value" "30m")   (sdict "label" "20 minutes" "value" "20m")   (sdict "label" "15 minutes" "value" "15m")   (sdict "label" "10 minutes" "value" "10m") (sdict "label" "5 minutes" "value" "5m")))}}
+{{$a.Add "text" "** **"}}
+{{$c := ""}}
+{{range (index ($db.Get "configuration") 2)}}
+{{$c = print $c "<@&" . "> "}}
+{{end}}
+{{if not $c}}
+{{$c = " None"}}
+{{end}}
+{{$a.Add "text" (print "**Inmune roles**: " $c)}}
+{{$a.Add "menus" (cmenu "min_values" 0 "max_values" (len .Guild.Roles) "type" "role" "custom_id" "samConfigRoles")}}
+{{$a.Add "separator" false}}
+{{$a.Add "buttons" (cslice (cbutton "label" "Back" "custom_id" "samGoBackSam" "style" "grey"))}}
+{{$b := componentBuilder "container" (sdict "components" $a)}}
+{{try}}
+{{updateMessage $b}}
+{{catch}}
+{{editMessage $.Channel.ID $.Message.ID $b}}
+{{end}}
+{{return}}
+{{end}}
+{{if or (in .StrippedID "EnableSam") (in .StrippedID "LoadSamTemplate")}}
+{{$db := (dbGet 0 "swiftAutomod").Value}}
+{{$dbt := (dbGet 1 "swiftAutomod").Value}}
+{{if eq (len $db) 8}}
+There are too many automods enabled :( keep it at 7 at most
+{{return}}
+{{end}}
+{{$b := (index ($db.Get "configuration") 3)}}
+{{$c := cslice}}
+{{range (cslice "5m" "10m" "15m" "20m" "30m" "40m" "50m" "60m")}}
+{{$c = $c.Append (sdict "label" (print (reFind `\d+` .) " minutes") "value" .)}}
+{{if eq $b .}}
+{{break}}
+{{end}}
+{{end}}
+{{$j := ""}}
+{{$cid := ""}}
+{{if in .StrippedID "LoadSamTemplate"}}
+{{$cid = (reFind `\d+` .StrippedID)}}
+{{$j = ($dbt.Get (reFind `\d+` .StrippedID))}}
+{{end}}
+{{$a := modalBuilder (print "samEnableUpload" $cid) "Enable automoderation" (clabel "label" "✏️ Words to automoderate" "description" "Split each word or phrase using /, for example: word1/word2/word3..., case insensitive" "component" (ctextInput "value" $j "custom_id" "samSetWords" "style" 1)) (clabel "custom_id" "same" "label" "✏️ Special messages" "component" (cmenu "type" "text" "min_values" 0 "max_values" 5 "custom_id" "swiftAutomodSpecialSam" "options" (cslice (sdict "label" "🕹️ Activities" "value" "[{activity}]") (sdict "label" "🐦 Stickers" "value" "[{stickers}]") (sdict "label" "📊 Polls" "value" "[{polls}]") (sdict "label" "🔗 Links & Attachments" "value" "[{pics}]") (sdict "label" "🔄 Forwarded Messages" "value" "[{forward}]")))) (clabel "custom_id" "sama" "label" "💬 Channel" "component" (cmenu "type" "channel" "custom_id" "samSetChannel")) (clabel "custom_id" "samu" "label" "⌛ Duration" "component" (cmenu "type" "text" "custom_id" "samSetDuration" "options" $c)) }}
+{{sendModal $a}}
+{{return}}
+{{end}}
+{{if in .StrippedID "EditSam"}}
+{{$db := (dbGet 0 "swiftAutomod").Value}}
+{{$b := $db.Get (str (reFind `\d+` .StrippedID))}}
+{{$c := false}}
+{{$d := false}}
+{{$e := false}}
+{{$f := false}}
+{{$g := false}}
+{{$h := ""}}
+{{range $b}}
+{{if eq . "[{activity}]"}}
+{{$c = true}}
+{{else if (eq . "[{stickers}]")}}
+{{$d = true}}
+{{else if (eq . "[{polls}]")}}
+{{$e = true}}
+{{else if (eq . "[{pics}]")}}
+{{$f = true}}
+{{else if (eq . "[{forward}]")}}
+{{$g = true}}
+{{else}}
+{{$h = print $h . "/"}}
+{{end}}
+{{end}}
+{{$a := modalBuilder (print "samEditUpload" (reFind `\d+` .StrippedID)) "Edit automoderation" (clabel "label" "✏️ Words to automoderate" "description" "Split each word or phrase using /, for example: word1/word2/word3..., case insensitive" "component" (ctextInput "custom_id" "samSetWords" "style" 1 "value" $h)) (clabel "custom_id" "same" "label" "✏️ Special messages" "component" (cmenu "type" "text" "min_values" 0 "max_values" 5 "custom_id" "swiftAutomodSpecialSam" "options" (cslice (sdict "label" "🕹️ Activities" "value" "[{activity}]" "default" $c) (sdict "label" "🐦 Stickers" "value" "[{stickers}]" "default" $d) (sdict "label" "📊 Polls" "value" "[{polls}]" "default" $e) (sdict "label" "🔗 Links & Attachments" "value" "[{pics}]" "default" $f) (sdict "label" "🔄 Forwarded Messages" "value" "[{forward}]" "default" $g)))) }}
+{{sendModal $a}}
+{{return}}
+{{end}}
