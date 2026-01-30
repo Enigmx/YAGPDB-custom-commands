@@ -1,0 +1,223 @@
+{{if in .StrippedID "EditSamTemplate"}}
+{{$db1 := (dbGet 0 "swiftAutomod").Value}}
+{{$db := (dbGet 1 "swiftAutomod").Value}}
+{{$db.Set (reFind `\d+` .StrippedID) (($.ModalValues.Get "samNewTemplate").Get "value")}}
+{{dbSet 1 "swiftAutomod" $db}}
+⚙️ {{.User.Mention}} **has modified template {{(reFind `\d+` .StrippedID)}}**:
+{{(($.ModalValues.Get "samNewTemplate").Get "value")}}
+{{execCC (index ($db1.Get "configuration") 1) nil 0 (cslice "template" $.Message.ID $.Channel.ID (toInt (reFind `\d+` (index (index .Message.Components 0).Components 2).Content)))}}
+{{return}}
+{{end}}
+{{if in .StrippedID "NewSamTemplate"}}
+{{$db := (dbGet 1 "swiftAutomod").Value}}
+{{$db1 := (dbGet 0 "swiftAutomod").Value}}
+{{if not $db}}
+{{$db = sdict}}
+{{end}}
+{{$o := 0}}
+{{range (seq 1 100)}}
+{{if not ($db.Get (str .))}}
+{{$db.Set (str .) (($.ModalValues.Get "samNewTemplate").Get "value")}}
+{{$o = .}}
+{{break}}
+{{end}}
+{{end}}
+{{dbSet 1 "swiftAutomod" $db}}
+{{execCC (index ($db1.Get "configuration") 1) nil 0 (cslice "template" $.Message.ID $.Channel.ID (toInt (reFind `\d+` (index (index .Message.Components 0).Components 2).Content)))}}
+⚙️ {{.User.Mention}} **has created template {{$o}}**:
+{{(($.ModalValues.Get "samNewTemplate").Get "value")}}
+{{return}}
+{{$f := false}}
+{{$g := false}}
+{{$a := componentBuilder}}
+{{$a.Add "text" "# Swift Automoderation: Templates"}}
+{{$a.Add "separator" false}}
+{{$p := reFind `\d+` .StrippedID}}
+{{$a.Add "text" (print "### Page " $p)}}
+{{range (seq (sub (mult (toInt $p) 10) 9) (mult (toInt $p) 10))}}
+{{if $b := $db.Get (str .)}}
+{{$f = true}}
+{{$c := 0}}
+{{$d := ""}}
+{{range (split $b "")}}
+{{$d = print $d .}}
+{{$c = add $c 1}}
+{{if eq $c 250}}
+{{$d = print $d "....."}}
+{{break}}
+{{end}}
+{{end}}
+{{if $g}}
+{{$a.Add "text" "** **"}}
+{{end}}
+{{$a.Add "text" (print "**" . "**: " $d)}}
+{{$a.Add "buttons" (cslice (cbutton "label" "Load" "style" "green" "custom_id" (print "samLoadSamTemplate" .)) (cbutton "label" "Edit" "custom_id" (print "samEditSamTemplate" .) "style" "grey") (cbutton "label" "Delete" "custom_id" (print "samDeleteSamTemplate" .) "style" "red"))}}
+{{$g = true}}
+{{end}}
+{{end}}
+{{if $f}}
+{{$a.Add "separator" false}}
+{{end}}
+{{$a.Add "buttons" (cslice (cbutton "emoji" (sdict "name" "⬅️") "custom_id" "samPreviousPageSam" "style" "grey") (cbutton "label" "Back" "custom_id" "samGoBackSam" "style" "grey") (cbutton "label" "Add" "custom_id" "samNewSamTemplate" "style" "green") (cbutton "emoji" (sdict "name" "➡️") "custom_id" "samNextPageSam" "style" "grey"))}}
+{{$e := componentBuilder "container" (sdict "components" $a)}}
+{{try}}
+{{updateMessage $e}}
+{{catch}}
+{{editMessage $.Message.ID $.Channel.ID $e}}
+{{end}}
+{{return}}
+{{end}}
+{{if in .StrippedID "EditUpload"}}
+{{$db := (dbGet 0 "swiftAutomod").Value}}
+{{$k := ""}}
+{{if ((.ModalValues.Get "samSetWords").Get "value")}}
+{{$k = (.ModalValues.Get "samSetWords").Get "value"}}
+{{end}}
+{{if $v := ((.ModalValues.Get "swiftAutomodSpecialSam").Get "value")}}
+{{$k = (print $k "/" (joinStr "/" $v))}}
+{{end}}
+{{if not $k}}
+{{ephemeralResponse}}
+You didn't configure what content to blacklist, fill the text box or enable special messages when clicking "Edit".
+{{return}}
+{{end}}
+{{$e := cslice}}
+{{range (split $k "/")}}
+{{if .}}
+{{$e = $e.Append .}}
+{{end}}
+{{end}}
+{{$c := (reFind `\d+` .StrippedID)}}
+{{ $db.Set (str $c) $e}}
+{{dbSet 0 "swiftAutomod" $db}}
+{{$a := componentBuilder}}
+{{$a.Add "text" "# Swift Automoderation"}}
+{{$a.Add "separator" false}}
+{{$a.Add "text" "Temporarily enable automoderation for words that may be causing issues in the chat. YAGPDB can also remove activities, stickers, links & attachments, polls and forwarded messages."}}
+{{$a.Add "text" (print "**" .ServerPrefix "sam [channel] [duration] [words]**: Add words to the automoderation for some time. Defaults to 5 minutes if the duration is not given. Split words using /.")}}
+{{$j := false}}
+{{range $k, $v := $db}}
+{{if eq $k "configuration"}}
+{{continue}}
+{{end}}
+{{$r := "** **"}}
+{{if not $j}}
+{{$a.Add "separator" false}}
+{{$r = ""}}
+{{end}}
+{{$j = true}}
+{{$t := ""}}
+{{$e := 0}}
+{{range (split (joinStr "/" $v) "")}}
+{{$t = print $t .}}
+{{$e = add $e 1}}
+{{if eq $e 250}}
+{{$t = print $t "....."}}
+{{break}}
+{{end}}
+{{end}}
+{{$a.Add "text" (print $r "\n**Enabled in**: <#" $k ">\n" $t)}}
+{{$a.Add "buttons" (cslice (cbutton "label" "Edit" "custom_id" (print "samEditSam" $k) "style" "grey") (cbutton "label" "Disable" "custom_id" (print "samDisableSam" $k) "style" "red"))}}
+{{end}}
+{{$a.Add "separator" false}}
+{{$adminRole := index ($db.Get "configuration") 4}}
+{{if in $.Member.Roles $adminRole}}
+{{$a.Add "buttons" (cslice (cbutton "label" "Enable" "custom_id" "samEnableSam" "style" "success") (cbutton "label" "Use template" "custom_id" "samUseTemplate" "style" "grey") (cbutton "label" "Configuration" "custom_id" "samSamConfig" "style" "grey"))}}
+{{else}}
+{{$a.Add "buttons" (cslice (cbutton "label" "Enable" "custom_id" "samEnableSam" "style" "success") (cbutton "style" "grey" "label" "Use template" "custom_id" "samUseTemplate"))}}
+{{end}}
+{{$b := componentBuilder "container" (sdict "components" $a)}}
+{{try}}
+{{updateMessage $b}}
+{{catch}}
+{{editMessage $.Channel.ID $.Message.ID $b}}
+{{end}}
+{{sendMessage nil (print "⚙️ **Edited automoderation in** <#" $c ">\n" $k)}}
+{{return}}
+{{end}}
+{{if in .StrippedID "EnableUpload"}}
+{{$db := (dbGet 0 "swiftAutomod").Value}}
+{{$c := 0}}
+{{$d := "5m"}}
+{{$k := ""}}
+{{if ((.ModalValues.Get "samSetWords").Get "value")}}
+{{$k = (.ModalValues.Get "samSetWords").Get "value"}}
+{{end}}
+{{if ((.ModalValues.Get "samSetDuration").Get "value")}}
+{{$d = index ((.ModalValues.Get "samSetDuration").Get "value") 0}}
+{{end}}
+{{if ((.ModalValues.Get "samSetChannel").Get "value")}}
+{{$c = index ((.ModalValues.Get "samSetChannel").Get "value") 0}}
+{{if not (getChannel (toInt $c)).ParentID}}
+{{ephemeralResponse}}
+You cannot add automoderation to a category :(
+{{return}}
+{{end}}
+{{else}}
+{{$c = .Channel.ID}}
+{{end}}
+{{if $v := ((.ModalValues.Get "swiftAutomodSpecialSam").Get "value")}}
+{{if $k}}
+{{$k = (print $k "/" (joinStr "/" $v))}}
+{{else}}
+{{$k = joinStr "/" $v}}
+{{end}}
+{{end}}
+{{if not $k}}
+{{ephemeralResponse}}
+You didn't configure what content to blacklist, fill the text box or enable special messages when clicking "Enable".
+{{return}}
+{{end}}
+{{$e := cslice}}
+{{range (split $k "/")}}
+{{if .}}
+{{$e = $e.Append .}}
+{{end}}
+{{end}}
+{{$db.Set (str $c) $e}}
+{{dbSet 0 "swiftAutomod" $db}}
+{{scheduleUniqueCC (index ($db.Get "configuration") 1) nil (toDuration $d).Seconds (str $c) (cslice "expire" $c)}}
+{{$a := componentBuilder}}
+{{$a.Add "text" "# Swift Automoderation"}}
+{{$a.Add "separator" false}}
+{{$a.Add "text" "Temporarily enable automoderation for words that may be causing issues in the chat. YAGPDB can also remove activities, stickers, links & attachments, polls and forwarded messages."}}
+{{$a.Add "text" (print "**" .ServerPrefix "sam [channel] [duration] [words]**: Add words to the automoderation for some time. Defaults to 5 minutes if the duration is not given. Split words using /.")}}
+{{$j := false}}
+{{range $k, $v := $db}}
+{{if eq $k "configuration"}}
+{{continue}}
+{{end}}
+{{$r := "** **"}}
+{{if not $j}}
+{{$a.Add "separator" false}}
+{{$r = ""}}
+{{end}}
+{{$j = true}}
+{{$t := ""}}
+{{$e := 0}}
+{{range (split (joinStr "/" $v) "")}}
+{{$t = print $t .}}
+{{$e = add $e 1}}
+{{if eq $e 250}}
+{{$t = print $t "....."}}
+{{break}}
+{{end}}
+{{end}}
+{{$a.Add "text" (print $r "\n**Enabled in**: <#" $k ">\n" $t)}}
+{{$a.Add "buttons" (cslice (cbutton "label" "Edit" "custom_id" (print "samEditSam" $k) "style" "grey") (cbutton "label" "Disable" "custom_id" (print "samDisableSam" $k) "style" "red"))}}
+{{end}}
+{{$a.Add "separator" false}}
+{{$adminRole := index ($db.Get "configuration") 4}}
+{{if in $.Member.Roles $adminRole}}
+{{$a.Add "buttons" (cslice (cbutton "label" "Enable" "custom_id" "samEnableSam" "style" "success") (cbutton "label" "Use template" "custom_id" "samUseTemplate" "style" "grey") (cbutton "label" "Configuration" "custom_id" "samSamConfig" "style" "grey"))}}
+{{else}}
+{{$a.Add "buttons" (cslice (cbutton "label" "Enable" "custom_id" "samEnableSam" "style" "success") (cbutton "style" "grey" "label" "Use template" "custom_id" "samUseTemplate"))}}
+{{end}}
+{{$b := componentBuilder "container" (sdict "components" $a)}}
+{{try}}
+{{updateMessage $b}}
+{{catch}}
+{{editMessage $.Channel.ID $.Message.ID $b}}
+{{end}}
+{{sendMessage nil (print "⚙️ **Enabled automoderation in** <#" $c "> **for** " (humanizeDurationMinutes (toDuration $d)) "\n" $k)}}
+{{end}}
