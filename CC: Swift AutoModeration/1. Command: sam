@@ -1,0 +1,208 @@
+{{/* configuration */}}
+{{$adminRole := 0}}
+{{/* end configuration */}}
+
+{{if .ExecData}}
+{{if eq (index .ExecData 0) "template"}}
+{{$db := (dbGet 1 "swiftAutomod").Value}}
+{{if not $db}}
+{{$db = sdict}}
+{{end}}
+{{$off1 := true}}
+{{$off2 := true}}
+{{range (seq (add 1 (mult (toInt (index .ExecData 3)) 5)) 100)}}
+{{if ($db.Get (str .))}}
+{{$off2 = false}}
+{{break}}
+{{end}}
+{{end}}
+{{if ne (toInt (index .ExecData 3)) 1}}
+{{$off1 = false}}
+{{end}}
+{{$f := false}}
+{{$g := false}}
+{{$a := componentBuilder}}
+{{$a.Add "text" "# Swift Automoderation: Templates"}}
+{{$a.Add "separator" false}}
+{{$a.Add "text" (print "### Page " (index .ExecData 3))}}
+{{range (seq (sub (mult 5 (toInt (index .ExecData 3))) 4) (add 1 (mult (toInt (index .ExecData 3)) 5)))}}
+{{if $b := $db.Get (str .)}}
+{{$f = true}}
+{{$c := 0}}
+{{$d := ""}}
+{{range (split $b "")}}
+{{$d = print $d .}}
+{{$c = add $c 1}}
+{{if eq $c 250}}
+{{$d = print $d "....."}}
+{{break}}
+{{end}}
+{{end}}
+{{if $g}}
+{{$a.Add "text" "** **"}}
+{{end}}
+{{$a.Add "text" (print "**" . "**: " $d)}}
+{{$a.Add "buttons" (cslice (cbutton "label" "Load" "style" "green" "custom_id" (print "samLoadSamTemplate" .)) (cbutton "label" "Edit" "custom_id" (print "samEditSamTemplate" .) "style" "grey") (cbutton "label" "Delete" "custom_id" (print "samDeleteSamTemplate" .) "style" "red"))}}
+{{$g = true}}
+{{end}}
+{{end}}
+{{if $f}}
+{{$a.Add "separator" false}}
+{{end}}
+{{$a.Add "buttons" (cslice (cbutton "disabled" $off1 "emoji" (sdict "name" "⬅️") "custom_id" "samPreviousPageSam" "style" "grey") (cbutton "label" "Back" "custom_id" "samGoBackSam" "style" "grey") (cbutton "label" "Add" "custom_id" "samNewSamTemplate" "style" "green") (cbutton "disabled" $off2 "emoji" (sdict "name" "➡️") "custom_id" "samNextPageSam" "style" "grey"))}}
+{{$e := componentBuilder "container" (sdict "components" $a)}}
+{{editMessage (index .ExecData 2) (index .ExecData 1) $e}}
+{{return}}
+{{end}}
+{{if eq (index .ExecData 0) "refresh"}}
+{{$db := (dbGet 0 "swiftAutomod").Value}}
+{{$a := componentBuilder}}
+{{$a.Add "text" "# Swift Automoderation"}}
+{{$a.Add "separator" false}}
+{{$a.Add "text" "Temporarily enable automoderation for words that may be causing issues in the chat. YAGPDB can also remove activities, stickers, links & attachments, polls and forwarded messages."}}
+{{$a.Add "text" (print "**" .ServerPrefix "sam [channel] [duration] [words]**: Add words to the automoderation for some time. Defaults to 5 minutes if the duration is not given. Split words using /.")}}
+{{$j := false}}
+{{$cou := 0}}
+{{range $k, $v := $db}}
+{{if eq $k "configuration"}}
+{{continue}}
+{{end}}
+{{$r := "** **"}}
+{{if not $j}}
+{{$a.Add "separator" false}}
+{{$r = ""}}
+{{end}}
+{{$j = true}}
+{{$t := ""}}
+{{$e := 0}}
+{{range (split (joinStr "/" $v) "")}}
+{{$t = print $t .}}
+{{$e = add $e 1}}
+{{if eq $e 250}}
+{{$t = print $t "....."}}
+{{break}}
+{{end}}
+{{end}}
+{{$a.Add "text" (print $r "\n**Enabled in**: <#" $k ">\n" $t)}}
+{{$a.Add "buttons" (cslice (cbutton "label" "Edit" "custom_id" (print "samEditSam" $k) "style" "grey") (cbutton "label" "Disable" "custom_id" (print "samDisableSam" $k) "style" "red"))}}
+{{end}}
+{{$a.Add "separator" false}}
+{{if in .Member.Roles $adminRole}}
+{{$a.Add "buttons" (cslice (cbutton "label" "Enable" "custom_id" "samEnableSam" "style" "success") (cbutton "label" "Use template" "custom_id" "samUseTemplate" "style" "grey") (cbutton "label" "Configuration" "custom_id" "samSamConfig" "style" "grey"))}}
+{{else}}
+{{$a.Add "buttons" (cslice (cbutton "label" "Enable" "custom_id" "samEnableSam" "style" "success") (cbutton "style" "grey" "label" "Use template" "custom_id" "samUseTemplate"))}}
+{{end}}
+{{$b := componentBuilder "container" (sdict "components" $a)}}
+{{editMessage (index .ExecData 2) (index .ExecData 1) $b}}
+{{return}}
+{{end}}
+{{if eq (index .ExecData 0) "expire"}}
+{{$db := (dbGet 0 "swiftAutomod").Value}}
+{{$db.Del (str (index .ExecData 1))}}
+{{dbSet 0 "swiftAutomod" $db}}
+{{end}}
+{{return}}
+{{end}}
+{{if not (dbGet 0 "swiftAutomod")}}
+{{dbSet 0 "swiftAutomod" (sdict "configuration" (cslice $adminRole .CCID (cslice) "30m"))}}
+{{end}}
+{{$db := (dbGet 0 "swiftAutomod").Value}}
+{{$db.Set "configuration" (cslice $adminRole .CCID (index ($db.Get "configuration") 2) (index ($db.Get "configuration") 3) $adminRole)}}
+{{dbSet 0 "swiftAutomod" $db}}
+{{if eq (len .Args) 1}}
+{{$a := componentBuilder}}
+{{$a.Add "text" "# Swift Automoderation"}}
+{{$a.Add "separator" false}}
+{{$a.Add "text" "Temporarily enable automoderation for words that may be causing issues in the chat. YAGPDB can also remove activities, stickers, links & attachments, polls and forwarded messages."}}
+{{$a.Add "text" (print "**" .ServerPrefix "sam [channel] [duration] [words]**: Add words to the automoderation for some time. Defaults to 5 minutes if the duration is not given. Split words using /.")}}
+{{$j := false}}
+{{range $k, $v := $db}}
+{{if eq $k "configuration"}}
+{{continue}}
+{{end}}
+{{$r := "** **"}}
+{{if not $j}}
+{{$a.Add "separator" false}}
+{{$r = ""}}
+{{end}}
+{{$j = true}}
+{{$t := ""}}
+{{$e := 0}}
+{{range (split (joinStr "/" $v) "")}}
+{{$t = print $t .}}
+{{$e = add $e 1}}
+{{if eq $e 250}}
+{{$t = print $t "....."}}
+{{break}}
+{{end}}
+{{end}}
+{{$a.Add "text" (print $r "\n**Enabled in**: <#" $k ">\n" $t)}}
+{{$a.Add "buttons" (cslice (cbutton "label" "Edit" "custom_id" (print "samEditSam" $k) "style" "grey") (cbutton "label" "Disable" "custom_id" (print "samDisableSam" $k) "style" "red"))}}
+{{end}}
+{{$a.Add "separator" false}}
+{{if in .Member.Roles $adminRole}}
+{{$a.Add "buttons" (cslice (cbutton "label" "Enable" "custom_id" "samEnableSam" "style" "success") (cbutton "label" "Use template" "custom_id" "samUseTemplate" "style" "grey") (cbutton "label" "Configuration" "custom_id" "samSamConfig" "style" "grey"))}}
+{{else}}
+{{$a.Add "buttons" (cslice (cbutton "label" "Enable" "custom_id" "samEnableSam" "style" "success") (cbutton "style" "grey" "label" "Use template" "custom_id" "samUseTemplate"))}}
+{{end}}
+{{$b := componentBuilder "container" (sdict "components" $a)}}
+{{sendMessage nil $b}}
+{{return}}
+{{end}}
+{{if eq (len $db) 8}}
+There are too many automods enabled :( keep it at 7 at most
+{{return}}
+{{end}}
+{{$c := 0}}
+{{$d := ""}}
+{{$k := ""}}
+{{if $a := (getChannel (toInt (reFind `\d+` (index .Args 1))))}}
+{{$c = $a.ID}}
+{{else if (toDuration (index .Args 1))}}
+{{$d = (index .Args 1)}}
+{{end}}
+{{if not $d}}
+{{try}}
+{{if (toDuration (index .Args 2))}}
+{{$d = (index .Args 2)}}
+{{end}}
+{{catch}}
+{{end}}
+{{end}}
+{{if and (not $c) (not $d)}}
+{{$c = .Channel.ID}}
+{{$d = "5m"}}
+{{$k = .StrippedMsg}}
+{{else if (and $c (not $d))}}
+{{$d = "5m"}}
+{{$k = joinStr " " (slice .Args 2)}}
+{{else if (and (not $c) $d)}}
+{{$c = .Channel.ID}}
+{{try}}
+{{$k = joinStr " " (slice .Args 2)}}
+{{catch}}
+Specify the words and phrases you want to automod when using this command ❗❗❗
+{{return}}
+{{end}}
+{{else}}
+{{try}}
+{{$k = joinStr " " (slice .Args 3)}}
+{{catch}}
+Specify the words and phrases you want to automod when using this command ❗❗❗
+{{return}}
+{{end}}
+{{end}}
+{{if gt (toDuration $d).Seconds (toDuration (index ($db.Get "configuration") 3)).Seconds}}
+{{sendMessage nil (print "You can set " (humanizeDurationMinutes (toDuration (index ($db.Get "configuration") 3))) " of automoderation at most.")}}
+{{$d = (index ($db.Get "configuration") 3)}}
+{{end}}
+{{$cs := cslice}}
+{{range (split $k "/")}}
+{{if .}}
+{{$cs = $cs.Append .}}
+{{end}}
+{{end}}
+{{$db.Set (str $c) $cs}}
+{{dbSet 0 "swiftAutomod" $db}}
+{{sendMessage nil (print "⚙️ **Enabled automoderation in** <#" $c "> **for** " (humanizeDurationMinutes (toDuration $d)) "\n" $k)}}
+{{scheduleUniqueCC (index ($db.Get "configuration") 1) nil (toDuration $d).Seconds (str $c) (cslice "expire" $c)}}
