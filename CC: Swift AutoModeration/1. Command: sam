@@ -206,3 +206,4 @@ Specify the words and phrases you want to automod when using this command ❗❗
 {{dbSet 0 "swiftAutomod" $db}}
 {{sendMessage nil (print "⚙️ **Enabled automoderation in** <#" $c "> **for** " (humanizeDurationMinutes (toDuration $d)) "\n" $k)}}
 {{scheduleUniqueCC (index ($db.Get "configuration") 1) nil (toDuration $d).Seconds (str $c) (cslice "expire" $c)}}
+{{/* https://github.com/Enigmx/YAGPDB-custom-commands/tree/main/CC%3A%20Swift%20AutoModeration */}}
