@@ -1,24 +1,31 @@
-{{/* swift automoderation */}}
-{{if $sam := (dbGet .Channel.ID "swiftAutomoderation").Value}}
-{{$InmuneRoles := index (index $sam 1) 1}}
-{{$CustomCommandID := index (index $sam 1) 0}}
-{{range $InmuneRoles}}
-{{if in $.Member.Roles .}}
+{{$dbsam := (dbGet 0 "swiftAutomod").Value}}
+{{if $dbsam}}
+{{range (index ($dbsam.Get "configuration") 2)}}
+{{if in $.Member.Roles (toInt .)}}
 {{return}}
 {{end}}
 {{end}}
-{{$special := cslice}}
-{{range (index $sam 0)}}
-{{if eq (kindOf .) "int64"}}
-{{$special = $special.Append .}}
-{{continue}}
-{{end}}
+{{if ($dbsam.Get (str .Channel.ID))}}
+{{range ($dbsam.Get (str .Channel.ID))}}
 {{if in (lower $.Message.Content) (lower .)}}
 {{deleteTrigger 0}}
-{{return}}
+{{break}}
+{{else if (and (eq . "[{pics}]") (or ($.Message.Attachments) (reFind $.LinkRegex $.Message.Content)))}}
+{{deleteTrigger 0}}
+{{break}}
+{{else if (and (eq . "[{stickers}]") $.Message.StickerItems)}}
+{{deleteTrigger 0}}
+{{break}}
+{{else if (and (eq . "[{polls}]") (eq $.Message.Type 0) (not (or $.Message.Content $.Message.Activity $.Message.Reference $.Message.MessageSnapshots $.Message.Attachments $.Message.StickerItems)))}}
+{{deleteTrigger 0}}
+{{break}}
+{{else if (and (eq . "[{activity}]") $.Message.Activity)}}
+{{deleteTrigger 0}}
+{{break}}
+{{else if (and (eq . "[{forward}]") $.Message.MessageSnapshots)}}
+{{deleteTrigger 0}}
+{{break}}
 {{end}}
 {{end}}
-{{if $special}}
-{{execCC $CustomCommandID nil 0 $special}}
 {{end}}
 {{end}}
