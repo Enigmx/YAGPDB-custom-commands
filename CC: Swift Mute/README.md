@@ -11,8 +11,8 @@ One piece of code has to be integrated as a custom command. Copy the code from t
 ___
 
 ### Code #1
-**Trigger type**: Regex  
-**Trigger**: \A(-sm)\b  
+**Trigger type**: Command  
+**Trigger**: sm  
 **Response**: Paste code from file #1  
 **Role restrictions**: Moderators only  
 **Channel restrictions**: None  
