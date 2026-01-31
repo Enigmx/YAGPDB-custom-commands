@@ -1,21 +1,29 @@
-# Swift Mute  
-Immediately mute a member without the need of a reason or a duration. A powerful tool for fast-paced chats.  
+# Swift Mute
+Immediately mute a member without requiring a reason or a duration. A powerful tool designed for fast-paced chats where quick moderation is needed.
 
-# Use  
-**-sm [targets] [Number]** Mute members who are tagged in the message. You can set an optional number below 100, which indicates how many messages to delete for the first five targets. Order of arguments doesn't matter.  
+# Use manual
+**-sm [targets] [number]**: Mute the members mentioned in the message.  
+- You may optionally provide a number below 100, which determines how many messages are deleted per target (up to five targets).  
+- The order of arguments does not matter.
 
-# Set up  
-Create a new Custom Command, in the response box, paste the code found in "Regex: \A(-sm)\b". Configure the trigger type and trigger as follows:  
+# Set up instructions
+One piece of code has to be integrated as a custom command. Copy the code from the file and paste it into the response box of the custom command. Configure it as follows:
+___
 
-![pic](../ignore/swiftmute1.png)  
+### Code #1
+**Trigger type**: Regex  
+**Trigger**: \A(-sm)\b  
+**Response**: Paste code from file #1  
+**Role restrictions**: Moderators only  
+**Channel restrictions**: None  
 
-In the code itself, there are four other settings:  
+⚙️ **Extra configuration**: Configure the first section of the code as follows:
+- **{{$limit := 50}}**: Maximum number of messages a moderator can delete per targeted member. This is capped at 100 to prevent excessive message deletion.
+- **{{$logchannel := 0}}**: Replace `0` with the channel ID where logs confirming swift mutes will be sent. It is recommended to use the same channel where moderators run commands.
+- **{{$mutedrole := 0}}**: Replace `0` with the role ID of the muted role. It is not recommended to reuse the same role used for regular mutes, as this command applies its own duration and removes the role automatically.
+- **{{$duration := 600}}**: Duration of the swift mute in seconds. All swift mutes will use this fixed duration.
 
-![pic](../ignore/swiftmute2.png)  
-**{{$limit := 50}}**: How many messages can moderators remove, at most, per person targeted. Pretty important to avoid moderators deleting huge amounts of messages. Max limit is 100.  
-**{{$logchannel := 0}}**: Replace the 0 for the channel ID of the log channel. Messages confirming who got swift muted will be sent here. It is recommended to set the same channel where moderators run commands.  
-**{{$mutedrole := 0}}**: Replace the 0 for the role ID of the muted role. It is not recommended to use the same muted role which is used for "regular" mutes, because this custom command has it's own duration and will take away the muted role.  
-**{{$duration := 600}}**: The duration of the swift mute, in seconds. All swift mutes will have this duration.  
-It is necessary to enable the native "clear" command found in the moderation section of the control panel.
+⚙️ **Additional requirement**: The native "clear" command must be enabled in the "Moderation" section of YAGPDB’s control panel.
 
-If everything is configured properly, you can begin use.
+___
+You can begin use should everything be set up until this point.
