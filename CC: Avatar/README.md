@@ -1,12 +1,12 @@
 # Avatar  
 Get your profile picture. Can also be used to get someone else's profile picture.  YAGPDB will send both user and server wide pictures, if available.
 
-## Use manual  
+# Use manual  
 **-avatar**: Get your profile picture.  
 
 **-avatar [member]**: Get someone else's profile picture.
 
-## Set up instructions  
+# Set up instructions  
 One piece of code has to be integrated as a custom command. Copy the code in the file and paste it in the response box of the custom command. Configure it as follows:  
 ___
 ### Code #1  
