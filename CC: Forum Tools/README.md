@@ -1,7 +1,7 @@
-# Forum tools  
+# Forum Tools  
 A collection of tools for managing forum posts, ranging from changing tags to automatically closing posts after a set period. It also includes a special optional feature that updates a post’s tags and closes it after 12 hours, making it ideal for support-style forums that use “resolved” tags.  
 
-## Use manual  
+# Use manual  
 **-forum**: list all available tools.  
 
 **-forum tags**: Modify the post tags. A menu pops up which can be used by moderators. 
@@ -22,7 +22,7 @@ A collection of tools for managing forum posts, ranging from changing tags to au
 
 🔘 **Decline**: Button in the member report which declines it and doesn't do anything, still marking the report itself as checked.  
 
-## Set up instructions  
+# Set up instructions  
 Two pieces of code have to be integrated as a custom command for each. Copy the code in each file and paste it in the response box of the corresponding custom command. Configure them as follows:  
 ___
 ### Code #1  
