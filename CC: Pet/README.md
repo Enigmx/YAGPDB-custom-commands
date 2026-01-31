@@ -1,7 +1,7 @@
 # Pet
 Send a randomly selected photo of someone’s pet. Images are manually added and removed by server moderators, allowing you to build and manage your own pet gallery.
 
-## Use manual
+# Use manual
 **-pet**: Send a random pet picture along with a short fact.  
 
 **-pet admin**: Open the admin tools menu used to manage pet pictures.  
@@ -16,7 +16,7 @@ Send a randomly selected photo of someone’s pet. Images are manually added and
 
 **-pet admin database**: Send the internal database where all pet pictures are stored. This command is mainly intended for debugging purposes.
 
-## Set up instructions
+# Set up instructions
 One piece of code has to be integrated as a custom command. Copy the code from the file and paste it into the response box of the custom command. Configure it as follows:  
 ___
 
