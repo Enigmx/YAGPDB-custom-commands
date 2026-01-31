@@ -68,6 +68,8 @@ ___
 **Role restrictions**: None  
 **Channel restrictions**: None  
 
+⚙️ **Extra configuration**: None
+
 ❗ **Warning**: This code is designed to run every time a message is sent. If you already have a custom command that runs on every message, you can safely append this code to the end of that command’s response.
 ___
 
@@ -77,6 +79,8 @@ ___
 **Response**: Paste code from file #3  
 **Role restrictions**: Moderators only  
 **Channel restrictions**: None  
+
+⚙️ **Extra configuration**: None
 ___
 
 ### Code #4
@@ -85,5 +89,7 @@ ___
 **Response**: Paste code from file #4  
 **Role restrictions**: None  
 **Channel restrictions**: None  
+
+⚙️ **Extra configuration**: None
 ___
 You can begin use should everything be set up until this point.
