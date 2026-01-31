@@ -3,7 +3,7 @@ Template that you can freely customize to produce your own embed message. You ca
   
 You can also optionally pair it with the crontab extra code, which sends a monthly summary of custom command usage in your server. Helpful for tracking which commands are used the least.
 
-## Set up instructions 
+# Set up instructions 
 One piece of code has to be integrated as a custom command. Copy the code in the file and paste it in the response box of the custom command. Configure it as follows:  
 ___
 ### Code #1    
