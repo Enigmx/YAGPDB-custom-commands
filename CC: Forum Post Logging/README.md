@@ -1,7 +1,7 @@
 # Forum Post Logging
 YAGPDB automatically logs every new post created in forum channels and pins the opening message inside the post itself, making it easier to find later. Each log message includes an interactive menu that allows moderators to manage the post directly — from adjusting tags to deleting or renaming the post, or marking the log as concluded for tracking or moderation purposes.
 
-## Use manual
+# Use manual
 This tool is passive, meaning you do not use it like a traditional command. All interactions happen through the log message generated when a forum post is created.
 
 In the log message, the following controls are available:
@@ -16,7 +16,7 @@ In the log message, the following controls are available:
 🔘 **Rename**: Changes the name of the post. Once clicked, a modal will appear:
 - **New name**: The new title that will be applied to the post.
 
-## Set up instructions
+# Set up instructions
 Four pieces of code must be integrated as separate custom commands. Copy the code from each file and paste it into the response box of its corresponding custom command. Configure them as follows:
 ___
 
