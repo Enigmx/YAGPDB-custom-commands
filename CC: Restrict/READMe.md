@@ -3,7 +3,7 @@ Restrict members from accessing specific channels or systems by temporarily assi
 
 By default, restrictions last 30 days, after which the role is automatically removed.
 
-## Use manual
+# Use manual
 **-restrict [user] [days]**: Restrict the specified member from the current channel. The duration is optional and defaults to 30 days.
 
 **-restrict [user] [channel] [days]**: Restrict the specified member from a specific channel instead of the current one. The duration is optional and defaults to 30 days.
@@ -23,7 +23,7 @@ The channel can be provided as a channel mention or channel ID, and the role as 
 
 **-restrict admin remove [keyword]**: Remove the binding between a keyword and its associated role.
 
-## Set up instructions
+# Set up instructions
 One piece of code has to be integrated as a custom command. Copy the code from the file and paste it into the response box of the custom command. Configure it as follows:  
 ___
 
