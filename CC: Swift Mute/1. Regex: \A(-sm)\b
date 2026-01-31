@@ -1,9 +1,10 @@
+{{/* configuration */}}
 {{$limit := 50}}
 {{$staffchannel := 0}}
 {{$mutedrole := 0}}
 {{$duration := 600}}
+{{/* end configuration */}}
 
-{{/* ignore */}}
 {{if not (getChannel $staffchannel)}}
 This Custom Command has not been configured properly; a log channel has not been set. 
 Edit the second line of the code: \{\{$staffchannel := 0\}\}, replace 0 with the channel ID where logs will be sent.
@@ -30,7 +31,7 @@ Edit the third line of the code: \{\{$mutedrole := 0\}\}, replace 0 with the mut
 Quickly mute members without having to provide a reason or a duration.
 
 __Command usage:__
-**-sm** [Targets: Mention/UserID] [Optional number of messages to delete]
+**{{.ServerPrefix}}sm** [Targets: Mention/UserID] [Optional number of messages to delete]
 {{else}}
 {{deleteTrigger 0.5}}
 {{range .CmdArgs}}
@@ -70,7 +71,10 @@ __Command usage:__
 {{if gt $a 0}}
 {{if lt $e 5}}
 {{if gt $a $limit}}
+{{try}}
 {{exec "clear" . $limit}}
+{{catch}}
+{{end}}
 {{$e = add $e 1}}
 {{else}}
 {{exec "clear" . $a}}
