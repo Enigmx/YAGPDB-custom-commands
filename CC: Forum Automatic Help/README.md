@@ -3,7 +3,7 @@ YAGPDB automatically sends a message to new forum posts when the post contains k
   
 The command provides a simple interface where you can create, edit, and remove responses. It also includes a testing feature so you can preview how it behaves without needing to create a new post each time you change something. Members can read the information stored in the automatic responses, but they cannot add, edit, or delete responses or their settings.
 
-## Use manual
+# Use manual
 **\-autohelp**: Open the list of custom responses, an unique ID is associated with each. If you have the moderator role you will see the "Create" button, which when clicked will prompt you to configure an automatic response. "Previous page" and "Next page" will be available if you have more than 10 custom responses.  
   
 🔘 **Create**: Once clicked, a modal with four text boxes will pop up:
@@ -24,7 +24,7 @@ The command provides a simple interface where you can create, edit, and remove r
 
 **\-autohelp [text]**: Test the behavior of YAGPDB through text, YAGPDB will read it and send automatic responses if keywords match, just as if a new post is being created.  
 
-## Set up instructions
+# Set up instructions
 Four pieces of code have to be integrated as a custom command for each. Copy the code in each file and paste it in the response box of the corresponding custom command. Configure them as follows:  
 ___
 
