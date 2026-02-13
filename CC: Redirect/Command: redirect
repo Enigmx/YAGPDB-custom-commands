@@ -1,0 +1,60 @@
+{{if eq (len .Args) 1}}
+### Redirect
+**{{.ServerPrefix}}redirect [user] [channel]**: Suggest a member to move to another channel
+{{return}}
+{{end}}
+{{$db := (dbGet 5769 "redirect").Value}}
+{{if eq (index .Args 1) "admin"}}
+{{$components := componentBuilder}}
+{{ $containerComponents := componentBuilder "text" "# Redirect: admin\nHere you can create custom, prefabricated messages to redirect people from one channel to another. To create a new automatic message, click ''Add'', then specify the channels where people are going to be redirected from and to. "}}
+{{ $containerComponents.Merge ( componentBuilder "separator" false "buttons" ( sdict "label" "Add" "custom_id" "redirectCreate" "style" "green")) }}
+{{ $components.Add "container" ( sdict "color" 0x009FFF "components" $containerComponents ) }}
+{{range (seq 0 5)}}
+{{if ($db.Get (toInt64 .))}}
+{{$containerComponents.Merge (componentBuilder (index ($db.Get (toInt64 .)) 4))}}
+{{$containerComponents.Merge (componentBuilder (index ($db.Get (toInt64 .)) 5))}}
+{{end}}
+{{end}}
+{{$containerComponents.Merge (componentBuilder "separator" false "text" "-# Current page: 1")}}
+{{range (seq 5 101)}}
+{{if not ($db.Get (toInt64 .))}}
+{{continue}}
+{{end}}
+{{$components.Add "buttons" (cslice (sdict "disabled" true "style" "blue" "label" "Previous page" "custom_id" "redirectPreviousPage") (sdict "custom_id" "redirectNextPage" "style" "blue" "label" "Next page"))}}
+{{break}}
+{{end}}
+{{ $id := sendComponentMessageRetID nil $components }}
+{{return}}
+{{end}}
+{{$ids := reFindAll `\d+` .Message.Content}}
+{{$user := 0}}
+{{$target := 0}}
+{{range $ids}}
+{{if (getMember (toInt .))}}
+{{$user = toInt .}}
+{{break}}
+{{end}}
+{{end}}
+{{range $ids}}
+{{if (getChannel (toInt .))}}
+{{$target = toInt .}}
+{{break}}
+{{end}}
+{{end}}
+{{if not $target}}
+I couldn't tell where to redirect, can you try again?
+{{return}}
+{{end}}
+{{range $k, $v := $db}}
+{{if and (eq (toInt (index $v 1)) $.Channel.ID) (eq (toInt $target) (toInt (index $v 2)))}}
+{{if $user}}
+{{deleteTrigger 0}}
+{{sendMessage nil (complexMessage "content" (print "<@" $user ">") "embed" (cembed "description" (index $v 3) "color" 0x79c1ff))}}
+{{return}}
+{{else}}
+{{sendMessage nil (complexMessage "embed" (cembed "description" (index $v 3) "color" 0x79c1ff))}}
+{{return}}
+{{end}}
+{{end}}
+{{end}}
+Sorry I couldn't tell what to do exactly, can you try again?
