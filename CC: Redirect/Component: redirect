@@ -1,0 +1,90 @@
+{{if eq .CustomID "redirectPreviousPage"}}
+{{$index := sub (len (index .Message.Components 0).Components) 1}}
+{{$page := reFind `\d+` (index (index .Message.Components 0).Components $index).Content}}
+{{$db := (dbGet 5769 "redirect").Value}}
+{{$a := add (toInt $page) 1}}
+{{ $containerComponents := componentBuilder "text" "# Create and edit\nHere you can create custom, prefabricated messages to redirect people from one channel to another. To create a new automatic message, click ''Add'', then specify the channels where people are going to be redirected from and to. "}}
+{{ $containerComponents.Merge ( componentBuilder "separator" false "buttons" ( sdict "label" "Add" "custom_id" "redirectCreate" "style" "green")) }}
+{{$components := componentBuilder}}
+{{ $components.Add "container" ( sdict "color" 0x009FFF "components" $containerComponents ) }}
+{{$seq := 0}}
+{{if eq (toInt $page) 2}}
+{{$seq = seq 0 5}}
+{{else}}
+{{$seq = seq (mult (sub (toInt $page) 2) 5) (add (mult (sub (toInt $page) 2) 5) 5)}}
+{{end}}
+{{range $seq}}
+{{if ($db.Get (toInt64 .))}}
+{{$containerComponents.Merge (componentBuilder (index ($db.Get (toInt64 .)) 4))}}
+{{$containerComponents.Merge (componentBuilder (index ($db.Get (toInt64 .)) 5))}}
+{{end}}
+{{end}}
+{{$containerComponents.Merge (componentBuilder "separator" false "text" (print "-# Current page: " (sub (toInt $page) 1)))}}
+{{if eq (toInt $page) 2}}
+{{$components.Add "buttons" (cslice (sdict "disabled" true "style" "blue" "label" "Previous page" "custom_id" "redirectPreviousPage") (sdict "disabled" false "custom_id" "redirectNextPage" "style" "blue" "label" "Next page"))}}
+{{else}}
+{{$components.Add "buttons" (cslice (sdict "disabled" false "style" "blue" "label" "Previous page" "custom_id" "redirectPreviousPage") (sdict "disabled" false "custom_id" "redirectNextPage" "style" "blue" "label" "Next page"))}}
+{{end}}
+{{try}}
+{{updateMessage $components}}
+{{catch}}
+{{editMessage nil nil $components}}
+{{end}}
+{{return}}
+{{end}}
+{{if eq .CustomID "redirectNextPage"}}
+{{$index := sub (len (index .Message.Components 0).Components) 1}}
+{{$page := reFind `\d+` (index (index .Message.Components 0).Components $index).Content}}
+{{$db := (dbGet 5769 "redirect").Value}}
+{{$a := add (toInt $page) 1}}
+{{ $containerComponents := componentBuilder "text" "# Create and edit\nHere you can create custom, prefabricated messages to redirect people from one channel to another. To create a new automatic message, click ''Add'', then specify the channels where people are going to be redirected from and to. "}}
+{{ $containerComponents.Merge ( componentBuilder "separator" false "buttons" ( sdict "label" "Add" "custom_id" "redirectCreate" "style" "green")) }}
+{{$components := componentBuilder}}
+{{ $components.Add "container" ( sdict "color" 0x009FFF "components" $containerComponents ) }}
+{{$so := false}}
+{{range (seq (mult (sub $a 1) 5) (mult $a 5))}}
+{{if ($db.Get (toInt64 .))}}
+{{$containerComponents.Merge (componentBuilder (index ($db.Get (toInt64 .)) 4))}}
+{{$containerComponents.Merge (componentBuilder (index ($db.Get (toInt64 .)) 5))}}
+{{end}}
+{{end}}
+{{$containerComponents.Merge (componentBuilder "separator" false "text" (print "-# Current page: " $a))}}
+{{range (seq (mult $a 5) (mult (add $a 1) 5))}}
+{{if ($db.Get (toInt64 .))}}
+{{$so = true}}
+{{$components.Add "buttons" (cslice (sdict "disabled" false "style" "blue" "label" "Previous page" "custom_id" "redirectPreviousPage") (sdict "disabled" false "custom_id" "redirectNextPage" "style" "blue" "label" "Next page"))}}
+{{break}}
+{{end}}
+{{break}}
+{{end}}
+{{if not $so}}
+{{$components.Add "buttons" (cslice (sdict "disabled" false "style" "blue" "label" "Previous page" "custom_id" "redirectPreviousPage") (sdict "disabled" true "custom_id" "redirectNextPage" "style" "blue" "label" "Next page"))}}
+{{end}}
+{{try}}
+{{updateMessage $components}}
+{{catch}}
+{{editMessage nil nil $components}}
+{{end}}
+{{return}}
+{{end}}
+{{if in .CustomID "redirectRemove"}}
+{{$id := reFind `\d+` .StrippedID}}
+{{$db := (dbGet 5769 "redirect").Value}}
+Done! removed this redirect message:
+**From:** <#{{index ($db.Get (toInt64 $id)) 1}}> **to:** <#{{index ($db.Get (toInt64 $id)) 2}}>
+{{index ($db.Get (toInt64 $id)) 3}}
+{{$db.Del (toInt64 $id)}}
+{{dbSet 5769 "redirect" $db}}
+{{return}}
+{{end}}
+{{if in .CustomID "redirectEdit"}}
+{{$id := reFind `\d+` .StrippedID}}
+{{$db := (dbGet 5769 "redirect").Value}}
+{{sendModal (sdict "title" "Edit message" "custom_id" (print "redirectEdit" $id) "fields" (cslice (sdict "value" (index ($db.Get (toInt64 $id)) 3) "label" "Message" "placeholder" "Message to the member who is being redirected" "required" true "style" 1 "max_length" 2000)))}}
+{{return}}
+{{end}}
+{{if eq .CustomID "redirectCreate"}}
+{{$a := modalBuilder "redirectCreate" "Create redirect" (clabel "label" "From:" "custom_id" "from" "component" (cmenu "required" true "type" "channel" "custom_id" "channel1"))  (clabel "label" "To:" "custom_id" "to" "component" (cmenu "required" true "type" "channel" "custom_id" "channel2")) (clabel "label" "Message" "component" (ctextInput "required" true "custom_id" "message" "style" 1))}}
+{{sendModal $a}}
+{{return}}
+{{end}}
