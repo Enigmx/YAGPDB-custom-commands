@@ -1,0 +1,37 @@
+{{if in .CustomID "redirectEdit"}}
+{{$id := reFind `\d+` .StrippedID}}
+{{$ID := reFind `\d+` .StrippedID}}
+{{$db := (dbGet 5769 "redirect").Value}}
+{{if not $db}}
+{{$db = dict}}
+{{end}}
+{{$c := $db.Get (toInt64 $ID)}}
+{{$db.Set (toInt64 $ID) (cslice $ID (index $c 1) (index $c 2) (index .Values 0) (sdict "text" (print "** **\n**From:** <#" (index $c 1) "> **to:** <#" (index $c 2) ">\n" (index .Values 0))) (sdict "buttons" (cslice (sdict "label" "Edit" "style" "grey" "custom_id" (print "redirectEditRedirect" (toInt $ID))) (sdict "label" "Remove" "style" "red" "custom_id" (print "redirectRemoveRedirect" (toInt $ID))))))}}
+{{dbSet 5769 "redirect" $db}}
+⚙️ **Done! edited this redirect message.**
+**From:** <#{{(index $c 1)}}> **to:** <#{{(index $c 2)}}> 
+{{index .Values 0}}
+{{return}}
+{{end}}
+{{if eq .CustomID "redirectCreate"}}
+{{$channel1 := index ((.ModalValues.Get "channel1").Get "value") 0}}
+{{$channel2 := index ((.ModalValues.Get "channel2").Get "value") 0}}
+{{$ID := 0}}
+{{$db := (dbGet 5769 "redirect").Value}}
+{{if not $db}}
+{{$db = dict}}
+{{end}}
+{{range (seq 0 201)}}
+{{if $db.Get (toInt64 .)}}
+{{continue}}
+{{end}}
+{{$ID = (toInt64 .)}}
+{{break}}
+{{end}}
+{{$db.Set $ID (cslice $ID $channel1 $channel2 ((.ModalValues.Get "message").Get "value") (sdict "text" (print "** **\n**From:** <#" $channel1 "> **to:** <#" $channel2 ">\n" ((.ModalValues.Get "message").Get "value"))) (sdict "buttons" (cslice (sdict "label" "Edit" "style" "grey" "custom_id" (print "redirectEditRedirect" (toInt $ID))) (sdict "label" "Remove" "style" "red" "custom_id" (print "redirectRemoveRedirect" (toInt $ID))))))}}
+{{dbSet 5769 "redirect" $db}}
+⚙️ **Done! Added a new redirect message.**
+**From:** <#{{$channel1}}> **to:** <#{{($channel2)}}> 
+{{((.ModalValues.Get "message").Get "value")}}
+{{return}}
+{{end}}
