@@ -1,0 +1,3 @@
+name: Error report
+description: Report an error spit by YAGPDB or unexpected behavior from custom commands.
+labels: ["Error"]
