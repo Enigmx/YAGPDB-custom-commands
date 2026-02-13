@@ -1,5 +1,5 @@
 {{/* translate buttons */}}
-{{if eq .StrippedID "FromBinary"}}
+{{if eq .CustomID "translateFromBinary"}}
 {{$s := .Message.ReferencedMessage.Content}}
 {{$a := trimSpace $s}}
 {{$d := cslice}}
@@ -29,7 +29,7 @@
 {{end}}
 {{return}}
 {{end}}
-{{if eq .StrippedID "FromMorse"}}
+{{if eq .CustomID "translateFromMorse"}}
 {{$dict := sdict
   "space"   " "
   ".-"      "a"  "-..."  "b"  "-.-."  "c"  "-.."   "d"  "."     "e"
