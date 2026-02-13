@@ -4,7 +4,7 @@ labels: ["Error"]
 body:
 - type: dropdown
   attributes:
-    label: Custom command:
+    label: Custom command
     description: Select the Custom Command you are having issues with
     options:
       - CC: Avatar
