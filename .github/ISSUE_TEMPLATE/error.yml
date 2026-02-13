@@ -25,8 +25,8 @@ body:
   validations:
     required: true
 - type: textarea
-    attributes:
-      label: Description
-      description: Copy-paste the error here, or explain what the issue is.
-    validations:
-      required: true
+  attributes:
+    label: Description
+    description: Copy-paste the error here, or explain what the issue is.
+  validations:
+     required: true
