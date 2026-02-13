@@ -7,21 +7,21 @@ body:
     label: Custom command
     description: Select the Custom Command you are having issues with
     options:
-      - CC: Avatar
-      - CC: Custom Command Template
-      - CC: Extract
-      - CC: Forum Automatic Help
-      - CC: Forum Post Logging
-      - CC: Forum Tools
-      - CC: Pet
-      - CC: Public Gearbot Infractions
-      - CC: Redirect
-      - CC: Report
-      - CC: Restrict
-      - CC: Swift AutoModeration
-      - CC: Swift Mute
-      - CC: Todo
-      - CC: Translate
+      - Avatar
+      - Custom Command Template
+      - Extract
+      - Forum Automatic Help
+      - Forum Post Logging
+      - Forum Tools
+      - Pet
+      - Public Gearbot Infractions
+      - Redirect
+      - Report
+      - Restrict
+      - Swift AutoModeration
+      - Swift Mute
+      - Todo
+      - Translate
   validations:
     required: true
 - type: textarea
