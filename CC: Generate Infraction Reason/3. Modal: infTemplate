@@ -1,0 +1,201 @@
+{{if in .CustomID "infTemplatesDelete"}}
+{{$db := (dbGet 0 "infTemplates").Value}}
+{{$d := index ($db.Get (reFind `\d+` .CustomID)) 0}}
+{{$db.Del (reFind `\d+` .CustomID)}}
+⚙️ {{.User.Mention}} **successfully deleted template**
+{{$d}}
+{{dbSet 0 "infTemplates" $db}}
+{{$page := "1"}}
+{{$db := (dbGet 0 "infTemplates").Value}}
+{{$c := false}}
+{{$d := ""}}
+{{$a := componentBuilder}}
+{{$a.Add "text" "# Infraction templates"}}
+{{$a.Add "separator" false}}
+{{$a.Add "text" "Click ''Add'' to add a new infraction template, then configure the name and at least one infraction template. While writing an infraction, use [ID] as a placeholder for the user ID, and optionally use [single|multiple] to add support for multi target infractions."}}
+{{$a.Add "separator" false}}
+{{range (seq (add (mult 9 (sub (toInt $page) 1)) 1) (add (mult 9 (sub (toInt $page) 1)) 10) )}}
+{{if ($db.Get (str .))}}
+{{$a.Add "text" (print $d (index ($db.Get (str .)) 0))}}
+{{$a.Add "buttons" (cbutton "label" "View" "custom_id" (print "infTemplatesView" .) "style" "grey") }}
+{{$c = true}}
+{{$d = "** **\n"}}
+{{end}}
+{{end}}
+{{if $c}}
+{{$a.Add "separator" false}}
+{{end}}
+{{$a.Add "text" (print "-# Page " (toInt $page))}}
+{{$n := true}}
+{{range (seq (add (mult 9 (sub (toInt $page) 1)) 10) 50)}}
+{{if ($db.Get (str .))}}
+{{$n = false}}
+{{break}}
+{{end}}
+{{end}}
+{{$b := componentBuilder "container" (sdict "components" $a)}}
+{{$p := false}}
+{{if eq $page "1"}}
+{{$p = true}}
+{{end}}
+{{$b.Add "buttons" (cslice (cbutton "label" "Previous page" "disabled" $p "custom_id" "infTemplatesPreviousPage") (cbutton "label" "Add" "style" "green" "custom_id" "infTemplateAdd") (cbutton "label" "Next page" "disabled" $n "custom_id" "infTemplatesNextPage"))}}
+{{try}}
+{{updateMessage $b}}
+{{catch}}
+{{editMessage nil nil $b}}
+{{end}}
+{{return}}
+{{end}}
+{{if in .CustomID "infTemplateEditInf"}}
+{{$db := (dbGet 0 "infTemplates").Value}}
+{{$x := index (reFindAll `\d+` .CustomID) 0}}
+{{$y := index (reFindAll `\d+` .CustomID) 1}}
+{{$c := (.ModalValues.Get "1").Get "value"}}
+{{(index ($db.Get $x) 1).Set (toInt $y) $c}}
+{{dbSet 0 "infTemplates" $db}}
+⚙️ {{.User.Mention}} **Edited infraction**
+{{$c}}
+{{$i := $x}}
+{{$a := componentBuilder}}
+{{$a.Add "text" "# Infraction templates"}}
+{{$a.Add "separator" false}}
+{{$a.Add "text" (print "### " (index  ($db.Get $i) 0))}}
+{{$a.Add "buttons" (cbutton "label" "Edit" "custom_id" (print "infTemplatesEditName" $i) "style" "grey")}}
+{{$d := 0}}
+{{range (index ($db.Get $i) 1)}}
+{{$a.Add "text" (print "** **\n" .)}}
+{{$a.Add "buttons" (cslice (cbutton "label" "Edit" "custom_id" (print "infTemplateEditInf" $i "-" $d) "style" "grey") (cbutton "label" "Delete"  "custom_id" (print "infTemplateDeleteInf" $i "-" $d) "style" "red"))}}
+{{$d = add $d 1}}
+{{end}}
+{{$b := componentBuilder "container" (sdict "components" $a)}}
+{{$b.Add "buttons" (cslice (cbutton "label" "Back" "custom_id" "infTemplatesBack1" "style" "grey") (cbutton "label" "Add infraction" "custom_id" (print "infTemplatesAddInf" $i) "style" "green") (cbutton "label" "Delete template" "custom_id" (print "infTemplatesDelete" $i) "style" "red"))}}
+{{try}}
+{{updateMessage $b}}
+{{catch}}
+{{editMessage nil nil $b}}
+{{end}}
+{{return}}
+{{end}}
+{{if in .CustomID "infTemplatesEditName"}}
+{{$db := (dbGet 0 "infTemplates").Value}}
+{{$c := (.ModalValues.Get "1").Get "value"}}
+{{$db.Set (reFind `\d+` .CustomID) (cslice $c (index ($db.Get (reFind `\d+` .CustomID)) 1))}}
+{{dbSet 0 "infTemplates" $db}}
+⚙️ {{.User.Mention}} **Changed the name for this template**
+{{$c}}
+{{$i := reFind `\d+` .CustomID}}
+{{$a := componentBuilder}}
+{{$a.Add "text" "# Infraction templates"}}
+{{$a.Add "separator" false}}
+{{$a.Add "text" (print "### " (index  ($db.Get $i) 0))}}
+{{$a.Add "buttons" (cbutton "label" "Edit" "custom_id" (print "infTemplatesEditName" $i) "style" "grey")}}
+{{$d := 0}}
+{{range (index  ($db.Get $i) 1)}}
+{{$a.Add "text" (print "** **\n" .)}}
+{{$a.Add "buttons" (cslice (cbutton "label" "Edit" "custom_id" (print "infTemplateEditInf" $i "-" $d) "style" "grey") (cbutton "label" "Delete"  "custom_id" (print "infTemplateDeleteInf" $i "-" $d) "style" "red"))}}
+{{$d = add $d 1}}
+{{end}}
+{{$b := componentBuilder "container" (sdict "components" $a)}}
+{{$b.Add "buttons" (cslice (cbutton "label" "Back" "custom_id" "infTemplatesBack" "style" "grey") (cbutton "label" "Add infraction" "custom_id" (print "infTemplatesAddInf" $i) "style" "green") (cbutton "label" "Delete template" "custom_id" (print "infTemplatesDelete" $i) "style" "red"))}}
+{{try}}
+{{updateMessage $b}}
+{{catch}}
+{{editMessage nil nil $b}}
+{{end}}
+{{return}}
+{{end}}
+{{if in .CustomID "infTemplatesAddInf"}}
+{{$db := (dbGet 0 "infTemplates").Value}}
+{{$c := (.ModalValues.Get "1").Get "value"}}
+{{$d := index ($db.Get (reFind `\d+` .CustomID)) 1}}
+{{$d = $d.Append $c}}
+{{$db.Set (reFind `\d+` .CustomID) (cslice (index ($db.Get (reFind `\d+` .CustomID)) 0) $d)}}
+{{dbSet 0 "infTemplates" $db}}
+⚙️ {{.User.Mention}} **Added a new infraction to this template**
+{{$c}}
+{{$i := reFind `\d+` .CustomID}}
+{{$a := componentBuilder}}
+{{$a.Add "text" "# Infraction templates"}}
+{{$a.Add "separator" false}}
+{{$a.Add "text" (print "### " (index  ($db.Get $i) 0))}}
+{{$a.Add "buttons" (cbutton "label" "Edit" "custom_id" (print "infTemplatesEditName" $i) "style" "grey")}}
+{{$d := 0}}
+{{range (index  ($db.Get $i) 1)}}
+{{$a.Add "text" (print "** **\n" .)}}
+{{$a.Add "buttons" (cslice (cbutton "label" "Edit" "custom_id" (print "infTemplateEditInf" $i "-" $d) "style" "grey") (cbutton "label" "Delete"  "custom_id" (print "infTemplateDeleteInf" $i "-" $d) "style" "red"))}}
+{{$d = add $d 1}}
+{{end}}
+{{$b := componentBuilder "container" (sdict "components" $a)}}
+{{$b.Add "buttons" (cslice (cbutton "label" "Back" "custom_id" "infTemplatesBack" "style" "grey") (cbutton "label" "Add infraction" "custom_id" (print "infTemplatesAddInf" $i) "style" "green") (cbutton "label" "Delete template" "custom_id" (print "infTemplatesDelete" $i) "style" "red"))}}
+{{try}}
+{{updateMessage $b}}
+{{catch}}
+{{editMessage nil nil $b}}
+{{end}}
+{{return}}
+{{end}}
+{{if eq .CustomID "infTemplateAdd"}}
+{{$db := (dbGet 0 "infTemplates").Value}}
+{{if not $db}}
+{{$db = sdict}}
+{{end}}
+{{$a := cslice}}
+{{range $k, $v := .ModalValues}}
+{{if eq $k "name"}}
+{{continue}}
+{{end}}
+{{if ($v.Get "value")}}
+{{$a = $a.Append ($v.Get "value")}}
+{{end}}
+{{end}}
+{{range (seq 1 50)}}
+{{if (not ($db.Get (str .)))}}
+{{$db.Set (str .) (cslice (($.ModalValues.Get "name").Get "value") $a)}}
+{{break}}
+{{end}}
+{{end}}
+{{dbSet 0 "infTemplates" $db}}
+⚙️ {{.User.Mention}} **Successfully added a new template**
+{{(($.ModalValues.Get "name").Get "value")}}
+{{$index := sub (len (index .Message.Components 0).Components) 1}}
+{{$page := reFind `\d+` (index (index .Message.Components 0).Components $index).Content}}
+{{$db := (dbGet 0 "infTemplates").Value}}
+{{$c := false}}
+{{$d := ""}}
+{{$a := componentBuilder}}
+{{$a.Add "text" "# Infraction templates"}}
+{{$a.Add "separator" false}}
+{{$a.Add "text" "Click ''Add'' to add a new infraction template, then configure the name and at least one infraction template. While writing an infraction, use [ID] as a placeholder for the user ID, and optionally use [single|multiple] to add support for multi target infractions."}}
+{{$a.Add "separator" false}}
+{{range (seq (add (mult 9 (sub (toInt $page) 1)) 1) (add (mult 9 (sub (toInt $page) 1)) 10) )}}
+{{if ($db.Get (str .))}}
+{{$a.Add "text" (print $d (index ($db.Get (str .)) 0))}}
+{{$a.Add "buttons" (cbutton "label" "View" "custom_id" (print "infTemplatesView" .) "style" "grey") }}
+{{$c = true}}
+{{$d = "** **\n"}}
+{{end}}
+{{end}}
+{{if $c}}
+{{$a.Add "separator" false}}
+{{end}}
+{{$a.Add "text" (print "-# Page " (toInt $page))}}
+{{$n := true}}
+{{range (seq (add (mult 9 (sub (toInt $page) 1)) 10) 50)}}
+{{if ($db.Get (str .))}}
+{{$n = false}}
+{{break}}
+{{end}}
+{{end}}
+{{$b := componentBuilder "container" (sdict "components" $a)}}
+{{$p := false}}
+{{if eq $page "1"}}
+{{$p = true}}
+{{end}}
+{{$b.Add "buttons" (cslice (cbutton "label" "Previous page" "disabled" $p "custom_id" "infTemplatesPreviousPage") (cbutton "label" "Add" "style" "green" "custom_id" "infTemplateAdd") (cbutton "label" "Next page" "disabled" $n "custom_id" "infTemplatesNextPage"))}}
+{{try}}
+{{updateMessage $b}}
+{{catch}}
+{{editMessage nil nil $b}}
+{{end}}
+{{return}}
+{{end}}
