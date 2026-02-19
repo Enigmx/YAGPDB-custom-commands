@@ -48,17 +48,23 @@ Seems like this post has already been marked as concluded by someone else...
 {{end}}
 {{$embed := structToSdict (index .Message.Embeds 0)}}
 {{$embed.Set "color" 0x00FF00}}
+{{$c := cslice}}
+{{range $.Message.Components}}
+{{$c = $c.Append .Components}}
+{{end}}
 {{if eq (len .Message.Embeds) 1}}
-{{editMessage nil .Message.ID (complexMessageEdit "content" (print .Message.Content "\n\n<@" .User.ID "> has marked this report as concluded.") "embed" $embed)}}
-Done! marked as concluded.
-{{deleteResponse 5}}
-{{ephemeralResponse}}
+{{try}}
+{{updateMessage (complexMessageEdit "components" $c "content" (print .Message.Content "\n\n<@" .User.ID "> has marked this report as concluded.") "embed" $embed)}}
+{{catch}}
+{{editMessage nil nil (complexMessageEdit "components" $c "content" (print .Message.Content "\n\n<@" .User.ID "> has marked this report as concluded.") "embed" $embed)}}
+{{end}}
 {{return}}
 {{else}}
-{{editMessage nil .Message.ID (complexMessageEdit "content" (print .Message.Content "\n\n<@" .User.ID "> has marked this report as concluded.") "embed" (cslice $embed (index .Message.Embeds 1)))}}
-Done! marked as concluded.
-{{deleteResponse 5}}
-{{ephemeralResponse}}
+{{try}}
+{{updateMessage (complexMessageEdit "components" $c "content" (print .Message.Content "\n\n<@" .User.ID "> has marked this report as concluded.") "embed" (cslice $embed (index .Message.Embeds 1)))}}
+{{catch}}
+{{editMessage nil nil (complexMessageEdit "components" $c "content" (print .Message.Content "\n\n<@" .User.ID "> has marked this report as concluded.") "embed" (cslice $embed (index .Message.Embeds 1)))}}
+{{end}}
 {{return}}
 {{end}}
 {{end}}
