@@ -1,0 +1,100 @@
+{{$db := (dbGet 0 "infTemplates").Value}}
+{{if not $db}}
+{{$db = sdict}}
+{{end}}
+{{if eq (len .Args) 1}}
+{{$a := ""}}
+{{$b := 1}}
+{{range $k , $v := $db}}
+{{$a = print $a "**" $b ".** " (index $v 0) "\n"}}
+{{$b = add $b 1}}
+{{end}}
+# Infraction templates
+**{{.ServerPrefix}}inf [user] [template]**: Generate an infraction reason for this users account.
+
+**Templates available:**
+{{$a}}
+{{return}}
+{{end}}
+{{if eq (index .Args 1) "admin"}}
+{{$c := false}}
+{{$d := ""}}
+{{$a := componentBuilder}}
+{{$a.Add "text" "# Infraction templates"}}
+{{$a.Add "separator" false}}
+{{$a.Add "text" "Click ''Add'' to add a new infraction template, then configure the name and at least one infraction template. While writing an infraction, use [ID] as a placeholder for the user ID, and optionally use [single|multiple] to add support for multi target infractions."}}
+{{$a.Add "separator" false}}
+{{range (seq 1 10)}}
+{{if ($db.Get (str .))}}
+{{$a.Add "text" (print $d (index ($db.Get (str .)) 0))}}
+{{$a.Add "buttons" (cbutton "label" "View" "custom_id" (print "infTemplatesView" .) "style" "grey") }}
+{{$c = true}}
+{{$d = "** **\n"}}
+{{end}}
+{{end}}
+{{if $c}}
+{{$a.Add "separator" false}}
+{{end}}
+{{$a.Add "text" "-# Page 1"}}
+{{$n := true}}
+{{range (seq 10 50)}}
+{{if ($db.Get (str .))}}
+{{$n = false}}
+{{break}}
+{{end}}
+{{end}}
+{{$b := componentBuilder "container" (sdict "components" $a)}}
+{{$b.Add "buttons" (cslice (cbutton "label" "Previous page" "disabled" true "custom_id" "infTemplatesPreviousPage") (cbutton "label" "Add" "style" "green" "custom_id" "infTemplateAdd") (cbutton "label" "Next page" "disabled" $n "custom_id" "infTemplatesNextPage"))}}
+{{sendMessage nil $b}}
+{{return}}
+{{end}}
+{{$a := 0}}
+{{$b := cslice}}
+{{range .Args}}
+{{if eq $a 0}}
+{{$a = add $a 1}}
+{{continue}}
+{{end}}
+{{if $c := (reFind `\d+` .)}}
+{{$a = add $a 1}}
+{{if not (in $b $c)}}
+{{$b = $b.Append $c}}
+{{end}}
+{{else}}
+{{break}}
+{{end}}
+{{end}}
+{{$d := ""}}
+{{try}}
+{{$d = lower (trimSpace (joinStr " " (slice .Args $a)))}}
+{{catch}}
+Tell me which template to use though
+{{end}}
+{{$e := ""}}
+{{$db := (dbGet 0 "infTemplates").Value}}
+{{range $k, $v := $db}}
+{{range (split (index $v 0) ",")}}
+{{if eq (trimSpace (lower .)) $d}}
+{{$e = $k}}
+{{break}}
+{{end}}
+{{end}}
+{{end}}
+{{if not $e}}
+Seems like this template doesn't exist, check which ones are available by running {{.ServerPrefix}}inf.
+{{return}}
+{{end}}
+{{range (index ($db.Get $e) 1)}}
+{{$i := ""}}
+{{$f := (joinStr (joinStr " " $b) (split . "[ID]"))}}
+{{if $g := (reFind `\[(.*?)\|(.*?)\]` $f)}}
+{{$h := split $g "|"}}
+{{if eq (len $b) 1}}
+{{$i = (joinStr "" (slice (index $h 0) 1))}}
+{{else}}
+{{$i = (joinStr "" (slice (index $h 1) 0 (sub (len (index $h 1)) 1)))}}
+{{end}}
+{{$f = (joinStr $i (split $f $g))}}
+{{end}}
+{{sendMessage nil (complexMessage "content" $f "embed" (cembed "author" (sdict "name" ($.User.Username) "icon_url" ($.User.AvatarURL "512")) "description" "Automatically generated an infraction reason 🤖" "color" 0xFF5555))}}
+{{end}}
