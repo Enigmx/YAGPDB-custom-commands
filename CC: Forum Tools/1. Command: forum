@@ -47,6 +47,7 @@
 **{{.ServerPrefix}}forum closelock**: Close and lock the post
 **{{.ServerPrefix}}forum expire [time]**: Close and lock the post after some time
 **{{.ServerPrefix}}forum delete [reason]**: Delete the post and optionally notify the creator why so
+**{{.ServerPrefix}}forum search [forum] [name]**: Search posts in a forum channel by name
 {{$str}}
 {{return}}
 {{end}}
