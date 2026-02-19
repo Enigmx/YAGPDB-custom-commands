@@ -31,7 +31,7 @@ ___
 **Trigger type**: Command  
 **Trigger**: restrict  
 **Response**: Paste code from file #1  
-**Role restrictions**: Server moderators only  
+**Role restrictions**: Moderators only  
 **Channel restrictions**: None  
 
 ⚙️ **Extra configuration**: Configure the first section of the code as follows:
