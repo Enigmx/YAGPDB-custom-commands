@@ -212,4 +212,47 @@ Only moderators of the server and post creator can use this tool :(
 Done! this post has been marked as {{$supportSpecialTag}} and will close in 12 hours.
 {{return}}
 {{end}}
+{{if eq (lower (index .Args 1)) "search"}}
+{{$a := 0}}
+{{try}}
+{{$a = getChannel (toInt (reFind `\d+` (index .Args 2)))}}
+{{catch}}
+Select a forum channel to look posts in
+**{{$.ServerPrefix}}forum search [forum] [name]**
+{{return}}
+{{end}}
+{{if not $a}}
+Select a forum channel to look posts in
+**{{$.ServerPrefix}}forum search [forum] [name]**
+{{return}}
+{{end}}
+{{if not ($a.IsForum)}}
+You can only select forum channels to look posts in :(
+{{return}}
+{{end}}
+{{$b := ""}}
+{{try}}
+{{$b = trimSpace (lower (joinStr " " (slice .Args 3)))}}
+{{catch}}
+Select what posts to look up (by name)
+**{{$.ServerPrefix}}forum search [forum] [name]**
+{{return}}
+{{end}}
+{{$c := ""}}
+{{range .Guild.Threads}}
+{{if and (eq $a.ID .ParentID) (in (lower .Name) $b)}}
+{{if ge (len $c) 5800}}
+{{$c = print $c "\n\nAnd some more posts which I can't show due to the character limit..."}}
+{{break}}
+{{end}}
+{{$c = print $c "\n\n<#" .ID "> - " .Name ", opened by <@" .OwnerID ">"}}
+{{end}}
+{{end}}
+{{if not $c}}
+Nothing found...
+{{return}}
+{{end}}
+{{sendMessage nil (complexMessage "embed" (cembed "title" "Search results" "description" $c))}}
+{{return}}
+{{end}}
 {{/* https://github.com/Enigmx/YAGPDB-custom-commands/tree/main/CC%3A%20Forum%20Tools */}}
