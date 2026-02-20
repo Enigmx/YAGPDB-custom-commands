@@ -181,7 +181,7 @@ Done! this post will be deleted in ten seconds, to cancel, run "-forum delete" a
 {{return}}
 {{end}}
 {{end}}
-{{if and (eq (index .Args 1) $supportSpecialTag) $supportSpecialTag}}
+{{if and (eq (lower (index .Args 1)) (lower $supportSpecialTag)) $supportSpecialTag}}
 {{$f := false}}
 {{range (getChannel .Channel.ParentID).AvailableTags }}
 {{if eq .Name $supportSpecialTag}}
