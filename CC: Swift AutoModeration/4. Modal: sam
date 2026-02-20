@@ -120,7 +120,7 @@ You didn't configure what content to blacklist, fill the text box or enable spec
 {{$a.Add "buttons" (cslice (cbutton "label" "Edit" "custom_id" (print "samEditSam" $k) "style" "grey") (cbutton "label" "Disable" "custom_id" (print "samDisableSam" $k) "style" "red"))}}
 {{end}}
 {{$a.Add "separator" false}}
-{{$adminRole := index ($db.Get "configuration") 4}}
+{{$adminRole := index ($db.Get "configuration") 0}}
 {{if in $.Member.Roles $adminRole}}
 {{$a.Add "buttons" (cslice (cbutton "label" "Enable" "custom_id" "samEnableSam" "style" "success") (cbutton "label" "Use template" "custom_id" "samUseTemplate" "style" "grey") (cbutton "label" "Configuration" "custom_id" "samSamConfig" "style" "grey"))}}
 {{else}}
@@ -207,7 +207,7 @@ You didn't configure what content to blacklist, fill the text box or enable spec
 {{$a.Add "buttons" (cslice (cbutton "label" "Edit" "custom_id" (print "samEditSam" $k) "style" "grey") (cbutton "label" "Disable" "custom_id" (print "samDisableSam" $k) "style" "red"))}}
 {{end}}
 {{$a.Add "separator" false}}
-{{$adminRole := index ($db.Get "configuration") 4}}
+{{$adminRole := index ($db.Get "configuration") 0}}
 {{if in $.Member.Roles $adminRole}}
 {{$a.Add "buttons" (cslice (cbutton "label" "Enable" "custom_id" "samEnableSam" "style" "success") (cbutton "label" "Use template" "custom_id" "samUseTemplate" "style" "grey") (cbutton "label" "Configuration" "custom_id" "samSamConfig" "style" "grey"))}}
 {{else}}
