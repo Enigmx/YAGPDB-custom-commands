@@ -63,6 +63,9 @@
 {{end}}
 {{if in .CustomID "infTemplatesBack"}}
 {{$page := reFind `\d+` .CustomID}}
+{{if not $page}}
+{{$page = "1"}}
+{{end}}
 {{$db := (dbGet 0 "infTemplates").Value}}
 {{$c := false}}
 {{$d := ""}}
