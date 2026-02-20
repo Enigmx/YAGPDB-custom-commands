@@ -118,7 +118,7 @@ Only <@&{{(index ($db.Get "configuration") 0)}}> can configure swift automoderat
 {{$c = " None"}}
 {{end}}
 {{$a.Add "text" (print "**Inmune roles**: " $c)}}
-{{$a.Add "menus" (cmenu "min_values" 0 "type" "role" "custom_id" "samConfigRoles")}}
+{{$a.Add "menus" (cmenu "min_values" 0 "max_values" 25 "type" "role" "custom_id" "samConfigRoles")}}
 {{$a.Add "separator" false}}
 {{$a.Add "buttons" (cslice (cbutton "label" "Back" "custom_id" "samGoBackSam" "style" "grey"))}}
 {{$b := componentBuilder "container" (sdict "components" $a)}}
