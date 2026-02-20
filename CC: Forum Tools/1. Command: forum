@@ -194,11 +194,11 @@ This tool can only be used in forum channels with the **{{$supportSpecialTag}}**
 {{return}}
 {{end}}
 {{if and (not (in .Member.Roles $mod)) (not (eq .User.ID .Channel.OwnerID)) }}
-{{if and (getMessage .Channel.ID .Channel.ID) (getChannel $reportChannel)}}
+{{if and (getMessage .Channel.ID .Channel.ID) (getChannelOrThread $reportChannel)}}
 {{sendMessage $reportChannel (complexMessage "content" (print .User.Mention " notified this post has to be marked as " $supportSpecialTag ": <#" .Channel.ID ">" ) "buttons" (cslice  (sdict "label" "Accept" "style" "green" "custom_id" "forumToolsAcceptConcluded") (sdict "label" "Decline" "style" "red" "custom_id" "forumToolsDeclineConcluded")) "embed" (cembed "title" .Channel.Name "description" (getMessage .Channel.ID .Channel.ID).Content "color" 0xFF0000))}}
 Notified server moderators 👍
 {{return}}
-{{else if (getChannel $reportChannel)}}
+{{else if (getChannelOrThread $reportChannel)}}
 {{sendMessage $reportChannel (complexMessage "content" (print .User.Mention " notified that this post has to be marked as " $supportSpecialTag ": <#" .Channel.ID ">" ) "buttons" (cslice  (sdict "label" "Accept" "style" "green" "custom_id" "forumToolsAcceptConcluded") (sdict "label" "Decline" "style" "red" "custom_id" "forumToolsDeclineConcluded")) "embed" (cembed "title" .Channel.Name "description" "Unknown... original message has been deleted" "color" 0xFF0000))}}
 Notified server moderators 👍
 {{return}}
