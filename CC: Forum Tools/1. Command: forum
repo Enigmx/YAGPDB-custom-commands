@@ -242,7 +242,7 @@ Select what posts to look up (by name)
 {{$c := ""}}
 {{range .Guild.Threads}}
 {{if and (eq $a.ID .ParentID) (in (lower .Name) $b)}}
-{{if ge (len $c) 5800}}
+{{if ge (len $c) 3950}}
 {{$c = print $c "\n\nAnd some more posts which I can't show due to the character limit..."}}
 {{break}}
 {{end}}
