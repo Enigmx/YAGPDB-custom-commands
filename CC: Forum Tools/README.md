@@ -16,6 +16,8 @@ A collection of tools for managing forum posts, ranging from changing tags to au
 
 **-forum delete [reason]**: Delete the post, moderator only tool. You can optionally provide a reason, which is sent to a channel or thread of your choice, tagging the creator of said post to let them know. Good for transparency. If you do not provide a reason, the user is not notified at all and the post is deleted. If you somehow accidentally run this tool, you can cancel it in the ten seconds it takes YAGPDB to delete the post by running **-forum delete** again.  
 
+**-forum search [forum] [name]**: Search posts by name.
+
 **-forum [support tag]**: Add the support tag indicating the post is resolved and scheduling automatic closing and locking after 12 hours. Both moderators and post creator can use this tool, and you can optionally configure it to enable regular members to report posts that need to be marked as solved.  
 
 🔘 **Accept**: Button in the member report which marks the post as resolved.  
