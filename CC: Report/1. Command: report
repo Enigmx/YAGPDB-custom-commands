@@ -15,7 +15,7 @@
 {{return}}
 {{end}}
 {{if $b.Attachments}}
-{{$attach = (index $b 0).URL}}
+{{$attach = (index $b.Attachments 0).URL}}
 {{end}}
 {{$message := $b}}
 {{$member := getMember $message.Author}}
