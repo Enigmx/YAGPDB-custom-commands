@@ -12,6 +12,7 @@
 {{$channel := (index (reFindAll `\d{16,20}` .Message.Content) 1)}}
 {{if (getChannelOrThread (toInt $channel))}}
 {{editThread (toInt $channel) (sdict "tags" (cslice (dbGet 0 "forumTools").Value))}} 
+{{sendMessage $channel (print "Done! post has been marked as " (dbGet 0 "forumTools").Value " and will close in 12 hours.")}}
 {{end}}
 {{$embed := structToSdict (index .Message.Embeds 0)}}
 {{$embed.Set "color" 0x00FF00}}
