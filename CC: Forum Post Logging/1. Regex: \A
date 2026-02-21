@@ -5,7 +5,7 @@
 {{$renameButton := true}}
 {{/* End configuration */}}
 
-{{if and (getChannel .Channel.ParentID).IsForum (eq .Channel.ID .Message.ID)}}
+{{if and  (not .IsMessageEdit) (getChannel .Channel.ParentID).IsForum (eq .Channel.ID .Message.ID)}}
 {{$b := cslice}}
 {{$c := 0x000000}}
 {{if $concludedButton}}
