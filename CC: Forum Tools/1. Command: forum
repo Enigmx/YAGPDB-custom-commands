@@ -29,7 +29,7 @@
 {{end}}
 {{end}}
 {{end}}
-{{sendMessage $notificationChannel (complexMessage "content" (print "<@" (index .ExecData 3) ">") "embed" (cembed "color" 0xff0000 "title" "❗ A  moderator deleted your post" "description" (print "**__Reason:__**\n" (index .ExecData 2))))}}
+{{sendMessage $notificationChannel (complexMessage "content" (print "<@" (index .ExecData 3) ">") "embed" (cembed "title" "❗ A  moderator deleted your post" "description" (print "**__Reason:__**\n" (index .ExecData 2))))}}
 {{end}}
 {{end}}
 {{end}}
