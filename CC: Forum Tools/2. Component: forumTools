@@ -4,7 +4,7 @@
 {{try}}
 {{updateMessage (complexMessageEdit "content" (print .Message.Content "\n\n" .User.Mention " has declined the report.") "buttons" (cslice  (sdict "disabled" true "label" "Accept" "style" "green" "custom_id" "forumToolsAcceptConcluded") (sdict "disabled" true "label" "Decline" "style" "red" "custom_id" "forumToolsDeclineConcluded")) "embed" (cembed $embed))}}
 {{catch}}
-{{editMessage $.Channel.ID $.Message.ID (complexMessageEdit "content" (print .Message.Content "\n\n" .User.Mention " has declined the report.") "buttons" (cslice  (sdict "disabled" true "label" "Accept" "style" "green" "custom_id" "forumToolsAcceptConcluded") (sdict "disabled" true "label" "Decline" "style" "red" "custom_id" "forumToolsDeclineConcluded")) "embed" (cembed $embed))}}
+{{editMessage $.Channel.ID $.Message.ID (complexMessageEdit "content" (print $.Message.Content "\n\n" .User.Mention " has declined the report.") "buttons" (cslice  (sdict "disabled" true "label" "Accept" "style" "green" "custom_id" "forumToolsAcceptConcluded") (sdict "disabled" true "label" "Decline" "style" "red" "custom_id" "forumToolsDeclineConcluded")) "embed" (cembed $embed))}}
 {{end}}
 {{return}}
 {{end}}
@@ -19,7 +19,7 @@
 {{try}}
 {{updateMessage (complexMessageEdit "content" (print .Message.Content "\n\n" .User.Mention " has accepted the report and marked the post as " (dbGet 0 "forumTools").Value ".") "buttons" (cslice  (sdict "disabled" true "label" "Accept" "style" "green" "custom_id" "forumToolsAcceptConcluded") (sdict "disabled" true "label" "Decline" "style" "red" "custom_id" "forumToolsDeclineConcluded")) "embed" (cembed $embed))}}
 {{catch}}
-{{editMessage $.Channel.ID $.Message.ID (complexMessageEdit "content" (print .Message.Content "\n\n" .User.Mention " has accepted the report and marked the post as " (dbGet 0 "forumTools").Value ".") "buttons" (cslice  (sdict "disabled" true "label" "Accept" "style" "green" "custom_id" "forumToolsAcceptConcluded") (sdict "disabled" true "label" "Decline" "style" "red" "custom_id" "forumToolsDeclineConcluded")) "embed" (cembed $embed))}}
+{{editMessage $.Channel.ID $.Message.ID (complexMessageEdit "content" (print $.Message.Content "\n\n" .User.Mention " has accepted the report and marked the post as " (dbGet 0 "forumTools").Value ".") "buttons" (cslice  (sdict "disabled" true "label" "Accept" "style" "green" "custom_id" "forumToolsAcceptConcluded") (sdict "disabled" true "label" "Decline" "style" "red" "custom_id" "forumToolsDeclineConcluded")) "embed" (cembed $embed))}}
 {{end}}
 {{return}}
 {{end}}
