@@ -18,7 +18,7 @@
 {{deleteForumPost (reFind `\d+` .Message.Content)}}
 {{if not (eq (len (index .Values 0)) 0)}}
 {{$user := getMember (index (reFindAll `\d+` .Message.Content) 1)}}
-{{sendMessage $forumEraseReportChannel (complexMessage "content" (print "<@" $user.User.ID ">") "embed" (cembed "color" 0xff0000 "title" "❗ A  moderator deleted your post" "description" (print "**__Reason:__**\n" (index $.Values 0))))}}
+{{sendMessage $forumEraseReportChannel (complexMessage "content" (print "<@" $user.User.ID ">") "embed" (cembed "title" "❗ A  moderator deleted your post" "description" (print "**__Reason:__**\n" (index $.Values 0))))}}
 {{try}}
 {{updateMessage (complexMessageEdit "components" $c "content" (print .Message.Content "\n\n" .User.Mention " has removed this post for the following reason:\n" (index .Values 0)) "embed" (cslice (index .Message.Embeds 0) (index .Message.Embeds 1)))}}
 {{catch}}
