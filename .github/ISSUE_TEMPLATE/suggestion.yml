@@ -1,28 +1,38 @@
 name: Suggestion
 description: Suggest a new custom command, an improvement to an existing one, or something related to the repository.
 labels: ["Suggestion"]
+
 body:
-- type: dropdown
-    options:
-      - Repository
-      - Avatar
-      - Custom Command Template
-      - Extract
-      - Forum Automatic Help
-      - Forum Post Logging
-      - Forum Tools
-      - Generate Infraction Reason 
-      - Pet
-      - Public Gearbot Infractions
-      - Redirect
-      - Report
-      - Restrict
-      - Swift AutoModeration
-      - Swift Mute
-      - Todo
-      - Translate
-  validations:
-    required: false
-- type: textarea
-  validations:
-     required: true
+  - type: dropdown
+    id: target_area
+    attributes:
+      label: What is this suggestion related to?
+      options:
+        - Repository
+        - New CC or MS
+        - Avatar
+        - Custom Command Template
+        - Extract
+        - Forum Automatic Help
+        - Forum Post Logging
+        - Forum Tools
+        - Generate Infraction Reason
+        - Pet
+        - Public Gearbot Infractions
+        - Redirect
+        - Report
+        - Restrict
+        - Swift AutoModeration
+        - Swift Mute
+        - Todo
+        - Translate
+    validations:
+      required: true
+
+  - type: textarea
+    id: suggestion_details
+    attributes:
+      label: Suggestion Details
+      description: Describe your idea or improvement.
+    validations:
+      required: true
