@@ -1,0 +1,38 @@
+name: Modification
+description: Suggest a code maintenance improvement, refactor, optimization, or future-proofing change.
+labels: ["Modification"]
+
+body:
+  - type: dropdown
+    id: target_cc
+    attributes:
+      label: Which Custom Command is affected?
+      description: Select the Custom Command this modification applies to.
+      options:
+        - Mini Script
+        - Avatar
+        - Custom Command Template
+        - Extract
+        - Forum Automatic Help
+        - Forum Post Logging
+        - Forum Tools
+        - Generate Infraction Reason
+        - Pet
+        - Public Gearbot Infractions
+        - Redirect
+        - Report
+        - Restrict
+        - Swift AutoModeration
+        - Swift Mute
+        - Todo
+        - Translate
+    validations:
+      required: true
+
+  - type: textarea
+    id: modification_details
+    attributes:
+      label: Details
+      description: Describe the improvement, refactor, optimization, or structural change you are proposing.
+    validations:
+      required: true
