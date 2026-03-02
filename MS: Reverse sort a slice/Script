@@ -1,0 +1,6 @@
+{{$toReverse := }}
+{{$reversed := cslice}}
+{{range (seq (mult -1 (sub (len $toReverse) 1)) 1)}}
+{{$reversed = $reversed.Append (index $toReverse (mult -1 .))}}
+{{end}}
+{{$reversed}}
