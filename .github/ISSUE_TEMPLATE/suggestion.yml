@@ -3,8 +3,6 @@ description: Suggest a new custom command, an improvement to an existing one, or
 labels: ["Suggestion"]
 body:
 - type: dropdown
-  attributes:
-    label: Suggestion to:
     options:
       - Repository
       - Avatar
@@ -24,7 +22,7 @@ body:
       - Todo
       - Translate
   validations:
-    required: true
+    required: false
 - type: textarea
   validations:
      required: true
