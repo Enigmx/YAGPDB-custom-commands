@@ -1,0 +1,37 @@
+name: Question
+description: Ask a question about a custom command or the repository.
+labels: ["Question"]
+
+body:
+  - type: dropdown
+    id: target_area
+    attributes:
+      label: What is your question related to?
+      options:
+        - Repository
+        - A MiniScript
+        - Avatar
+        - Custom Command Template
+        - Extract
+        - Forum Automatic Help
+        - Forum Post Logging
+        - Forum Tools
+        - Generate Infraction Reason
+        - Pet
+        - Public Gearbot Infractions
+        - Redirect
+        - Report
+        - Restrict
+        - Swift AutoModeration
+        - Swift Mute
+        - Todo
+        - Translate
+    validations:
+      required: true
+
+  - type: textarea
+    id: question_details
+    attributes:
+      label: Your Question
+    validations:
+      required: true
