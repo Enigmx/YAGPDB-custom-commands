@@ -1,6 +1,7 @@
 {{/* configuration */}}
 {{$forumEraseReportChannel := 1}}
 {{/* end configuration */}}
+
 {{if eq .StrippedID "ErasePostReport"}}
 {{if eq $forumEraseReportChannel 1}}
 {{$ao := (getChannelOrThread (reFind `\d+` $.Message.Content)).ParentID}}
@@ -22,13 +23,13 @@
 {{try}}
 {{updateMessage (complexMessageEdit "components" $c "content" (print .Message.Content "\n\n" .User.Mention " has removed this post for the following reason:\n" (index .Values 0)) "embed" (cslice (index .Message.Embeds 0) (index .Message.Embeds 1)))}}
 {{catch}}
-{{editMessage nil nil (complexMessageEdit "content" (print .Message.Content "\n\n" .User.Mention " has removed this post for the following reason:\n" (index .Values 0)) "components" $c "embed" (cslice (index .Message.Embeds 0) (index .Message.Embeds 1)))}}
+{{editMessage nil nil (complexMessageEdit "content" (print $.Message.Content "\n\n" $.User.Mention " has removed this post for the following reason:\n" (index $.Values 0)) "components" $c "embed" (cslice (index $.Message.Embeds 0) (index $.Message.Embeds 1)))}}
 {{end}}
 {{else}}
 {{try}}
 {{updateMessage (complexMessageEdit "components" $c "content" (print .Message.Content "\n\n" .User.Mention " has removed this post.") "embed" (cslice (index .Message.Embeds 0) (index .Message.Embeds 1)))}}
 {{catch}}
-{{editMessage nil nil (complexMessageEdit "content" (print .Message.Content "\n\n" .User.Mention " has removed this post.") "components" $c "embed" (cslice (index .Message.Embeds 0) (index .Message.Embeds 1)))}}
+{{editMessage nil nil (complexMessageEdit "content" (print $.Message.Content "\n\n" $.User.Mention " has removed this post.") "components" $c "embed" (cslice (index $.Message.Embeds 0) (index $.Message.Embeds 1)))}}
 {{end}}
 {{end}}
 {{return}}
