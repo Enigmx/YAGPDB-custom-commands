@@ -15,7 +15,6 @@
 {{try}}
 {{exec "clear" (index $b 0) $a}}
 {{catch}}
-{{.Error}}
 {{execCC $.CCID nil 4 (cslice $a $b)}}
 {{return}}
 {{end}}
