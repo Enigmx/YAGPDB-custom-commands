@@ -1,4 +1,4 @@
-{{if eq (len .Args) 1}}
+{{if and ( eq (len .Args) 1 ) (not .Message.ReferencedMessage)}}
 ### Automatically generate an infraction list
 __Usage:__
 {{.ServerPrefix}}public [Infraction text]
@@ -14,11 +14,10 @@ __Usage:__
 {{$string := "## Infractions"}}
 {{$b := ""}}
 {{$a := split .Message.Content "\n"}}
-{{range $a}}
-{{if le $count 3}}
-{{$count = add $count 1}}
-{{continue}}
+{{if .Message.ReferencedMessage}}
+{{$a = split .Message.ReferencedMessage.Content "\n"}}
 {{end}}
+{{range $a}}
 {{$b = split . "|"}}
 {{try}}
 {{$kindOf = index $b 4}}
