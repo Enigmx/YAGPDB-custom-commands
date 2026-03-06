@@ -10,9 +10,9 @@
 {{$e = true}}
 {{end}}
 {{end}}
-{{if and (in $.CustomID "2") ($e)}}
+{{if and (in $.CustomID "2") ($e) $.Values}}
 {{continue}}
-{{else if (and (in $.CustomID "1") (not $e))}}
+{{else if (and (in $.CustomID "1") $.Values (not $e))}}
 {{continue}}
 {{end}}
 {{if ge (len $c) 3950}}
@@ -31,9 +31,9 @@ Nothing found...
 {{$d = $d.Append (sdict "label" .Name "value" (str .ID))}}
 {{end}}
 {{try}}
-{{updateMessage (complexMessageEdit "menus" (cslice (sdict "type" "text" "placeholder" "Filter by tags" "custom_id" "forumToolsFilter1" "options" $d "max_values" (len $d)) (sdict "type" "text" "placeholder" "Filter out tags" "custom_id" "forumToolsFilter2" "options" $d "max_values" (len $d))) "embed" (cembed "title" (print "Search results in <#" $a.ID ">: " $b) "description" $c))}}
+{{updateMessage (complexMessageEdit "menus" (cslice (sdict "type" "text" "placeholder" "Filter by tags" "custom_id" "forumToolsFilter1" "options" $d "min_values" 0 "max_values" (len $d)) (sdict "type" "text" "placeholder" "Filter out tags" "custom_id" "forumToolsFilter2" "options" $d "max_values" (len $d))) "embed" (cembed "title" (print "Search results in <#" $a.ID ">: " $b) "description" $c))}}
 {{catch}}
-{{editMessage nil nil (complexMessageEdit "menus" (cslice (sdict "type" "text" "placeholder" "Filter by tags" "custom_id" "forumToolsFilter1" "options" $d "max_values" (len $d)) (sdict "type" "text" "placeholder" "Filter out tags" "custom_id" "forumToolsFilter2" "options" $d "max_values" (len $d))) "embed" (cembed "title" (print "Search results in <#" $a.ID ">: " $b) "description" $c))}}
+{{editMessage nil nil (complexMessageEdit "menus" (cslice (sdict "type" "text" "placeholder" "Filter by tags" "custom_id" "forumToolsFilter1" "options" $d "min_values" 0 "max_values" (len $d)) (sdict "type" "text" "placeholder" "Filter out tags" "custom_id" "forumToolsFilter2" "options" $d "max_values" (len $d))) "embed" (cembed "title" (print "Search results in <#" $a.ID ">: " $b) "description" $c))}}
 {{end}}
 {{return}}
 {{end}}
