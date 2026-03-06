@@ -1,4 +1,49 @@
-{{if eq .StrippedID "DeclineConcluded"}}
+{{if eq .CustomID "forumToolsFilter1" "forumToolsFilter2"}}
+{{$a := getChannel (toInt (reFind `\d+` (index .Message.Embeds 0).Title))}}
+{{$b := trimSpace (index (slice (split (index .Message.Embeds 0).Title " ") 3) 1)}}
+{{$c := ""}}
+{{range .Guild.Threads}}
+{{if and (eq $a.ID .ParentID) (in (lower .Name) $b)}}
+{{$e := false}}
+{{range .AppliedTags}}
+{{if in $.Values (str .)}}
+{{$e = true}}
+{{end}}
+{{end}}
+{{if and (in $.CustomID "2") ($e)}}
+{{continue}}
+{{else if (and (in $.CustomID "1") (not $e))}}
+{{continue}}
+{{end}}
+{{if ge (len $c) 3950}}
+{{$c = print $c "\n\nAnd some more posts which I can't show due to the character limit..."}}
+{{break}}
+{{end}}
+{{$c = print $c "\n\n<#" .ID "> - " .Name ", opened by <@" .OwnerID ">"}}
+{{end}}
+{{end}}
+{{if not $c}}
+Nothing found...
+{{return}}
+{{end}}
+{{$d := cslice}}
+{{range $a.AvailableTags}}
+{{$d = $d.Append (sdict "label" .Name "value" (str .ID))}}
+{{end}}
+{{try}}
+{{updateMessage (complexMessageEdit "menus" (cslice (sdict "type" "text" "placeholder" "Filter by tags" "custom_id" "forumToolsFilter1" "options" $d "max_values" (len $d)) (sdict "type" "text" "placeholder" "Filter out tags" "custom_id" "forumToolsFilter2" "options" $d "max_values" (len $d))) "embed" (cembed "title" (print "Search results in <#" $a.ID ">: " $b) "description" $c))}}
+{{catch}}
+{{editMessage nil nil (complexMessageEdit "menus" (cslice (sdict "type" "text" "placeholder" "Filter by tags" "custom_id" "forumToolsFilter1" "options" $d "max_values" (len $d)) (sdict "type" "text" "placeholder" "Filter out tags" "custom_id" "forumToolsFilter2" "options" $d "max_values" (len $d))) "embed" (cembed "title" (print "Search results in <#" $a.ID ">: " $b) "description" $c))}}
+{{end}}
+{{return}}
+{{end}}
+{{if eq .CustomID "forumToolsDeclineConcluded"}}
+{{$db := (dbGet 0 "forumTools").Value}}
+{{if not (in .Member.Roles (index $db 2))}}
+Only moderators of the server can use this tool :(
+{{ephemeralResponse}}
+{{return}}
+{{end}}
 {{$embed := structToSdict (index .Message.Embeds 0)}}
 {{$embed.Set "color" 0x00FF00}}
 {{try}}
@@ -8,22 +53,37 @@
 {{end}}
 {{return}}
 {{end}}
-{{if eq .StrippedID "AcceptConcluded"}}
+{{if eq .CustomID "forumToolsAcceptConcluded"}}
+{{$db := (dbGet 0 "forumTools").Value}}
+{{if not (in .Member.Roles (index $db 2))}}
+Only moderators of the server can use this tool :(
+{{ephemeralResponse}}
+{{return}}
+{{end}}
+{{$db := (dbGet 0 "forumTools").Value}}
 {{$channel := (index (reFindAll `\d{16,20}` .Message.Content) 1)}}
 {{if (getChannelOrThread (toInt $channel))}}
-{{editThread (toInt $channel) (sdict "tags" (cslice (dbGet 0 "forumTools").Value))}} 
-{{sendMessage $channel (print "Done! post has been marked as " (dbGet 0 "forumTools").Value " and will close in 12 hours.")}}
+{{editThread (toInt $channel) (sdict "tags" (cslice (index $db 0)))}} 
+{{sendMessage $channel (print "Done! post has been marked as " (index $db 0) " and will close in 12 hours.")}}
+{{scheduleUniqueCC (index $db 1) nil 43200 (print .Channel.ID "expire") (cslice (toInt $channel) "expire")}}
+{{dbSetExpire (toInt $channel) "forumToolsExpire" "a" (toInt 43200)}}
 {{end}}
 {{$embed := structToSdict (index .Message.Embeds 0)}}
 {{$embed.Set "color" 0x00FF00}}
 {{try}}
-{{updateMessage (complexMessageEdit "content" (print .Message.Content "\n\n" .User.Mention " has accepted the report and marked the post as " (dbGet 0 "forumTools").Value ".") "buttons" (cslice  (sdict "disabled" true "label" "Accept" "style" "green" "custom_id" "forumToolsAcceptConcluded") (sdict "disabled" true "label" "Decline" "style" "red" "custom_id" "forumToolsDeclineConcluded")) "embed" (cembed $embed))}}
+{{updateMessage (complexMessageEdit "content" (print .Message.Content "\n\n" .User.Mention " has accepted the report and marked the post as " (index $db 0) ".") "buttons" (cslice  (sdict "disabled" true "label" "Accept" "style" "green" "custom_id" "forumToolsAcceptConcluded") (sdict "disabled" true "label" "Decline" "style" "red" "custom_id" "forumToolsDeclineConcluded")) "embed" (cembed $embed))}}
 {{catch}}
-{{editMessage $.Channel.ID $.Message.ID (complexMessageEdit "content" (print $.Message.Content "\n\n" $.User.Mention " has accepted the report and marked the post as " (dbGet 0 "forumTools").Value ".") "buttons" (cslice  (sdict "disabled" true "label" "Accept" "style" "green" "custom_id" "forumToolsAcceptConcluded") (sdict "disabled" true "label" "Decline" "style" "red" "custom_id" "forumToolsDeclineConcluded")) "embed" (cembed $embed))}}
+{{editMessage $.Channel.ID $.Message.ID (complexMessageEdit "content" (print $.Message.Content "\n\n" $.User.Mention " has accepted the report and marked the post as " (index $db 0) ".") "buttons" (cslice  (sdict "disabled" true "label" "Accept" "style" "green" "custom_id" "forumToolsAcceptConcluded") (sdict "disabled" true "label" "Decline" "style" "red" "custom_id" "forumToolsDeclineConcluded")) "embed" (cembed $embed))}}
 {{end}}
 {{return}}
 {{end}}
-{{if eq .StrippedID "ModifyTags"}}
+{{if eq .CustomID "forumToolsModifyTags"}}
+{{$db := (dbGet 0 "forumTools").Value}}
+{{if not (in .Member.Roles (index $db 2))}}
+Only moderators of the server can use this tool :(
+{{ephemeralResponse}}
+{{return}}
+{{end}}
 {{editThread .Channel.ID (sdict "tags" .Values)}}
 {{try}}
 {{updateMessage (complexMessageEdit "content" "Done! modified this post's tags.")}}
@@ -32,3 +92,4 @@
 {{end}}
 {{return}}
 {{end}}
+{{/* https://github.com/Enigmx/YAGPDB-custom-commands/tree/main/CC%3A%20Forum%20Tools */}}
