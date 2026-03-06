@@ -16,7 +16,7 @@ A collection of tools for managing forum posts, ranging from changing tags to au
 
 **-forum delete [reason]**: Delete the post, moderator only tool. You can optionally provide a reason, which is sent to a channel or thread of your choice, tagging the creator of said post to let them know. Good for transparency. If you do not provide a reason, the user is not notified at all and the post is deleted. If you somehow accidentally run this tool, you can cancel it in the ten seconds it takes YAGPDB to delete the post by running **-forum delete** again.  
 
-**-forum search [forum] [name]**: Search posts by name, includes a menu where you can filter by tags (or lack of it).
+**-forum search [forum] [name]**: Search posts by name, includes a menu where you can filter by tags (or lack of them).
 
 **-forum slowmode [seconds]**: Configure the current posts slowmode.  
 
