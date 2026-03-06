@@ -1,0 +1,12 @@
+{{$getTag := }}
+{{$tagObject := 0}}
+{{range .Guild.Channels}}
+{{if .AvailableTags}}
+{{range .AvailableTags}}
+{{if eq $getTag .ID}}
+{{$tagObject = .}}
+{{break}}
+{{end}}
+{{end}}
+{{end}}
+{{end}}
