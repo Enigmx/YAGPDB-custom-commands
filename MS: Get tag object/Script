@@ -1,12 +1,12 @@
-{{$getTag := }}
-{{$tagObject := 0}}
+{{$getTags := }}
+{{$resultTags := cslice}}
 {{range .Guild.Channels}}
-{{if .AvailableTags}}
-{{range .AvailableTags}}
-{{if eq $getTag .ID}}
-{{$tagObject = .}}
-{{break}}
+{{if not .AvailableTags}}
+{{continue}}
 {{end}}
+{{range .AvailableTags}}
+{{if in $getTags .ID}}
+{{$resultTags = $resultTags.Append .}}
 {{end}}
 {{end}}
 {{end}}
