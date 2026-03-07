@@ -1,0 +1,100 @@
+{{if eq .CustomID "indentCode"}}
+{{$a := modalBuilder "indent" "Indent code" (clabel "label" "Code" "component" (ctextInput "custom_id" "code" "style" 2 "max_length" 4000)) (clabel "label" "Setting" "component" (cradioGroup "custom_id" "option" "required" true "options" (cslice (sdict "label" "Remove indentation" "value" "0") (sdict "label" "TAB character" "value" "9") (sdict "label" "1 space" "value" "1") (sdict "label" "2 spaces" "value" "2") (sdict "label" "3 spaces" "value" "3") (sdict "label" "4 spaces" "value" "4") (sdict "label" "5 spaces" "value" "5")))) }}
+{{sendModal $a}}
+{{return}}
+{{end}}
+{{if eq .CustomID "indentMagnitude"}}
+{{$a := toInt (index .Values 0)}}
+{{$b := execAdmin "cc" (reFind `\d+` (index .Message.Embeds 0).Title) "-raw"}}
+{{$c := index (reSplit `\x60\x60\x60txt\n` $b.Content 2) 1}}
+{{$d := ""}}
+{{if eq $a 1}}
+{{$d = " "}}
+{{else if (eq $a 2)}}
+{{$d = "  "}}
+{{else if (eq $a 3)}}
+{{$d = "   "}}
+{{else if (eq $a 4)}}
+{{$d = "    "}}
+{{else if (eq $a 5)}}
+{{$d = "     "}}
+{{else if (eq $a 9)}}
+{{$d = printf "%c" 9}}
+{{end}}
+{{$e := cslice "if" "range" "try" "while" "with" "define" "block"}}
+{{$f := cslice "else" "catch"}}
+{{$g := cslice "end"}}
+{{$i := 0}}
+{{$j := ""}}
+{{$m := ""}}
+{{$c = joinStr "}}\n{{" (split $c (printf "%c%c%c%c" 125 125 123 123))}}
+{{$c = joinStr "}}\n{{" (split $c (printf "%c%c%c%c%c" 125 125 32 123 123))}}
+{{$c = joinStr "" (split $c (printf "%c" 9))}}
+{{range $k := (split $c "\n")}}
+{{if eq (trimSpace .) "```"}}
+{{continue}}
+{{end}}
+{{if eq (len (trimSpace .)) 0}}
+{{$j = print $j "\n"}}
+{{continue}}
+{{end}}
+{{$l := trimSpace .}}
+{{$h := ""}}
+{{if in . "{{"}}
+{{$h = (joinStr "" (split (joinStr "" (split (trimSpace .) "{{")) "}}"))}}
+{{$h = trimSpace (joinStr "" (split $h "-"))}}
+{{if in $e (index (split $h " ") 0)}}
+{{range (seq 0 $i)}}
+{{$l = print $d $l}}
+{{end}}
+{{if not (or (in $k (printf "%c%c%c%c%c%c%c" 123 123 101 110 100 125 125)) (in $k (printf "%c%c%c%c%c%c%c%c%c" 123 123 32 101 110 100 32 125 125)) (in $k (printf "%c%c%c%c%c%c%c%c%c%c%c" 123 123 32 32 101 110 100 32 32 125 125)))}}
+{{$i = add $i 1}}
+{{end}}
+{{else if (in $f (index (split $h " ") 0))}}
+{{if eq $i 0}}
+{{$m = print "\n⚠️ Indentation level seemed to go into the negatives at some point, suggesting there may be an unnecessary end somewhere"}}
+{{else}}
+{{range (seq 0 (sub $i 1))}}
+{{$l = print $d $l}}
+{{if (or (in $k (printf "%c%c%c%c%c%c%c" 123 123 101 110 100 125 125)) (in $k (printf "%c%c%c%c%c%c%c%c%c" 123 123 32 101 110 100 32 125 125)) (in $k (printf "%c%c%c%c%c%c%c%c%c%c%c" 123 123 32 32 101 110 100 32 32 125 125)))}}
+{{$i = sub $i 1}}
+{{end}}
+{{end}}
+{{end}}
+{{else if (in $g (index (split $h " ") 0))}}
+{{if eq $i 0}}
+{{$m = print "\n⚠️ Indentation level seemed to go into the negatives at some point, suggesting there may be an unnecessary end somewhere"}}
+{{$i = add $i 1}}
+{{else}}
+{{range (seq 0 (sub $i 1))}}
+{{$l = print $d $l}}
+{{end}}
+{{end}}
+{{$i = sub $i 1}}
+{{else}}
+{{range (seq 0 $i)}}
+{{$l = print $d $l}}
+{{end}}
+{{end}}
+{{$j = print $j "\n" $l}}
+{{else}}
+{{range (seq 0 $i)}}
+{{$l = print $d $l}}
+{{end}}
+{{$j = print $j "\n" $l}}
+{{end}}
+{{end}}
+{{if ne $i 0}}
+{{$m = print $m "\n⚠️ Indentation level did not end in zero at the end of the code, suggesting there may be a missing end or the code provided is incomplete"}}
+{{end}}
+{{$stringLenLimit := 3950}}
+{{$yourString := $j}}
+{{$truncation := ""}}
+{{if ge (len $yourString) $stringLenLimit}}
+{{$truncation = print (joinStr "" (slice (split $yourString "") 0 $stringLenLimit)) "..."}}
+{{else}}
+{{$truncation = $yourString}}
+{{end}}
+{{sendResponse nil (complexMessage "content" (print "Custom command **" (reFind `\d+` (index .Message.Embeds 0).Title) "** indented code, do a backup of your original code in case indentation is broken.\nCode length: " (len $j) "\n\n" $m) "file" $j)}}
+{{return}}
+{{end}}
