@@ -11,6 +11,7 @@ body:
         - Repository
         - A MiniScript
         - Avatar
+        - Custom Command Indent 
         - Custom Command Template
         - Extract
         - Forum Automatic Help
