@@ -8,6 +8,7 @@ body:
     description: Select the Custom Command you are having issues with
     options:
       - Avatar
+      - Custom Command Indent 
       - Custom Command Template
       - Extract
       - Forum Automatic Help
