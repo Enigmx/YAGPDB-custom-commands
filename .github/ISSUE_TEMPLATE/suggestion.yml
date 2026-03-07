@@ -11,6 +11,7 @@ body:
         - Repository
         - New CC or MS
         - Avatar
+        - Custom Command Indent
         - Custom Command Template
         - Extract
         - Forum Automatic Help
