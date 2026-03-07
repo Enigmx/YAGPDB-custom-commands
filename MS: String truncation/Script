@@ -3,5 +3,7 @@
 {{$truncation := ""}}
 {{if ge (len $yourString) $stringLenLimit}}
 {{$truncation = print (joinStr "" (slice (split $yourString "") 0 $stringLenLimit)) "..."}}
+{{else}}
+{{$truncation = $yourString}}
 {{end}}
 {{$truncation}}
