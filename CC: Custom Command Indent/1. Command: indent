@@ -1,0 +1,12 @@
+{{if eq (len .Args) 1}}
+{{sendMessage nil (complexMessage "buttons" (cbutton "label" "Indent code" "custom_id" "indentCode") "embed" (cembed "title" "Custom command indent" "description" (print "Automatically adds indent to custom command code. You can also remove it and configure the magnitude of indentation.\n\n**" .ServerPrefix "indent [CC]**: indent server custom command by ID.\n**" .ServerPrefix "indent**: Open this menu, where you alternatively have the option to input code to indent directly. Limited to 4000 characters max.")))}}
+{{return}}
+{{end}}
+{{$a := reFind `\d+` (index .Args 1)}}
+{{$b := execAdmin "cc" $a "-raw"}}
+{{if eq (kindOf $b) "string"}}
+No custom command of ID **{{$a}}** exists :(
+{{return}}
+{{end}}
+{{$c := index (reSplit `\x60\x60\x60txt` $b.Content 2) 1}}
+{{sendMessage nil (complexMessage "menus" (cmenu "type" "text" "placeholder" "Indentation magnitude" "custom_id" "indentMagnitude" "options" (cslice (sdict "label" "Remove indentation" "value" "0") (sdict "label" "TAB character" "value" "9") (sdict "label" "1 space" "value" "1") (sdict "label" "2 spaces" "value" "2") (sdict "label" "3 spaces" "value" "3") (sdict "label" "4 spaces" "value" "4") (sdict "label" "5 spaces" "value" "5"))) "embed" (cembed "title" (print "Custom command " $a) "description" (print (index (reSplit `\x60\x60\x60txt` $b.Content 2) 0) "\nCode length: " (len $c) "\n\nSelect the amount of spaces for indentation, or click ''Remove indentation'' to remove it.")))}}
