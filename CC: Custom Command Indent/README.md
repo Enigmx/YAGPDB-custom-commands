@@ -7,9 +7,9 @@ This tool will always attempt to split multiple brace actions on the same line i
 Example:
 `{{if condition}} {{something}} {{end}}`  
 becomes  
-`{{if condition}}  
-{{something}}  
-{{end}}`
+`{{if condition}}`  
+`{{something}}`  
+`{{end}}`
 
 # Use manual
 **-indent [CC]**: Indent the custom command by ID. After running the command, you will configure the indentation settings (remove indentation, use TAB indentation, or use a specific number of spaces). Result will be sent as a `.txt` file.
