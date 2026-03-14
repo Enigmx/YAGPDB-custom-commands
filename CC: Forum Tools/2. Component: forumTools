@@ -65,7 +65,7 @@ Only moderators of the server can use this tool :(
 {{if (getChannelOrThread (toInt $channel))}}
 {{editThread (toInt $channel) (sdict "tags" (cslice (index $db 0)))}} 
 {{sendMessage $channel (print "Done! post has been marked as " (index $db 0) " and will close in 12 hours.")}}
-{{scheduleUniqueCC (index $db 1) nil 43200 (print .Channel.ID "expire") (cslice (toInt $channel) "expire")}}
+{{scheduleUniqueCC (index $db 1) nil 43200 (print (toInt $channel) "expire") (cslice (toInt $channel) "expire")}}
 {{dbSetExpire (toInt $channel) "forumToolsExpire" "a" (toInt 43200)}}
 {{end}}
 {{$embed := structToSdict (index .Message.Embeds 0)}}
