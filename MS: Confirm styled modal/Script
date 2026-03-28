@@ -1,0 +1,2 @@
+{{$confirm := modalBuilder "insert_custom_id" "Confirm action" (clabel "label" "Are you sure?" "component" (ccheckboxGroup "required" true "custom_id" "a" "options" (cslice (sdict "value" "1" "label" "Confirm"))))}}
+{{sendModal $confirm}}
