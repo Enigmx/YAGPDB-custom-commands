@@ -9,10 +9,11 @@ body:
       label: What is this suggestion related to?
       options:
         - Repository
-        - New CC or MS
+        - New CC or SN
         - Avatar
         - Custom Command Indent
         - Custom Command Template
+        - Embed Creator
         - Extract
         - Forum Automatic Help
         - Forum Post Logging
