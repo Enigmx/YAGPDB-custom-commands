@@ -9,7 +9,7 @@ body:
       label: Which Custom Command is affected?
       description: Select the Custom Command this modification applies to.
       options:
-        - Mini Script
+        - A snippet
         - Avatar
         - Custom Command Indent 
         - Custom Command Template
