@@ -9,3 +9,14 @@ The result will be stored in the `$messageObject` variable:
 - Returns **nil** if the message could not be found or does not exist  
 
 You can then use this variable in the rest of your code.
+
+# Script
+```
+{{$messageLink := }}
+{{$messageObject := false}}
+{{try}}
+{{$messageObject = getMessage (toInt (index (split $messageLink "/") 5)) (toInt (index (split $messageLink "/") 6))}}
+{{catch}}
+{{end}}
+{{$messageObject}}
+```
