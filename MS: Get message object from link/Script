@@ -1,7 +1,0 @@
-{{$messageLink := }}
-{{$messageObject := false}}
-{{try}}
-{{$messageObject = getMessage (toInt (index (split $messageLink "/") 5)) (toInt (index (split $messageLink "/") 6))}}
-{{catch}}
-{{end}}
-{{$messageObject}}
