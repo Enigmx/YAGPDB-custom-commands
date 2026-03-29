@@ -9,10 +9,11 @@ body:
       label: What is your question related to?
       options:
         - Repository
-        - A MiniScript
+        - A snippet
         - Avatar
         - Custom Command Indent 
         - Custom Command Template
+        - Embed Creator
         - Extract
         - Forum Automatic Help
         - Forum Post Logging
