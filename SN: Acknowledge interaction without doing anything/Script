@@ -1,8 +1,0 @@
-{{$components := cslice}}
-{{range .Message.Components}}
-{{$components = $components.Append .Components}}
-{{end}}
-{{try}}
-{{updateMessage (complexMessageEdit "content" .Message.Content "embed" .Message.Embeds "components" $components)}}
-{{catch}}
-{{end}}
