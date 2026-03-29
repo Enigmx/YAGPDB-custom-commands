@@ -1,0 +1,169 @@
+{{$components := cslice}}
+{{range .Message.Components}}
+{{$components = $components.Append .Components}}
+{{end}}
+{{$i := toInt (reFind `\d+` .CustomID)}}
+{{if eq .CustomID "embedCreatorSend"}}
+{{$a := modalBuilder "embedCreatorSend" "Send message" (clabel "label" "Channel/thread name or ID" "component" (ctextInput "custom_id" "channel" "style" 1 "max_length" 100))}}
+{{sendModal $a}}
+{{return}}
+{{end}}
+{{if eq .CustomID "embedCreatorEditMessage"}}
+{{$a := modalBuilder "embedCreatorEdit" "Edit message" (clabel "label" "Message link" "component" (ctextInput "custom_id" "link" "style" 1 "max_length" 100))}}
+{{sendModal $a}}
+{{return}}
+{{end}}
+{{if eq .CustomID "embedCreatorDone"}}
+{{$a := complexMessageEdit "components" (cslice (cbutton "label" "Back" "custom_id" "embedCreatorBack") (cbutton "label" "Send message" "custom_id" "embedCreatorSend" "style" "grey") (cbutton "label" "Edit message" "custom_id" "embedCreatorEditMessage" "style" "grey") (cbutton "label" "To YAGPDB" "custom_id" "embedCreatorYag" "style" "grey") (cbutton "label" "JSON" "custom_id" "embedCreatorToJson" "style" "grey")) "embed" (cembed "title" "Export options" "description" "Click ''Send message'' to send your embed to a specific channel or thread.\nClick ''Edit message'' to edit a message sent by YAGPDB, replacing it for your embed.\n''To YAGPDB'' formats your embed for complexMessage use.\n''JSON'' sends your embed in JSON indented format.")}}
+{{try}}
+{{updateMessage $a}}
+{{catch}}
+{{editMessage nil $.Message.ID $a}}
+{{end}}
+{{return}}
+{{end}}
+{{if in .CustomID "embedCreatorDeleteEmbed"}}
+{{$c := modalBuilder (print "embedCreatorDeleteEmbed" $i) "Delete embed" (clabel "label" "Are you sure?" "component" (ccheckboxGroup "required" true "custom_id" "a" "options" (cslice (sdict "value" "1" "label" "Confirm"))))}}
+{{sendModal $c}}
+{{return}}
+{{end}}
+{{if in .CustomID "embedCreatorEditField"}}
+{{$a := ((structToSdict (index (.Message.ReferencedMessage).Embeds (toInt (sub $i 1)))).Get "Fields")}}
+{{$b := (index $a (toInt (index .Values 0)))}}
+{{$c := modalBuilder (print "embedCreatorEditField" $i "-" (index .Values 0)) "Edit field" (clabel "label" "Name (leave empty to remove)" "component" (ctextInput "value" $b.Name "custom_id" "name" "style" 1 "max_length" 256)) (clabel "label" "Value" "component" (ctextInput "required" true "value" $b.Value "custom_id" "value" "style" 2 "max_length" 1024)) (clabel "label" "Inline" "component" (cradioGroup "required" false "custom_id" "inline" "options" (cslice (sdict "value" "1" "label" "Enable") (sdict "value" "0" "label" "Disable"))))}}
+{{sendModal $c}}
+{{return}}
+{{end}}
+{{if eq .CustomID "embedCreatorLoadMessage"}}
+{{$a := modalBuilder (print "embedCreatorLoadMessage") "Load from message" (clabel "label" "Message link:" "component" (ctextInput "custom_id" "link" "style" 1 "max_length" 95))}}
+{{sendModal $a}}
+{{return}}
+{{end}}
+{{if eq .CustomID "embedCreatorLoadJson"}}
+{{$a := modalBuilder (print "embedCreatorLoadJson") "Load JSON" (clabel "label" "JSON:" "component" (ctextInput "custom_id" "json" "style" 2 "max_length" 4000))}}
+{{sendModal $a}}
+{{return}}
+{{end}}
+{{if eq .CustomID "embedCreatorBack" "embedCreatorToJson" "embedCreatorYag"}}
+{{try}}
+{{updateMessage (complexMessageEdit "content" .Message.Content "embed" .Message.Embeds "components" $components)}}
+{{catch}}
+{{end}}
+{{if in .CustomID "Back"}}
+{{execCC (toInt (dbGet 0 "embedCreator").Value) nil 0 "c"}}
+{{else if in .CustomID "Yag"}}
+{{execCC (toInt (dbGet 0 "embedCreator").Value) nil 0 "y"}}
+{{else}}
+{{execCC (toInt (dbGet 0 "embedCreator").Value) nil 0 "z"}}
+{{end}}
+{{return}}
+{{end}}
+{{if in .CustomID "embedCreatorAddField"}}
+{{$a := ((structToSdict (index (.Message.ReferencedMessage).Embeds (toInt (sub $i 1)))).Get "Fields")}}
+{{if eq (len $a) 25}}
+You can't add any more fields :(
+{{ephemeralResponse}}
+{{return}}
+{{end}}
+{{$a := modalBuilder (print "embedCreatorFields" $i) "Add a field" (clabel "label" "Name" "component" (ctextInput "custom_id" "name" "required" true "style" 1 "max_length" 256)) (clabel "label" "Value" "component" (ctextInput "required" true "custom_id" "value" "style" 2 "max_length" 1024))  (clabel "label" "Inline" "component" (cradioGroup "required" false "custom_id" "inline" "options" (cslice (sdict "value" "1" "label" "Enable") (sdict "value" "0" "label" "Disable"))))}}
+{{sendModal $a}}
+{{return}}
+{{end}}
+{{if in .CustomID "embedCreatorEditAttach"}}
+{{$b := ""}}
+{{$c := ""}}
+{{$j := ((structToSdict (index (.Message.ReferencedMessage).Embeds (toInt (sub (reFind `\d+` .CustomID) 1)))))}}
+{{if $j.Image}}
+{{$b = $j.Image.URL}}
+{{end}}
+{{if $j.Thumbnail}}
+{{$c = $j.Thumbnail.URL}}
+{{end}}
+{{$a := modalBuilder (print "embedCreatorAttach" $i) "Edit attachments" (clabel "label" "Image" "component" (ctextInput "custom_id" "image" "style" 1 "max_length" 1000 "value" $b)) (clabel "label" "Thumbnail" "component" (ctextInput "custom_id" "attach" "style" 1 "max_length" 1000 "value" $c))}}
+{{sendModal $a}}
+{{return}}
+{{end}}
+{{if in .CustomID "embedCreatorEditColor"}}
+{{$b := (structToSdict (index (.Message.ReferencedMessage).Embeds (toInt (sub $i 1)))).Get "Color"}}
+{{$a := modalBuilder (print "embedCreatorColor" $i) "Edit color" (clabel "label" "Integer" "component" (ctextInput "custom_id" "color" "style" 1 "max_length" 8 "value" (str $b)))}}
+{{sendModal $a}}
+{{return}}
+{{end}}
+{{if in .CustomID "embedCreatorEditFooter"}}
+{{$b := ""}}
+{{$c := ""}}
+{{if $d := ((structToSdict (index (.Message.ReferencedMessage).Embeds (toInt (sub $i 1)))).Get "Footer")}}
+{{$b = (structToSdict $d).Get "Text"}}
+{{$c = (structToSdict $d).Get "IconURL"}}
+{{end}}
+{{$a := modalBuilder (print "embedCreatorFooter" $i) "Edit footer" (clabel "label" "Text" "component" (ctextInput "custom_id" "text" "style" 1 "max_length" 2048 "value" $b)) (clabel "label" "Icon URL" "component" (ctextInput "custom_id" "URL" "style" 1 "max_length" 1000 "value" $c))}}
+{{sendModal $a}}
+{{return}}
+{{end}}
+{{if in .CustomID "embedCreatorEditAuthor"}}
+{{$b := ""}}
+{{$c := ""}}
+{{$d := ""}}
+{{if $e := ((structToSdict (index (.Message.ReferencedMessage).Embeds (toInt (sub $i 1)))).Get "Author")}}
+{{$b = (structToSdict $e).Get "Name"}}
+{{$c = (structToSdict $e).Get "URL"}}
+{{$d = (structToSdict $e).Get "IconURL"}}
+{{end}}
+{{$a := modalBuilder (print "embedCreatorAuthor" $i) "Edit author" (clabel "label" "Name" "component" (ctextInput "custom_id" "name" "style" 1 "max_length" 256 "value" $b)) (clabel "label" "URL" "component" (ctextInput "custom_id" "URL" "style" 1 "max_length" 1000 "value" $c)) (clabel "label" "Icon URL" "component" (ctextInput "custom_id" "icon" "style" 1 "max_length" 1000 "value" $d))}}
+{{sendModal $a}}
+{{return}}
+{{end}}
+{{if in .CustomID "embedCreatorEditDescription"}}
+{{$b := (structToSdict (index (.Message.ReferencedMessage).Embeds (toInt (sub $i 1)))).Get "Description"}}
+{{$a := modalBuilder (print "embedCreatorDescription" $i) "Edit description" (clabel "label" "Description" "component" (ctextInput "custom_id" "Description" "style" 2 "max_length" 4000 "value" $b))}}
+{{sendModal $a}}
+{{return}}
+{{end}}
+{{if in .CustomID "embedCreatorEditTitle"}}
+{{$d :=  (structToSdict (index (.Message.ReferencedMessage).Embeds (toInt (sub $i 1))))}}
+{{$b := $d.Get "Title"}}
+{{$c := $d.Get "URL"}}
+{{$a := modalBuilder (print "embedCreatorTitle" $i) "Edit title" (clabel "label" "Title" "component" (ctextInput "custom_id" "title" "style" 1 "max_length" 256 "value" $b)) (clabel "label" "URL" "component" (ctextInput "custom_id" "URL" "style" 1 "max_length" 1000 "value" $c))}}
+{{sendModal $a}}
+{{return}}
+{{end}}
+{{if in .CustomID "embedCreatorEditEmbed"}}
+{{try}}
+{{updateMessage (complexMessageEdit "content" .Message.Content "embed" .Message.Embeds "components" $components)}}
+{{catch}}
+{{end}}
+{{execCC (toInt (dbGet 0 "embedCreator").Value) nil 0 (print "e" $i)}}
+{{return}}
+{{end}}
+{{if eq .CustomID "embedCreatorAddEmbed"}}
+{{if eq (len .Message.ReferencedMessage.Embeds) 9}}
+You can't add any more embeds :(
+{{ephemeralResponse}}
+{{return}}
+{{end}}
+{{try}}
+{{updateMessage (complexMessageEdit "content" .Message.Content "embed" .Message.Embeds "components" $components)}}
+{{catch}}
+{{end}}
+{{$a := structToSdict .Message.ReferencedMessage}}
+{{$b := cslice}}
+{{range ($a.Get "Embeds")}}
+{{$b = $b.Append .}}
+{{end}}
+{{$b = $b.Append (cembed "description" (print "Embed index: " (add (len ($a.Get "Embeds")) 1)))}}
+{{editMessage nil $a.ID (complexMessageEdit "content" ($a.Get "Content") "embed" $b)}}
+{{execCC (toInt (dbGet 0 "embedCreator").Value) nil 0 "c"}}
+{{return}}
+{{end}}
+{{if eq .CustomID "embedCreatorContent"}}
+{{$b := .Message.ReferencedMessage.Content}}
+{{$a := modalBuilder "embedCreatorContent" "Edit content" (clabel "label" "Content" "component" (ctextInput "custom_id" "content" "style" 2 "max_length" 2000 "value" $b))}}
+{{sendModal $a}}
+{{return}}
+{{end}}
+{{if eq .CustomID "embedCreatorNew"}}
+{{editMessage .Channel.ID .Message.ID (complexMessageEdit "content" "Edit this message using the control panel!" "embed" (cslice) "components" (cslice))}}
+{{sendMessage nil (complexMessage "reply" .Message.ID "components" (cslice (cbutton "label" "Done" "custom_id" "embedCreatorDone" "style" "green") (cbutton "label" "Edit content" "custom_id" "embedCreatorContent" "style" "grey")  (cbutton "label" "Add embed" "custom_id" "embedCreatorAddEmbed")) "embed" (cembed "title" "Control panel" "description" "Click ''New embed'' to add an embed to the message.\nClick ''Edit content'' to edit the text that is outside embeds.\nClick ''Done'' to export or send this message.\n\n### Total characters count: 42/6000\nContent: 42/2000"))}}
+{{return}}
+{{end}}
+{{/* https://github.com/Enigmx/YAGPDB-custom-commands/tree/main/CC%3A%20Embed%20Creator */}}
