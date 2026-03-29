@@ -11,3 +11,19 @@ The tag object contains the following fields:
 Copy and paste the script into your code, then assign the tag IDs you want to process to the `{{$getTags}}` variable as a slice (`.Channel.AppliedTags` works if you are trying to get tag objects from the current channel).
 
 The result will be stored in the `{{$resultTags}}` variable as a slice containing the objects of all valid tag IDs, ordered the same way the tags are ordered in the forum channel configuration. You can then use this variable in the rest of your code.
+
+# Script
+```
+{{$getTags := }}
+{{$resultTags := cslice}}
+{{range .Guild.Channels}}
+{{if not .AvailableTags}}
+{{continue}}
+{{end}}
+{{range .AvailableTags}}
+{{if in $getTags .ID}}
+{{$resultTags = $resultTags.Append .}}
+{{end}}
+{{end}}
+{{end}}
+```
