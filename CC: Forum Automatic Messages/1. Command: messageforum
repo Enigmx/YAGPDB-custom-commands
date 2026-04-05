@@ -39,3 +39,4 @@ Select a forum channel to manage
 {{sendMessage nil (complexMessage "content" (print "<#" $b.ID ">") "components" (cslice (cbutton "label" "Edit" "custom_id" (print "forumAutoMessageEdit" $b.ID) "style" "grey")  (cbutton "label" "Remove" "custom_id" (print "forumAutoMessageRemove" $b.ID) "style" "red")) "embed" (cembed "title" $c "description" $d "color" $e))}}
 {{end}}
 {{end}}
+{{/* https://github.com/Enigmx/YAGPDB-custom-commands/tree/main/CC%3A%20Forum%20Automatic%20Messages */}}
