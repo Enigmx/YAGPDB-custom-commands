@@ -1,0 +1,22 @@
+{{if in .CustomID "forumAutoMessageEdit"}}
+{{$db := (dbGet 0 "forumAutoMessage").Value}}
+{{$b := reFind `\d+` .Message.Content}}
+{{$c := ($db.Get (str $b)).Get "title"}}
+{{$d := ($db.Get (str $b)).Get "description"}}
+{{$e := ($db.Get (str $b)).Get "color" | toInt}}
+{{$f := ($db.Get (str $b)).Get "image"}}
+{{if $f}}
+{{$f = $f.Get "url"}}
+{{end}}
+{{sendModal (sdict "custom_id" (print "forumAutoMessageEdit" (reFind `\d+` (.Message.Content))) "title" "Edit message" "components" (cslice (clabel "label" "Embed title" "custom_id" "title" "component" (ctextInput "max_length" 256 "custom_id" "a" "style" 1 "value" (str $c))) (clabel "label" "Embed description" "custom_id" "description" "component" (ctextInput "max_length" 4000 "custom_id" "b" "style" 2 "value" (str $d))) (clabel "label" "Embed color" "custom_id" "color" "component" (ctextInput "max_length" 12 "custom_id" "c" "style" 1 "value" (str $e)))  (clabel "label" "Embed image" "custom_id" "image" "component" (ctextInput "max_length" 2000 "custom_id" "d" "style" 1 "value" (str $f))) (clabel "label" "Pin message automatically?" "component" (cradioGroup "custom_id" "pin" "required" true "options" (cslice (sdict "label" "Enable" "value" "1") (sdict "label" "Disable" "value" "0"))))))}}
+{{return}}
+{{end}}
+{{if in .CustomID "forumAutoMessageRemove"}}
+{{$confirm := modalBuilder (print "forumAutoMessageRemove" (reFind `\d+` .Message.Content)) "Remove forum message" (clabel "label" "Are you sure?" "component" (ccheckboxGroup "required" true "custom_id" "a" "options" (cslice (sdict "value" "1" "label" "Confirm"))))}}
+{{sendModal $confirm}}
+{{return}}
+{{end}}
+{{if eq .CustomID "forumAutoMessageAdd"}}
+{{sendModal (sdict "custom_id" (print "forumAutoMessageAdd" (reFind `\d+` (.Message.Content))) "title" "Add message" "components" (cslice (clabel "label" "Embed title" "custom_id" "title" "component" (ctextInput "max_length" 256 "custom_id" "a" "style" 1)) (clabel "label" "Embed description" "custom_id" "description" "component" (ctextInput "max_length" 4000 "custom_id" "b" "style" 2)) (clabel "label" "Embed color" "custom_id" "color" "component" (ctextInput "max_length" 12 "custom_id" "c" "style" 1))  (clabel "label" "Embed image" "custom_id" "image" "component" (ctextInput "max_length" 2000 "custom_id" "d" "style" 1)) (clabel "label" "Pin message automatically?" "component" (cradioGroup "custom_id" "pin" "required" true "options" (cslice (sdict "label" "Enable" "value" "1") (sdict "label" "Disable" "value" "0"))))))}}
+{{return}}
+{{end}}
