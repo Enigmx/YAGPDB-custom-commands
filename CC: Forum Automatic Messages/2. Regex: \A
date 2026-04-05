@@ -1,0 +1,21 @@
+{{if eq .Channel.ID .Message.ID}}
+{{$dbafm := (dbGet 0 "forumAutoMessage").Value}}
+{{if $dbafm}}
+{{if $a := ($dbafm.Get (str .Channel.ParentID))}}
+{{$c := $a.Get "title"}}
+{{$d := $a.Get "description"}}
+{{$e := $a.Get "color" | toInt}}
+{{$f := $a.Get "image"}}
+{{$g := $a.Get "pin"}}
+{{$h := 0}}
+{{if $f}}
+{{$h = sendMessageRetID nil (complexMessage "embed" (cembed "title" $c "description" $d "color" $e "image" $f))}}
+{{else}}
+{{$h = sendMessageRetID nil (complexMessage "embed" (cembed "title" $c "description" $d "color" $e))}}
+{{end}}
+{{if (toInt $g)}}
+{{pinMessage nil $h}}
+{{end}}
+{{end}}
+{{end}}
+{{end}}
