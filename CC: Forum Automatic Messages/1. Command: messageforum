@@ -1,0 +1,41 @@
+{{$db := (dbGet 0 "forumAutoMessage").Value}}
+{{if not $db}}
+{{$db = sdict}}
+{{end}}
+{{if eq (len .Args) 1}}
+{{$a := ""}}
+{{range $k, $v := $db}}
+{{$a = print $a "<#" $k "> "}}
+{{end}}
+{{if not $a}}
+{{$a = "none."}}
+{{end}}
+# Forum Automatic Messages
+**{{.ServerPrefix}}messageforum [channel]**: Add, edit or remove automatic messages when a forum post is opened in this forum channel.
+
+Currently enabled in: {{$a}}
+{{return}}
+{{end}}
+{{$b := getChannel (toInt (reFind `\d+` (index .Args 1)))}}
+{{if not $b}}
+Select a forum channel to manage
+{{return}}
+{{end}}
+{{if not $b.IsForum}}
+Select a forum channel to manage
+{{return}}
+{{end}}
+{{if not ($db.Get (str $b.ID))}}
+{{sendMessage nil (complexMessage "content" (print "No automatic message available for <#" $b.ID ">, click ''Add'' to write one") "components" (cbutton "label" "Add" "custom_id" "forumAutoMessageAdd" "style" "green"))}}
+{{else}}
+{{$c := ($db.Get (str $b.ID)).Get "title"}}
+{{$d := ($db.Get (str $b.ID)).Get "description"}}
+{{$e := ($db.Get (str $b.ID)).Get "color" | toInt}}
+{{$f := ($db.Get (str $b.ID)).Get "image"}}
+{{$g := ($db.Get (str $b.ID)).Get "pin"}}
+{{if $f}}
+{{sendMessage nil (complexMessage "content" (print "<#" $b.ID ">") "components" (cslice (cbutton "label" "Edit" "custom_id" (print "forumAutoMessageEdit" $b.ID) "style" "grey")  (cbutton "label" "Remove" "custom_id" (print "forumAutoMessageRemove" $b.ID) "style" "red")) "embed" (cembed "title" $c "description" $d "color" $e "image" $f))}}
+{{else}}
+{{sendMessage nil (complexMessage "content" (print "<#" $b.ID ">") "components" (cslice (cbutton "label" "Edit" "custom_id" (print "forumAutoMessageEdit" $b.ID) "style" "grey")  (cbutton "label" "Remove" "custom_id" (print "forumAutoMessageRemove" $b.ID) "style" "red")) "embed" (cembed "title" $c "description" $d "color" $e))}}
+{{end}}
+{{end}}
