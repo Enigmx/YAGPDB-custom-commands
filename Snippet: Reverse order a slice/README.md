@@ -1,4 +1,4 @@
-# Reverse sort a slice
+# Reverse order a slice
 Reverses the order of any slice you pass through, so the last element becomes the first, the second-to-last becomes the second, and so on. Useful for not having to use the sort function which is heavily limited.
 
 # Use
