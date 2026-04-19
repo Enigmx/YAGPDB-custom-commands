@@ -1,0 +1,13 @@
+{{$threadLogChannelID := 0}}
+{{$logFromTheseChannels := cslice }}
+{{$str := ""}}
+{{range .Guild.Threads}}
+{{if (in $logFromTheseChannels .ParentID)}}
+{{if le (toInt ( (currentTime).Sub (snowflakeToTime .ID)).Seconds) 300}}
+{{$str = print $str "\n\nA new thread has been opened by <@" .OwnerID ">\n<#" .ID "> ''" .Name "'' in <#" .ParentID ">"}}
+{{end}}
+{{end}}
+{{end}}
+{{if $str}}
+{{sendMessage $threadLogChannelID $str}}
+{{end}}
