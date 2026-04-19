@@ -1,0 +1,90 @@
+{{$thing := (execAdmin "dcct" (print (trimSpace .StrippedMsg)))}}
+{{if eq (kindOf $thing) "string"}}
+{{sendMessage nil (cembed "color" 2657023 "title" "Custom commands" "description" (print "Nothing triggers on ''" .StrippedMsg "''."))}}
+{{return}}
+{{else}}
+{{$thing = $thing.Content}}
+{{end}}
+{{$skip := 0}}
+{{$trigger := ""}}
+{{$string := split (str $thing) "\n"}}
+{{$string2 := 0}}
+{{range $string}}
+{{if eq $skip 0}}
+{{$skip = 1}}
+{{$string2 = print ""}}
+{{continue}}
+{{end}}
+{{if ge (len (split . "/")) 7}}
+{{$string2 = print $string2 "\n" "**"
+ (index (split . "/") 7) ":** "}}
+{{if in (index (split . (print "/" (index (split . "/") 7) "/):")) 1) "Regex"}}
+{{$string2 = print $string2 " __[Regex]__" }}
+{{else if (in (index (split . (print "/" (index (split . "/") 7) "/):")) 1) "ontain")}}
+{{$string2 = print $string2 " __[Contains]__" }}
+{{else if (in (index (split . (print "/" (index (split . "/") 7) "/):")) 1) "tarts")}}
+{{$string2 = print $string2 " __[Starts with]__" }}
+{{else if (in (index (split . (print "/" (index (split . "/") 7) "/):")) 1) "mmand")}}
+{{$string2 = print $string2 " __[Command]__" }}
+{{else if (in (index (split . (print "/" (index (split . "/") 7) "/):")) 1) "match")}}
+{{$string2 = print $string2 " __[Exact match]__" }}
+{{end}}
+{{if gt (len (index (split (index (split . "/") 8) "`") 1)) 2}}
+{{$why := ""}}
+{{$count2 := 0}}
+{{range (split . "/")}}
+{{if le $count2 7}}
+{{$count2 = add $count2 1}}
+{{continue}}
+{{else}}
+{{$why = print $why "/" .}}
+{{end}}
+{{end}}
+{{$count3 := 0}}
+{{$aaa := ""}}
+{{range (split $why " ")}}
+{{if le $count3 1}}
+{{$count3 = add $count3 1}}
+{{else}}
+{{$aaa = print $aaa " " .}}
+{{$trigger = $aaa}}
+{{end}}
+{{end}}
+{{$stringLenLimit := 40}}
+{{$yourString := $trigger}}
+{{$truncation := ""}}
+{{if ge (len $yourString) $stringLenLimit}}
+{{$truncation = print (joinStr "" (slice (split $yourString "") 0 $stringLenLimit)) "...`"}}
+{{else}}
+{{$truncation = $yourString}}
+{{end}}
+{{$trigger = $truncation}}
+{{$string2 = print $string2 " " $trigger}}
+{{$count := 0}}
+{{range (split (index (split . "/") 8) "`")}}
+{{$count = add $count 1}}
+{{if ge $count 2}}
+{{end}}
+{{end}}
+{{else}}
+{{if ge (len (split (index (split . " ") 3) "`")) 3}}
+{{$string2 = print $string2 " " (index (split (index (split . " ") 3) "`") 1)}}
+{{else}}
+{{$string2 = print $string2 " " (index (split (index (split . " ") 3) "`") 0)}}
+{{end}}
+{{$string2 = print $string2 " "}}
+{{end}}
+{{else}}
+{{if in . "will execute"}}
+{{$string2 = print $string2 "\n✅ Will execute\n"}}
+{{else if in . "unmet role"}}
+{{$string2 = print $string2 "\n✅ Will execute, but this Custom Command ignores you or this channel\n"}}
+{{else if in . "disabled"}}
+{{$string2 = print $string2 "\n❌ Will not execute, this Custom Command is disabled\n"}}
+{{else if in . "would otherwise execute"}}
+{{$string2 = print $string2 "\n🚫 Will not execute, too many custom commands already run under this input"}}
+{{end}}
+{{end}}
+{{else}}
+{{end}}
+{{sendMessage nil (cembed "color" 2657023 "title" "Custom commands" "description" $string2)}}
