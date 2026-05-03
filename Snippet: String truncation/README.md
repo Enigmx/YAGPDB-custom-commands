@@ -23,6 +23,6 @@ The output will be stored in the `{{$truncated}}` variable, which you can then u
 {{$strlim := }}
 {{$str := }}
 {{$tr := ""}}{{if ge (len $str) $strlim}}
-{{$tr = print (joinStr "" (slice (split $str "") 0 $strlen)) "..."}}{{else}}
+{{$tr = print (joinStr "" (slice (split $str "") 0 $strlim)) "..."}}{{else}}
 {{$tr = $str}}{{end}}
 ```
