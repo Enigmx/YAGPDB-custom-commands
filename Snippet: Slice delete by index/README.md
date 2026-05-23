@@ -29,7 +29,7 @@ Copy and paste the script into your code, then configure these variables:
 {{$slice := }}
 {{$ccc := 0}}{{$res := cslice}}
 {{range $slice}}
-{{if eq $cccc $delIndex}}{{$ccc = add $ccc 1}}{{continue}}{{end}}
+{{if eq $ccc $delIndex}}{{$ccc = add $ccc 1}}{{continue}}{{end}}
 {{$res = $res.Append .}}{{$ccc = add $ccc 1}}
 {{end}}
 ```
