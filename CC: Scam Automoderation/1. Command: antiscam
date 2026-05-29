@@ -1,0 +1,81 @@
+{{/* configuration */}}
+{{$admin := }}
+{{/* end configuration */}}
+
+{{$db := (dbGet 0 "antiscam").Value}}
+{{if not $db}}
+{{$db = sdict "config" (sdict "admin" $admin "log" 0 "roles" (cslice) "inmune" (cslice) ) "list" (cslice) "cross" (sdict)}}
+{{end}}
+{{$sd := $db.Get "config"}}
+{{$crosspast := $db.Get "cross"}}
+{{range $k, $v := $crosspast}}
+{{if (gt (toInt (currentTime.Sub (snowflakeToTime (index $v 1))).Seconds) 300)}}
+{{$crosspast.Del $k}}
+{{end}}
+{{end}}
+{{$sd.Set "admin" $admin}}
+{{$db.Set "cross" $crosspast}}
+{{$db.Set "config" $sd}}
+{{dbSet 0 "antiscam" $db}}
+{{if eq (len .Args) 1}}
+{{$on := true}}
+{{if ($db.Get "list")}}
+{{$on = false}}
+{{end}}
+{{sendMessage nil (complexMessage "components" (cslice (cslice (cbutton "emoji" (sdict "name" "⬅️") "style" "grey" "custom_id" "antiscamBack" "disabled" true) (cbutton "label" "New" "style" "green" "custom_id" "antiscamAdd")  (cbutton "emoji" (sdict "name" "➡️") "style" "grey" "custom_id" "antiscamNext" "disabled" $on))) "embed" (cembed "color" 0xFFF413 "title" "🔨 • Scam automoderation" "description" (print "Automatically mute, soft ban, and ban compromised & bot accounts from the server. Add new scam keywords by clicking ''New'' and browse scam lists by using the navigating arrows. \n\nWhile adding new scam keywords, you will be prompted to configure the following behaviors:\n\n**Scam keyword**: Add phrases commonly sent by bot accounts to flag them once detected by YAGPDB. Will also detect from attached file names.\n\n**Action to take**: Select whether to time out accounts for 30 minutes for manual moderator review, soft ban (ban, clean last day of messages and then unban), or to fully clean ban.\n\n**Trigger**: Select whether to take action as soon as a message is flagged, or only after crossposting across multiple channels. Good to avoid false positives if a scam message looks like something members may send casually.\n\nTo view, configure, or delete current scams run ''" .ServerPrefix "antiscam [ID]''.\nNote: you can have at most 500 keywords flagged through this tool, if you add more, the oldest keyword is deleted to make room.")))}}
+{{return}}
+{{end}}
+{{if and (eq (lower (index .Args 1)) "admin") (in .Member.Roles $admin)}}
+{{$r := ""}}
+{{if $a := (($db.Get "config").Get "roles")}}
+{{$r = print "<@&" (joinStr "> <@&" $a) ">"}}
+{{else}}
+{{$r = "None"}}
+{{end}}
+{{$j := ""}}
+{{if $f := (($db.Get "config").Get "inmune")}}
+{{$j = print "<@&" (joinStr "> <@&" $f) ">"}}
+{{else}}
+{{$j = "None"}}
+{{end}}
+{{$c := ""}}
+{{if $b := (($db.Get "config").Get "log")}}
+{{$c = print "<#" $b ">"}}
+{{else}}
+{{$c = "None"}}
+{{end}}
+{{sendMessage nil (complexMessage "components" (cbutton "label" "Settings" "custom_id" "antiscamSettings" "style" "grey") "embed" (cembed "title" "🛠️ • Configuration" "description" (print "Roles who are allowed to add, edit and remove keywords:\n" $r "\n\nInmune roles:\n" $j "\n\nLog channel:\n" $c)))}}
+{{return}}
+{{end}}
+{{if $a := (reFind `\d+` (index .Args 1))}}
+{{$a = toInt $a}}
+{{$toReverse := ($db.Get "list")}}
+{{$reversed := cslice}}
+{{range (seq (mult -1 (sub (len $toReverse) 1)) 1)}}
+{{$reversed = $reversed.Append (index $toReverse (mult -1 .))}}
+{{end}}
+{{$r := ""}}
+{{try}}
+{{$r = index $reversed (add $a -1)}}
+{{catch}}
+Nothing found
+{{return}}
+{{end}}
+{{$str1 := ""}}
+{{$str2 := ""}}
+{{if eq ($r.Get "t") "1"}}
+{{$str2 = "🛡️ Triggers after a single instance"}}
+{{else}}
+{{$str2 = "🛡️ Triggers after crossposting"}}
+{{end}}
+{{if eq ($r.Get "a") "1"}}
+{{$str1 = "⏰ Times out for 30 minutes"}}
+{{else if eq ($r.Get "a") "2"}}
+{{$str1 = "🧹 Soft bans"}}
+{{else}}
+{{$str1 = "🔨 Bans"}}
+{{end}}
+{{sendMessage nil (complexMessage "components" (cslice (cbutton "label" "Edit" "custom_id" (print "antiscamEdit" $a)) (cbutton "label" "Delete" "custom_id" (print "antiscamDelete" $a) "style" "red")) "embed" (cembed "title" "🛠️ • Scam automoderation" "color" 0xFFF413 "description" (print "**" $a "**: " ($r.Get "k") "\n\n" $str1 "\n" $str2)))}}
+{{return}}
+{{end}}
+{{/* https://github.com/Enigmx/YAGPDB-custom-commands/tree/main/CC%3A%20Scam%20Automoderation */}}
