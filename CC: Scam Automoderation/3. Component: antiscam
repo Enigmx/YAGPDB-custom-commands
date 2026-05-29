@@ -1,0 +1,134 @@
+{{if in .CustomID "antiscamDelete"}}
+{{$a := reFind `\d+` .CustomID | toInt | add -1}}
+{{$db := (dbGet 0 "antiscam").Value}}
+{{$tf := false}}
+{{range (($db.Get "config").Get "roles")}}
+{{if in $.Member.Roles (toInt .)}}
+{{$tf = true}}
+{{end}}
+{{end}}
+{{if not $tf}}
+You are not allowed to delete keywords from the scam list :(
+{{ephemeralResponse}}
+{{return}}
+{{end}}
+{{$confirm := modalBuilder (print "antiscamDelete" $a) "Delete scam keyword" (clabel "label" "Are you sure?" "component" (ccheckboxGroup "required" true "custom_id" "a" "options" (cslice (sdict "value" "1" "label" "Confirm"))))}}
+{{sendModal $confirm}}
+{{return}}
+{{end}}
+{{if in .CustomID "antiscamEdit"}}
+{{$a := reFind `\d+` .CustomID | toInt | add -1}}
+{{$db := (dbGet 0 "antiscam").Value}}
+{{$tf := false}}
+{{range (($db.Get "config").Get "roles")}}
+{{if in $.Member.Roles (toInt .)}}
+{{$tf = true}}
+{{end}}
+{{end}}
+{{if not $tf}}
+You are not allowed to edit keywords in the scam list :(
+{{ephemeralResponse}}
+{{return}}
+{{end}}
+{{$b := $db.Get "list"}}
+{{$toReverse := $b}}
+{{$reversed := cslice}}
+{{range (seq (mult -1 (sub (len $toReverse) 1)) 1)}}
+{{$reversed = $reversed.Append (index $toReverse (mult -1 .))}}
+{{end}}
+{{$c := index $reversed $a}}
+{{$k := $c.Get "k"}}
+{{$t := $c.Get "t"}}
+{{$aa := $c.Get "a"}}
+{{$act1 := eq $aa "1"}}
+{{$act2 := eq $aa "2"}}
+{{$act3 := eq $aa "3"}}
+{{$tr1 := eq $t "1"}}
+{{$tr2 := eq $t "2"}}
+{{sendModal (sdict "custom_id" (print "antiscamEdit" $a) "title" "Edit scam keyword" "components" (cslice (clabel "label" "Scam keyword" "component" (ctextInput "style" 1 "custom_id" "keyword" "required" true "value" $k)) (clabel "label" "Action to take" "component" (cradioGroup "custom_id" "action" "required" true "options" (cslice (sdict "default" $act1 "value" "1" "label" "Time out for 30 minutes") (sdict "default" $act2 "value" "2" "label" "Soft ban") (sdict "default" $act3 "value" "3" "label" "Ban")))) (clabel "label" "Trigger" "component" (cradioGroup "custom_id" "trigger" "required" true "options" (cslice (sdict "default" $tr1 "value" "1" "label" "As soon as it is flagged") (sdict "default" $tr2 "value" "2" "label" "After crossposting into two channels or more"))))))}}
+{{return}}
+{{end}}
+{{if or (eq .CustomID "antiscamNext") (eq .CustomID "antiscamBack")}}
+{{$db := (dbGet 0 "antiscam").Value}}
+{{$a := $db.Get "list"}}
+{{$toReverse := $a}}
+{{$reversed := cslice}}
+{{range (seq (mult -1 (sub (len $toReverse) 1)) 1)}}
+{{$reversed = $reversed.Append (index $toReverse (mult -1 .))}}
+{{end}}
+{{$page := 1}}
+{{if (index .Message.Embeds 0).Footer}}
+{{if in .CustomID "Next"}}
+{{$page = (reFind `\d+` (index .Message.Embeds 0).Footer.Text) | toInt | add 1}}
+{{else}}
+{{$page = (reFind `\d+` (index .Message.Embeds 0).Footer.Text) | toInt | add -1}}
+{{end}}
+{{end}}
+{{if eq $page 0}}
+{{$on := true}}
+{{if ($db.Get "list")}}
+{{$on = false}}
+{{end}}
+{{updateMessage (complexMessage "components" (cslice (cslice (cbutton "emoji" (sdict "name" "⬅️") "style" "grey" "custom_id" "antiscamBack" "disabled" true) (cbutton "label" "New" "style" "green" "custom_id" "antiscamAdd")  (cbutton "emoji" (sdict "name" "➡️") "style" "grey" "custom_id" "antiscamNext" "disabled" $on))) "embed" (cembed "color" 0xFFF413 "title" "🔨 • Scam automoderation" "description" (print "Automatically mute, soft ban, and ban compromised & bot accounts from the server. Add new scam keywords by clicking ''New'' and browse scam lists by using the navigating arrows. \n\nWhile adding new scam keywords, you will be prompted to configure the following behaviors:\n\n**Scam keyword**: Add phrases commonly sent by bot accounts to flag them once detected by YAGPDB.\n\n**Action to take**: Select whether to time out accounts for 30 minutes for manual moderator review, soft ban (ban, clean last day of messages and then unban), or to fully clean ban.\n\n**Trigger**: Select whether to take action as soon as a message is flagged, or only after crossposting across multiple channels. Good to avoid false positives if a scam message looks like something members may send casually.\n\nTo view, configure, or delete current scams run ''" .ServerPrefix "antiscam [ID]''.\nNote: you can have at most 500 keywords flagged through this tool, if you add more, the oldest keyword is deleted to make room.")))}}
+{{return}}
+{{end}}
+{{$results := slice $reversed (mult (sub $page 1)  15)}}
+{{$on := true}}
+{{if gt (len $results) 15}}
+{{$on = false}}
+{{$results = slice $results 0 15}}
+{{end}}
+{{$str := ""}}
+{{$id := 1}}
+{{range $results}}
+{{$str = print $str "\n\n**[" (add $id (mult (sub $page 1)  15)) "]** " (.Get "k") "\n"}}
+{{if eq (.Get "a") "1"}}
+{{$str = print $str "⚙️ Times out for 30 minutes, "}}
+{{else if eq (.Get "a") "2"}}
+{{$str = print $str "⚙️ Soft bans, "}}
+{{else}}
+{{$str = print $str "⚙️ Bans, "}}
+{{end}}
+{{if eq (.Get "t") "1"}}
+{{$str = print $str "Trigger immediately"}}
+{{else}}
+{{$str = print $str "Trigger after crossposting"}}
+{{end}}
+{{$id = add $id 1}}
+{{end}}
+{{updateMessage (complexMessage "components" (cslice (cslice (cbutton "emoji" (sdict "name" "⬅️") "style" "grey" "custom_id" "antiscamBack" "disabled" false) (cbutton "label" "New" "style" "green" "custom_id" "antiscamAdd")  (cbutton "emoji" (sdict "name" "➡️") "style" "grey" "custom_id" "antiscamNext" "disabled" $on))) "embed" (cembed "color" 0xFFF413 "title" "🔨 • Scam automoderation" "description" $str "footer" (sdict "text" (print "Page " $page))))}}
+{{return}}
+{{end}}
+{{if eq .CustomID "antiscamAdd"}}
+{{$db := (dbGet 0 "antiscam").Value}}
+{{$tf := false}}
+{{range (($db.Get "config").Get "roles")}}
+{{if in $.Member.Roles (toInt .)}}
+{{$tf = true}}
+{{end}}
+{{end}}
+{{if not $tf}}
+You are not allowed to add new keywords to the scam list :(
+{{ephemeralResponse}}
+{{return}}
+{{end}}
+{{sendModal (sdict "custom_id" "antiscamNew" "title" "Add scam keywords to flag" "components" (cslice (clabel "label" "Scam keyword" "component" (ctextInput "style" 1 "custom_id" "keyword" "required" true)) (clabel "label" "Action to take" "component" (cradioGroup "custom_id" "action" "required" true "options" (cslice (sdict "value" "1" "label" "Time out for 30 minutes") (sdict "value" "2" "label" "Soft ban") (sdict "value" "3" "label" "Ban")))) (clabel "label" "Trigger" "component" (cradioGroup "custom_id" "trigger" "required" true "options" (cslice (sdict "value" "1" "label" "As soon as it is flagged") (sdict "value" "2" "label" "After crossposting into two channels or more"))))))}}
+{{return}}
+{{end}}
+{{if eq .CustomID "antiscamSettings"}}
+{{$db := (dbGet 0 "antiscam").Value}}
+{{if not (in .Member.Roles (($db.Get "config").Get "admin"))}}
+Only administrators can configure this tool
+{{ephemeralResponse}}
+{{return}}
+{{end}}
+{{$a := or (($db.Get "config").Get "log") ""}}
+{{$b := or (($db.Get "config").Get "roles") (cslice)}}
+{{$b1 := cslice}}
+{{if $b}}{{range $b}}{{$b1 = $b1.Append (sdict "ID" . "type" "role")}}{{end}}{{$b = $b1}}{{end}}
+{{$c := or (($db.Get "config").Get "inmune") (cslice)}}
+{{$b2 := cslice}}
+{{if $c}}{{range $c}}{{$b2 = $b2.Append (sdict "ID" . "type" "role")}}{{end}}{{$c = $b2}}{{end}}
+{{sendModal (sdict "custom_id" "antiscamSettings" "title" "Settings" "components" (cslice (clabel "label" "Roles who can add, edit and remove keywords" "component" (cmenu "default_values" $b "type" "role" "required" false "custom_id" "roles" "min_values" 0 "max_values" 25)) (clabel "label" "Inmune roles" "component" (cmenu "default_values" $c "type" "role" "required" false "custom_id" "inmune" "min_values" 0 "max_values" 25)) (clabel "label" "Log channel or thread name/ID" "component" (ctextInput "style" 1 "custom_id" "channel" "required" false "value" (str $a)))))}}
+{{return}}
+{{end}}
