@@ -1,0 +1,112 @@
+{{if in .CustomID "antiscamDelete"}}
+{{$id := reFind `\d+` .CustomID | toInt}}
+{{$db := (dbGet 0 "antiscam").Value}}
+{{$b := (index ($db.Get "list") $id).Get "k"}}
+{{$deleteIndex :=  $id}}
+{{$slice := $db.Get "list"}}
+{{$count := 0}}
+{{$resultSlice := cslice}}
+{{range $slice}}
+{{if eq $count $deleteIndex}}
+{{$count = add $count 1}}
+{{continue}}
+{{end}}
+{{$resultSlice = $resultSlice.Append .}}
+{{$count = add $count 1}}
+{{end}}
+{{$db.Set "list" $resultSlice}}
+{{dbSet 0 "antiscam" $db}}
+⚙️ {{.User.Mention}} **Deleted {{add $id 1}}**:
+{{$b}}
+
+{{$on := true}}
+{{if ($db.Get "list")}}
+{{$on = false}}
+{{end}}
+{{editMessage nil .Message.ID (complexMessage "components" (cslice (cslice (cbutton "emoji" (sdict "name" "⬅️") "style" "grey" "custom_id" "antiscamBack" "disabled" true) (cbutton "label" "New" "style" "green" "custom_id" "antiscamAdd")  (cbutton "emoji" (sdict "name" "➡️") "style" "grey" "custom_id" "antiscamNext" "disabled" $on))) "embed" (cembed "color" 0xFFF413 "title" "🔨 • Scam automoderation" "description" (print "Automatically mute, soft ban, and ban compromised & bot accounts from the server. Add new scam keywords by clicking ''New'' and browse scam lists by using the navigating arrows. \n\nWhile adding new scam keywords, you will be prompted to configure the following behaviors:\n\n**Scam keyword**: Add phrases commonly sent by bot accounts to flag them once detected by YAGPDB.\n\n**Action to take**: Select whether to time out accounts for 30 minutes for manual moderator review, soft ban (ban, clean last day of messages and then unban), or to fully clean ban.\n\n**Trigger**: Select whether to take action as soon as a message is flagged, or only after crossposting across multiple channels. Good to avoid false positives if a scam message looks like something members may send casually.\n\nTo view, configure, or delete current scams run ''" .ServerPrefix "antiscam [ID]''.\nNote: you can have at most 500 keywords flagged through this tool, if you add more, the oldest keyword is deleted to make room.")))}}
+{{return}}
+{{end}}
+{{if or (eq .CustomID "antiscamNew") (in .CustomID "antiscamEdit")}}
+{{$id := 0}}
+{{if in .CustomID "antiscamEdit"}}
+{{$id = reFind `\d+` .CustomID | toInt}}
+{{end}}
+{{$db := (dbGet 0 "antiscam").Value}}
+{{$a := (.ModalValues.Get "action").Get "value"}}
+{{$b := (.ModalValues.Get "keyword").Get "value"}}
+{{$c := (.ModalValues.Get "trigger").Get "value"}}
+{{$d := $db.Get "list"}}
+{{if in .CustomID "Edit"}}
+{{$d.Set $id (sdict "k" $b "a" $a "t" $c)}}
+{{else}}
+{{$d = $d.Append (sdict "k" $b "a" $a "t" $c)}}
+{{if gt (len $d) 500}}
+{{$d = slice $d 1 501}}
+{{end}}
+{{end}}
+{{$db.Set "list" $d}}
+{{dbSet 0 "antiscam" $db}}
+{{if in .CustomID "Edit"}}
+⚙️ {{.User.Mention}} **Edited {{add $id 1}}**:
+{{$b}}
+
+{{if eq $a "1"}}⏰ Time out after flagged{{else if eq $a "2"}}🧹 Soft ban after flagged{{else}}🔨 Ban after flagged{{end}}
+{{if eq $c "1"}}🛡️ Trigger after a single instance{{else}}🛡️ Trigger after crossposting{{end}}
+{{else}}
+⚙️ {{.User.Mention}} **Added a new scam keyword**:
+{{$b}}
+
+{{if eq $a "1"}}⏰ Time out after flagged{{else if eq $a "2"}}🧹 Soft ban after flagged{{else}}🔨 Ban after flagged{{end}}
+{{if eq $c "1"}}🛡️ Trigger after a single instance{{else}}🛡️ Trigger after crossposting{{end}}
+{{end}}
+{{return}}
+{{end}}
+{{if eq .CustomID "antiscamSettings"}}
+{{$a := (.ModalValues.Get "channel").Get "value"}}
+{{$b := (.ModalValues.Get "inmune").Get "value"}}
+{{$c := (.ModalValues.Get "roles").Get "value"}}
+{{$db := (dbGet 0 "antiscam").Value}}
+{{$sd := $db.Get "config"}}
+{{$sd.Set "inmune" $b}}
+{{$sd.Set "roles" $c}}
+{{$on := false}}
+{{range .Guild.Channels}}
+{{if or (eq .Name (lower $a)) (eq .ID (toInt (reFind `\d+` $a)))}}
+{{$on = true}}
+{{$sd.Set "log" .ID}}
+{{end}}
+{{end}}
+{{if not $on}}
+{{range .Guild.Threads}}
+{{if or (eq .Name (lower $a)) (eq .ID (toInt (reFind `\d+` $a)))}}
+{{$on = true}}
+{{$sd.Set "log" .ID}}
+{{end}}
+{{end}}
+{{end}}
+{{if not $on}}
+{{$sd.Set "log" 0}}
+{{end}}
+{{$db.Set "config" $sd}}
+{{dbSet 0 "antiscam" $db}}
+{{$r := ""}}
+{{if $a = (($db.Get "config").Get "roles")}}
+{{$r = print "<@&" (joinStr "> <@&" $a) ">"}}
+{{else}}
+{{$r = "None"}}
+{{end}}
+{{$j := ""}}
+{{if $f := (($db.Get "config").Get "inmune")}}
+{{$j = print "<@&" (joinStr "> <@&" $f) ">"}}
+{{else}}
+{{$j = "None"}}
+{{end}}
+{{$c = ""}}
+{{if $b := (($db.Get "config").Get "log")}}
+{{$c = print "<#" $b ">"}}
+{{else}}
+{{$c = "None"}}
+{{end}}
+{{updateMessage (complexMessage "components" (cbutton "label" "Settings" "custom_id" "antiscamSettings" "style" "grey") "embed" (cembed "title" "🛠️ • Configuration" "description" (print "Roles who are allowed to add, edit and remove keywords:\n" $r "\n\nInmune roles:\n" $j "\n\nLog channel:\n" $c)))}}
+{{return}}
+{{end}}
