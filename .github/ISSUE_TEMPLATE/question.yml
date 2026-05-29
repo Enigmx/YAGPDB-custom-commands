@@ -25,6 +25,7 @@ body:
         - Redirect
         - Report
         - Restrict
+        - Scam Automoderation 
         - Swift AutoModeration
         - Swift Mute
         - Todo
