@@ -1,0 +1,61 @@
+{{$antiscam := (dbGet 0 "antiscam").Value}}
+{{$trfl := true}}
+{{range (($antiscam.Get "config").Get "inmune")}}
+{{if in $.Member.Roles (toInt .)}}
+{{$trfl = false}}
+{{end}}{{end}}
+{{if $trfl}}
+{{$p := false}}
+{{$pp := ""}}
+{{$attach := false}}
+{{$attach2 := false}}
+{{range $dd := ($antiscam.Get "list")}}
+{{if $.Message.Attachments}}
+{{range $.Message.Attachments}}
+{{if and (in (lower .Filename) (lower ($dd.Get "k"))) (eq ($dd.Get "t") "1")}}
+{{$attach = true}}
+{{sendMessage (($antiscam.Get "config").Get "log") (complexMessage "forward" (sdict "channel" $.Channel.ID "message" $.Message.ID))}}
+{{break}}
+{{else if (and (eq ($dd.Get "t") "2") (in (lower .Filename) (lower ($dd.Get "k"))))}}
+{{$attach = true}}
+{{$attach2 = true}}
+{{end}}
+{{end}}
+{{end}}
+{{$cross := ($antiscam.Get "cross")}}
+{{$yes := true}}
+{{if or (and (eq (.Get "t") "2") ($cross.Get (str $.User.ID)) (in (lower $.Message.Content) (lower (.Get "k")))) $attach (and (eq (.Get "t") "1") (in (lower $.Message.Content) (lower (.Get "k"))))}}
+{{if and (eq (.Get "t") "2") ($cross.HasKey (str $.User.ID))}}
+{{if or (eq (str (index ($cross.Get (str $.User.ID)) 0)) (str $.Channel.ID)) (gt (toInt (currentTime.Sub (snowflakeToTime (index ($cross.Get (str $.User.ID)) 1))).Seconds) 300)}}
+{{$yes = false}}
+{{$cross.Set (str $.User.ID) (cslice $.Channel.ID $.Message.ID)}}
+{{$antiscam.Set "cross" $cross}}
+{{dbSet 0 "antiscam" $antiscam}}
+{{end}}
+{{end}}
+{{if and $yes $attach2}}
+{{sendMessage (($antiscam.Get "config").Get "log") (complexMessage "forward" (sdict "channel" $.Channel.ID "message" $.Message.ID))}}
+{{end}}
+{{try}}
+{{if and $yes (eq (.Get "a") "1")}}{{$p = execAdmin "timeout" $.User.ID "30m" "Malicious message detected: scamming"}}{{$pp = "Time out for 30 minutes"}}{{deleteMessage $.Channel.ID $.Message.ID 0}}
+{{deleteMessage $.Channel.ID $.Message.ID 0}}{{else if and $yes (eq (.Get "a") "2")}}{{$p = execAdmin "ban" $.User.ID "5m" "Malicious message detected: scamming. You may rejoin once you restore your account." "-ddays 1"}}{{$pp = "Soft ban"}}
+{{else if $yes}}
+{{deleteMessage $.Channel.ID $.Message.ID 0}}{{$p = execAdmin "ban" $.User.ID "Malicious message detected: scamming." "-ddays 1"}}{{$pp = "Ban"}}
+{{end}}
+{{catch}}
+{{if in .Error "ranked"}}
+{{$pp = "None, I don't have permission to take action regarding this member."}}
+{{else}}
+{{$pp = "None, moderation command are turned off in the control panel."}}
+{{end}}{{end}}
+{{if and $yes (($antiscam.Get "config").Get "log")}}
+{{sendMessage (($antiscam.Get "config").Get "log") (complexMessage "content" $.User.ID "embed" (cembed "color" 0xFF0000 "author" (sdict "name" (print ($.User.Username) " • Malicious activity detected") "icon_url" ($.User.AvatarURL "512"))  "description" (print "**Message content:**\n" $.Message.Content) "fields" (cslice (sdict "name" "** **" "value" (print "Scam detected: " (.Get "k") "\nChannel: " $.Channel.Mention "\nAction taken: " $pp))) ))}}
+{{return}}
+{{end}}
+{{else if or $attach (and (eq (.Get "t") "2") (in (lower $.Message.Content) (lower (.Get "k"))))}}
+{{$cross.Set (str $.User.ID) (cslice $.Channel.ID $.Message.ID)}}
+{{$antiscam.Set "cross" $cross}}
+{{dbSet 0 "antiscam" $antiscam}}
+{{end}}
+{{end}}
+{{end}}
