@@ -49,7 +49,7 @@ The control panel provides usage instructions, shows which channels currently ha
 📃 **Immune roles**: Select the roles whose messages will not be deleted by automoderation.
 
 # Set up instructions
-Four pieces of code have to be integrated as custom commands. Copy the code from each file and paste it into the response box of the corresponding custom command. Configure them as follows:
+Four pieces of code have to be integrated as custom commands, with one extra optional. Copy the code from each file and paste it into the response box of the corresponding custom command. Configure them as follows:
 ___
 
 ### Code #1
