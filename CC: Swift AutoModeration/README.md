@@ -10,7 +10,9 @@ Swift Automoderation also includes a template system, allowing you to save commo
 - To add multiple words or phrases at once, separate them using `/` (for example: `word1/word2/word3`).
 
 **-sam**: Open the control panel.  
-The control panel provides usage instructions, shows which channels currently have automoderation enabled, allows you to add new automoderation rules, manage templates, and access configuration options (administrator only).
+The control panel provides usage instructions, shows which channels currently have automoderation enabled, allows you to add new automoderation rules, manage templates, and access configuration options (administrator only).  
+
+**/sam**: Ephemeral slash command with "keywords" and "duration" for you to quickly use in the chat.
 
 ### Control panel menu
 🔘 **Enable**: Enable automoderation in a channel. Once clicked, a modal opens with the following options:
@@ -93,3 +95,33 @@ ___
 ⚙️ **Extra configuration**: None
 ___
 You can begin use should everything be set up until this point.
+___
+### Code #5
+**Trigger type**: Slash command  
+**Command trigger**: sam  
+**Defer a response when triggered**: Ephemeral Message Response  
+**Description**: Add terms to automoderation for a small duration  
+**Options**: Configure **2** options as follows:  
+
+Option 1
+- Name: keywords
+- Type: text
+- Description: Terms to add to automoderation, separate by "/"
+- Required: off
+- Min length: none
+- Max length: none
+
+Option 2
+- Name: duration
+- Type: integer
+- Description: Duration in minutes
+- Required: off
+- Min value: none
+- Max value: none
+
+**Response**: Paste code from file #1  
+**Role restrictions**: Server moderators only  
+**Channel restrictions**: None  
+
+⚙️ **Extra configuration**: Configure the first section of the code as follows:
+- **{{$adminRole := 0}}**: Replace `0` with the role ID of the administrator role.
