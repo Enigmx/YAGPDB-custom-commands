@@ -31,7 +31,7 @@
 {{$db.Get (reFind `\d+` .StrippedID)}}
 {{$db.Del (reFind `\d+` .StrippedID)}}
 {{dbSet 1 "swiftAutomod" $db}}
-{{execCC (index ($db1.Get "configuration") 1) nil 0 (cslice "template" $.Message.ID $.Channel.ID (index (reFindAll `\d+` .StrippedID) 1))}}
+{{execCC (index ($db1.Get "configuration") 1) nil 0 (cslice "template" $.Message.ID $.Channel.ID 1)}}
 {{return}}
 {{end}}
 {{if in .StrippedID "DeleteSamTemplate"}}
