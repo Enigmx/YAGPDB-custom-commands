@@ -27,3 +27,35 @@ ___
 
 ___
 You can begin use should everything be set up until this point.
+___
+### Code #2
+**Trigger type**: Slash command  
+**Command trigger**: sm  
+**Defer a response when triggered**: Ephemeral Message Response  
+**Description**: Quickly mute a member and remove recent messages  
+**Options**: Configure **2** options as follows  
+
+Option 1
+
+- **Name**: target  
+- **Type**: User  
+- **Description**: Select member to swift mute  
+- **Required**: On  
+
+Option 2
+
+- **Name**: purge  
+- **Type**: Integer  
+- **Description**: Number of messages to delete  
+- **Required**: Off  
+- **Min value**: 1  
+- **Max value**: You choose  
+
+**Role restrictions**: Server moderators only  
+**Channel restrictions**: None
+
+  ⚙️ **Extra configuration**: Configure the first section of the code as follows:
+- **{{$limit := 50}}**: Maximum number of messages a moderator can delete per targeted member. This is capped at 100 to prevent excessive message deletion.
+- **{{$logchannel := 0}}**: Replace `0` with the channel ID where logs confirming swift mutes will be sent. It is recommended to use the same channel where moderators run commands.
+- **{{$mutedrole := 0}}**: Replace `0` with the role ID of the muted role. It is not recommended to reuse the same role used for regular mutes, as this command applies its own duration and removes the role automatically.
+- **{{$duration := 600}}**: Duration of the swift mute in seconds. All swift mutes will use this fixed duration.
