@@ -1,7 +1,7 @@
 {{/* configuration */}}
 {{$limit := 50}}
-{{$staffchannel := 0}}
-{{$mutedrole := 0}}
+{{$staffchannel := }}
+{{$mutedrole := }}
 {{$duration := 600}}
 {{/* end configuration */}}
 
@@ -45,14 +45,25 @@ Edit the third line of the code: \{\{$mutedrole := 0\}\}, replace 0 with the mut
 **{{.ServerPrefix}}sm [targets] [number of messages to delete]**: Mute members and delete their messages
 {{return}}
 {{end}}
-{{$a := reFindAll `\d{15,20}` .Message.Content}}
+{{$a := cslice}}
+{{if .Options}}
+{{sendResponse nil (complexMessage "content" (print (.Options.Get "target").ID) "embed"  (cembed "author" (sdict "name" ($.User.Username) "icon_url" ($.User.AvatarURL "512")) "description" (print "Successfully swift muted <@" (.Options.Get "target").ID ">" ) "color" 0xeb5ea))}}
+{{$a = cslice (.Options.Get "target").ID}}
+{{else}}
+{{$a = reFindAll `\d{15,20}` .Message.Content}}
+{{end}}
 {{$b := cslice}}
 {{range $a}}
 {{if not (in $b (toInt .))}}
 {{$b = $b.Append (toInt .)}}
 {{end}}
 {{end}}
-{{$c := reFind `\b(?:100|[1-9][0-9]?)\b` .Message.Content | toInt}}
+{{$c := 0}}
+{{if (.Options.Get "purge")}}
+{{$c = (.Options.Get "purge") | toInt}}
+{{else}}
+{{$c = reFind `\b(?:100|[1-9][0-9]?)\b` .Message.Content | toInt}}
+{{end}}
 {{$e := cslice}}
 {{if ge (len $b) 31}}
 {{sendMessage $staffchannel "You can swift mute 30 members at most :("}}
@@ -82,7 +93,7 @@ Edit the third line of the code: \{\{$mutedrole := 0\}\}, replace 0 with the mut
 {{end}}
 {{sendMessage $staffchannel (complexMessage "content" (joinStr " " $h) "embed" (cembed "author" (sdict "name" ($.User.Username) "icon_url" ($.User.AvatarURL "512")) "description" (print "**" $.User.Username "** swift muted **" (joinStr "**, **" $e) "**") "color" 0xeb5ea))}}
 {{end}}
-{{if le $limit $c}}
+{{if lt $limit $c}}
 {{sendMessage $staffchannel (print "You can delete **" $limit "** messages at most per person :(")}}
 {{$c = $limit}}
 {{end}}
