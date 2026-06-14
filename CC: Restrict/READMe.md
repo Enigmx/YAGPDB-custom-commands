@@ -1,5 +1,7 @@
 # Restrict
-Restrict members from accessing specific channels or systems by temporarily assigning a role. Each restriction is based on a link between a channel or keyword and a role. You can run the command directly in the channel you want to restrict access to, or specify a channel or keyword manually.
+Restrict members from accessing specific channels or systems by temporarily assigning a role. Each restriction is based on a link between a channel or keyword and a role. You can run the command directly in the channel you want to restrict access to, or specify a channel or keyword manually.  
+
+This custom command also has a slash command version for intuitive use, however admin tools aren't available in it so the regular command is needed.
 
 By default, restrictions last 30 days, after which the role is automatically removed.
 
@@ -39,3 +41,33 @@ ___
 
 ___
 You can begin use should everything be set up until this point.
+___
+### Code #2
+**Trigger type**: Slash command  
+**Command trigger**: restrict  
+**Defer a response when triggered**: Ephemeral Message  
+**Response**: Paste code from file #1  
+**Description**: Restrict a member from the current channel 
+**Options**: Configure **2** options as follows:
+
+Option 1
+
+- **Name**: member  
+- **Type**: User  
+- **Description**: Who to restrict  
+- **Required**: On  
+
+Option 2
+
+- **Name**: duration  
+- **Type**: Integer  
+- **Description**: Duration in days  
+- **Required**: Off  
+- **Min value**: None  
+- **Max value**: None  
+
+**Role restrictions**: You choose  
+**Channel restrictions**: You choose  
+
+⚙️ **Extra configuration**: Configure the first section of the code as follows:
+- **{{$staffchat := 0}}**: Replace `0` with the channel ID where restriction notifications will be sent.
