@@ -1,0 +1,29 @@
+{{/* configuration */}}
+{{$staffchat := 0}}
+{{/* end configuration */}}
+
+{{$db := (dbGet 5769 "restrict").Value}}
+{{if not $db}}
+{{$db = sdict}}
+{{end}}
+{{$users := cslice}}
+{{$key := (str .Channel.ID)}}
+{{$days := or (.Options.Get "duration") 30}}
+{{$role := $db.Get $key}}
+{{if not $role}}
+{{if (getChannel (toInt $key))}}
+{{sendMessage $staffchat (complexMessage "content" (print .User.Mention) "embed" (cembed "title" "Oops..." "description" (print "You tried to restrict <@" (.Options.Get "member").ID "> from <#" $key ">, but it doesn't seem like this channel actually has any restriction role bonded to it. Try again?")))}}
+{{return}}
+{{end}}
+{{end}}
+{{giveRoleID (.Options.Get "member").ID $role}}
+{{takeRoleID (.Options.Get "member").ID $role (toDuration (print $days "d"))}}
+{{if (getChannel (toInt $key))}}
+{{sendMessage $staffchat (complexMessage "content" (print (.Options.Get "member").ID) "embed" (cembed "color" 0xFF0000 "title" "Restriction added" "author" (sdict "name" $.User.Username "icon_url" ($.Member.AvatarURL "512")) "description" (print "Restricted from <#" $key ">\nGave <@&" $role "> to <@" (.Options.Get "member").ID "> \nDuration: **" $days "d**.") "thumbnail" (sdict "url" ((getMember (.Options.Get "member").ID).AvatarURL "512"))))}}
+✅ Gave <@{{ (.Options.Get "member").ID }}> <@&{{$role}}> for {{$days}} days
+{{else}}
+{{sendMessage $staffchat (complexMessage "content" (print (.Options.Get "member").ID) "embed" (cembed "color" 0xFF0000 "title" "Restriction added" "author" (sdict "name" $.User.Username "icon_url" ($.Member.AvatarURL "512")) "description" (print "Restricted from " $key "\nGave <@&" $role "> to <@" (.Options.Get "member").ID "> \nDuration: **" $days "d**.") "thumbnail" (sdict "url" ((getMember (.Options.Get "member").ID).AvatarURL "512"))))}}
+✅ Gave <@{{ (.Options.Get "member").ID }}> <@&{{$role}}> for {{$days}} days
+{{end}}
+{{/* https://github.com/Enigmx/YAGPDB-custom-commands/tree/main/CC%3A%20Restrict */}}
+{{/* made in chile */}}
