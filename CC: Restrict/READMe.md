@@ -66,8 +66,8 @@ Option 2
 - **Min value**: None  
 - **Max value**: None  
 
-**Role restrictions**: You choose  
-**Channel restrictions**: You choose  
+**Role restrictions**: Moderators only  
+**Channel restrictions**: None  
 
 ⚙️ **Extra configuration**: Configure the first section of the code as follows:
 - **{{$staffchat := 0}}**: Replace `0` with the channel ID where restriction notifications will be sent.
