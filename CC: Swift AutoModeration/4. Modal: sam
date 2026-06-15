@@ -219,5 +219,9 @@ You didn't configure what content to blacklist, fill the text box or enable spec
 {{catch}}
 {{editMessage $.Channel.ID $.Message.ID $b}}
 {{end}}
+{{if (bitwiseAnd .Message.Flags 64)}}
+{{sendResponse nil (complexMessage "ephemeral" true "content" (print "⚙️ **Enabled automoderation in** <#" $c "> **for** " (humanizeDurationMinutes (toDuration $d)) "\n" $k))}}
+{{else}}
 {{sendMessage nil (print "⚙️ **Enabled automoderation in** <#" $c "> **for** " (humanizeDurationMinutes (toDuration $d)) "\n" $k)}}
+{{end}}
 {{end}}
