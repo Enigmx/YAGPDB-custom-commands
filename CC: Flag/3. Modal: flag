@@ -1,0 +1,104 @@
+{{if eq .CustomID "flagDeletePost"}}
+{{$a := (.ModalValues.Get "1").Get "value"}}
+{{$db := (dbGet 0 "flagCC").Value}}
+{{$b := index ($db.Get "config") 3}}
+{{$u := index (reFindAll `\d+` .Message.Content) 1 | toInt}}
+{{$v := reFind `\d+` (index (split .Message.Content "\n") 2) | toInt}}
+{{updateMessage (complexMessage "content" (print .Message.Content "\n\n<@" .User.ID "> Deleted the post.\n" $a) "components" ( index .Message.Components 0).Components "embed" (cslice (index .Message.Embeds 0) (index .Message.Embeds 1)))}}
+{{deleteForumPost (toInt (reFind `\d+` .Message.Content))}}
+{{$channel := 0}}
+{{if eq $b 1}}
+{{range .Guild.Threads}}
+{{if and (bitwiseAnd .Flags 2) (eq $v .ParentID)}}
+{{$channel = .ID}}
+{{break}}
+{{end}}
+{{end}}
+{{else if $b}}
+{{$channel = $b}}
+{{end}}
+{{sendMessage $channel (complexMessage "content" (print "<@" $u ">") "embed" (cembed "title" "❗• Server Staff deleted your post" "description" (print "**Reason:** " $a)))}}
+{{return}}
+{{end}}
+{{if eq .CustomID "flagNote"}}
+{{$a := (.ModalValues.Get "1").Get "value"}}
+{{updateMessage (complexMessage "content" (print .Message.Content "\n\n<@" .User.ID "> Added a note:\n" $a) "components" ( index .Message.Components 0).Components "embed" (cslice (index .Message.Embeds 0) (index .Message.Embeds 1)))}}
+{{return}}
+{{end}}
+{{if or (eq .CustomID "flagRestrict") (eq .CustomID "flagUnrestrict")}}
+{{$a := reFind `\d+` ((.ModalValues.Get "1").Get "value")}}
+{{if $a}}
+{{if eq .CustomID "flagUnrestrict"}}
+{{dbDel (toInt $a) "flagCCRestrict"}}
+Done, unrestricted ID {{$a}} from using reporting tools
+{{ephemeralResponse}}
+{{else}}
+{{dbSetExpire (toInt $a) "flagCCRestrict" "a" 2592000}}
+Done, restricted ID {{$a}} from using reporting tools
+{{ephemeralResponse}}
+{{end}}
+{{else}}
+I couldn't tell who to restrict
+{{ephemeralResponse}}
+{{end}}
+{{return}}
+{{end}}
+{{if eq .CustomID "flagDeleteStaff"}}
+{{$db := (dbGet 0 "flagCC").Value}}
+{{$b := $db.Get "tags"}}
+{{$a := (.ModalValues.Get "1").Get "value"}}
+{{$a = reFind `\d+` $a}}
+{{if ($b.Get $a)}}
+{{$b.Del $a}}
+Done, removed that user from the notification system.
+{{ephemeralResponse}}
+{{return}}
+{{else}}
+Seems like there wasn't anyone of that user ID in the system
+{{ephemeralResponse}}
+{{return}}
+{{end}}
+{{return}}
+{{end}}
+{{if eq .CustomID "flagConfigForum"}}
+{{$a := (.ModalValues.Get "a").Get "value"}}
+{{$b := 0}}
+{{if eq $a "3"}}
+{{try}}
+{{$b = index ((.ModalValues.Get "b").Get "value") 0}}
+{{catch}}
+Select which channel or thread to forward delete reasons to
+{{ephemeralResponse}}
+{{return}}
+{{end}}
+{{end}}
+{{$db := (dbGet 0 "flagCC").Value}}
+{{$c := $db.Get "config"}}
+{{if eq $a "1"}}
+{{$c.Set 3 0}}
+{{else if (eq $a "2")}}
+{{$c.Set 3 1}}
+{{else}}
+{{$c.Set 3 (toInt $b)}}
+{{end}}
+{{$db.Set "config" $c}}
+{{dbSet 0 "flagCC" $db}}
+{{execCC (toInt (index ($db.Get "config") 2)) nil 0 "admin"}} 
+{{return}}
+{{end}}
+{{if eq .CustomID "flagAddLog"}}
+{{$db := (dbGet 0 "flagCC").Value}}
+{{$a := index ((.ModalValues.Get "a").Get "value") 0}}
+{{$b := index ((.ModalValues.Get "b").Get "value") 0}}
+{{$list := $db.Get "logs"}}
+{{if eq (toInt $b) (toInt (index ($db.Get "config") 0))}}
+{{$list.Del $a}}
+{{else}}
+{{$list.Set $a $b}}
+{{end}}
+{{$db.Set "logs" $list}}
+{{dbSet 0 "flagCC" $db}}
+{{execCC (toInt (index ($db.Get "config") 2)) nil 0 "admin"}} 
+{{return}}
+{{end}}
+{{/* https://github.com/Enigmx/YAGPDB-custom-commands/tree/main/CC%3A%20Flag */}}
