@@ -1,0 +1,208 @@
+{{$defaultReportChannel := 0}}
+{{$admin := 0}}
+
+{{define "a"}}
+Sent your report to Server Staff 😊
+{{ephemeralResponse}}
+{{end}}
+{{$db := (dbGet 0 "flagCC").Value}}
+{{if not $db}}
+{{$db = sdict "config" (cslice $defaultReportChannel $admin .CCID 0) "logs" (sdict) "tags" (sdict)}}
+{{dbSet 0 "flagCC" $db}}
+{{end}}
+{{$db.Set "config" (cslice $defaultReportChannel $admin .CCID (index ($db.Get "config") 3))}}
+{{dbSet 0 "flagCC" $db}}
+{{if .ExecData}}
+{{if eq .ExecData "admin"}}
+{{$a := componentBuilder}}
+{{$str := ""}}
+{{range $k , $v := ($db.Get "logs")}}
+{{$str = print $str "\nReports from <#" $k "> go to <#" $v ">"}}
+{{end}}
+{{$a.Add "text" (print "# Administrator panel\n\n**Report logging channels**\nSelect where reports are forwarded to when they come from a specific channel.\n> Default log channel: <#" (index ($db.Get "config") 0) ">" $str)}}
+{{$a.Add "buttons" (cbutton "label" "Add" "emoji" (sdict "id" "1527450008197009498") "custom_id" "flagAddLog" "style" "grey")}}
+{{$str2 := "> Current status: Disabled"}}
+{{if eq (index ($db.Get "config") 3) 1}}
+{{$str2 = "> Current status: Use pinned posts"}}
+{{else if (index ($db.Get "config") 3)}}
+{{$str2 = print "> Current status: Use <#" (index ($db.Get "config") 3) ">"}}
+{{end}}
+{{$a.Add "text" (print "** **\n**Forward post delete reasons**\nConfigure where do delete reasons go when a Staff member clicks ''Delete post'', YAGPDB will tag the post creator with said reason. You can configure it to use the current pinned post of the forum channel the post is located in. Select ''Disable'' to not send delete reasons to members.\n" $str2)}}
+{{$a.Add "buttons" (cbutton "label" "Configure" "emoji" (sdict "id" "1527138600414875678") "custom_id" "flagConfigForum" "style" "grey")}}
+{{$a.Add "text" "** **\n**Remove Staff member from notifications**\nStop YAGPDB from tagging a specific Staff member for reports. Useful if a Staff member is demoted/steps down without removing themselves from notifications first."}}
+{{$a.Add "buttons" (cbutton "label" "Remove" "emoji" (sdict "id" "1527457280017043626") "custom_id" "flagRemoveStaff" "style" "grey")}}
+{{$a.Add "separator" true}}
+{{$a.Add "buttons" (cbutton "label" "Back" "custom_id" "flagConfig" "style" "grey")}}
+{{$b := componentBuilder "container" (sdict "components" $a)}}
+{{$b.Add "ephemeral" true}}
+{{updateMessage $b}}
+{{return}}
+{{end}}
+{{return}}
+{{end}}
+{{$db2 := ""}}
+{{$emb := cembed "author" (sdict "name" ($.User.Username) "icon_url" ($.User.AvatarURL "512")) "description" (.Options.Get "reason") "color" 0xFF0000}}
+{{$emb2 := cembed}}
+{{$comp := cslice (cbutton "emoji" (sdict "id" "1526085926340788375") "style" "green" "custom_id" "flagConcluded") (cbutton "emoji" (sdict "id" "1527136247259205683") "style" "grey" "custom_id" "flagNote") (cbutton "emoji" (sdict "id" "1527138600414875678") "style" "grey" "custom_id" "flagConfig")}}
+{{$cont := print "Report made by <@" .User.ID ">\nLocation: <#" .Channel.ID ">"}}
+{{$a := or (.Options.Get "post") (.Options.Get "member") (.Options.Get "link")}}
+{{if eq .SubCommand "post"}}
+{{$a := or (.Options.Get "post") (.Options.Get "member") (.Options.Get "link")}}
+{{if and (not $a) (not (getChannel .Channel.ParentID).IsForum)}}
+You must select a forum post to report.
+{{ephemeralResponse}}
+{{return}}
+{{else if (not $a)}}
+{{$a = .Channel}}
+{{end}}
+{{$db2 = (dbGet $a.ID "flagCC").Value}}
+{{if $b := getMessage $a.ID $a.ID}}
+{{$image := sdict "url" ""}}
+{{if $b.Attachments}}
+{{$image = sdict "url" (index $b.Attachments 0).URL}}
+{{end}}
+{{$emb2 = cembed "description" (or $b.Content "Unknown") "image" $image "title" $a.Name "author" (sdict "name" (or ($b.Author.Username) "Unknown") "icon_url" (or ($b.Author.AvatarURL "512") ""))}}
+{{else}}
+{{$emb2 = cembed "description" "Original message is deleted" "title" "Unknown"}}
+{{end}}
+{{$cont = print "Report made by <@" .User.ID ">\nLocation: <#" $a.ParentID ">"}}
+{{$cont = print "\n📜 • **Post report**: <#" $a.ID ">, created by <@" $a.OwnerID ">\n" $cont}}{{$comp = $comp.Append (cbutton "label" "Delete post" "emoji" (sdict "id" "1526085970263281755") "style" "grey" "custom_id" "flagDeletePost")}}
+{{else if eq .SubCommand "member"}}
+{{$a = getMember $a.ID}}
+{{$db2 = (dbGet $a.User.ID "flagCC").Value}}
+{{$emb2 = cembed "description" (print "**Username:** " $a.User.Username "\n**User ID**: " $a.User.ID "\n**Global name:** " $a.User.Globalname "\n**Nickname:** " (or $a.Nick "Nothing set") "\n**Joined:** " ($a.JoinedAt.Parse.Format "Jan 02 2006" )) "title" $a.User.Username "thumbnail" (sdict "url" ($a.User.AvatarURL "512"))}}
+{{$cont = print "\n👤 • **Member report**: <@" $a.User.ID ">\n" $cont}}
+{{$comp = $comp.Append (cbutton "label" "Timeout" "emoji" (sdict "id" "1526113479315165255") "style" "grey" "custom_id" "flagTimeout")}}
+{{$a = $a.User}}
+{{else}}
+{{$me := trimSpace (.Options.Get "link")}}
+{{$Ob := false}}
+{{try}}
+{{$Ob = getMessage (toInt (index (split $me "/") 5)) (toInt (index (split $me "/") 6))}}
+{{catch}}
+Provide a proper message link, you can copy it by right clicking/holding a message and then "Copy Message Link".
+{{ephemeralResponse}}
+{{return}}
+{{end}}
+{{$a = $Ob}}
+{{if not $a}}
+Message not found :(
+{{ephemeralResponse}}
+{{return}}
+{{end}}
+{{$db2 = (dbGet $a.ID "flagCC").Value}}
+{{$image := sdict "url" ""}}
+{{if $a.Attachments}}
+{{$image = sdict "url" (index $a.Attachments 0).URL}}
+{{end}}
+{{$emb2 = cembed "image" $image "description" $a.Content "author" (sdict "name" (or ($a.Author.Username) "Unknown") "icon_url" (or ($a.Author.AvatarURL "512") ""))}}
+{{$cont = print "\n🗨️ • **Message report**: " $a.Link ", sent by <@" $a.Author.ID ">\n" $cont}}
+{{$comp = $comp.Append (cbutton "label" "Delete message" "emoji" (sdict "id" "1526113479315165255") "style" "grey" "custom_id" "flagDeleteMessage")}}
+{{end}}
+{{if (dbGet .User.ID "flagCCRestrict")}}
+You are restricted from using this tool :( contact Staff members regarding appeals.
+{{ephemeralResponse}}
+{{return}}
+{{end}}
+{{$list := $db.Get "tags"}}
+{{$time := cslice}}
+{{$hour := currentTime.Hour}}
+{{$ch := str .Channel.ID}}
+{{if .Channel.IsThread}}
+{{$ch = str .Channel.ParentID}}
+{{end}}
+{{$0 := ""}}
+{{$1 := ""}}
+{{if or (ge $hour 20) (lt $hour 4)}}{{$time = $time.Append "1"}}{{end}}
+{{if or (ge $hour 17) (lt $hour 1)}}{{$time = $time.Append "2"}}{{end}}
+{{if and (ge $hour 13) (lt $hour 21)}}{{$time = $time.Append "3"}}{{end}}
+{{if and (ge $hour 10) (lt $hour 18)}}{{$time = $time.Append "4"}}{{end}}
+{{if and (ge $hour 7) (lt $hour 15)}}{{$time = $time.Append "5"}}{{end}}
+{{if and (ge $hour 4) (lt $hour 12)}}{{$time = $time.Append "6"}}{{end}}
+{{range $k , $v := $list}}
+{{$c1 := false}}{{$c2 := false}}{{$c3 := false}}
+{{if eq ($v.Get "mode") 1}}
+{{$c1 = true}}
+{{end}}
+{{if ($v.Get "zone")}}
+{{range $time}}
+{{if in ($v.Get "zone") .}}
+{{$c2 = true}}
+{{break}}
+{{end}}
+{{end}}
+{{else}}
+{{$c2 = true}}
+{{end}}
+{{if ($v.Get "channels") }}
+{{if in ($v.Get "channels") $ch}}
+{{$c3 = true}}
+{{end}}
+{{else}}
+{{$c3 = true}}
+{{end}}
+{{if and $c1 $c2 $c3}}
+{{$1 = print $1 " <@" $k ">"}}
+{{else if and (not $c1) $c2 $c3}}
+{{$0 = print $0 " <@" $k ">"}}
+{{end}}
+{{end}}
+{{if $x := (($db.Get "logs").Get $ch)}}
+{{$defaultReportChannel = toInt $x}}
+{{end}}
+{{if $db2}}
+{{$g := getMessage (index $db2 0) (index $db2 1)}}
+{{if not $g}}
+{{if $0}}
+{{$cont = (print $cont "\n> " $0)}}
+{{end}}
+{{$dd := sendMessageRetID $defaultReportChannel (complexMessage "content" $cont "components" $comp "embed" (cslice $emb2 $emb))}}
+{{template "a"}}
+{{dbSetExpire $a.ID "flagCC" (cslice $defaultReportChannel $dd) 432000}}
+{{return}}
+{{end}}
+{{if in (index (split $g.Content "\n") 1) (str .User.ID)}}
+You have already made a report regarding this {{.SubCommand}}. If you believe it was missed by Server Staff, or if it's urgent, you may have to resort to direct reporting through DMs of a Staff member.
+{{ephemeralResponse}}
+{{return}}
+{{end}}
+{{if in (index $g.Embeds 1).Author.Name "👥"}}
+{{if and (eq (len (reFindAll `\d+` (index (split $g.Content "\n") 1))) 2) $1 (not (in $g.Content "concluded"))}}
+{{sendMessage (index $db2 0) (complexMessage "content" (print "❗**• Urgent report**\n" $1 "\n** **") "reply" (index $db2 1))}}
+{{end}}
+{{$emb3 := structToSdict (index $g.Embeds 1)}}
+{{$desc1 := (index $g.Embeds 1).Description}}
+{{$emb3.Set "description" (print $desc1 "\n\n<@" .User.ID ">: "  (.Options.Get "reason"))}}
+{{$cont2 := split $g.Content "\n"}}
+{{$cont3 := cslice}}
+{{range $cont2}}
+{{$cont3 = $cont3.Append .}}
+{{end}}
+{{$cont3.Set 1 (print (index $cont2 1) ", <@" .User.ID ">")}}
+{{editMessage (index $db2 0) (index $db2 1) (complexMessage "components" ( index $g.Components 0).Components "content" (joinStr "\n" $cont3) "embed" (cslice (index $g.Embeds 0) $emb3))}}
+{{template "a"}}
+{{return}}
+{{else}}
+{{$emb3 := structToSdict (index $g.Embeds 1)}}
+{{$desc1 := (index $g.Embeds 1).Description}}
+{{$emb3.Set "description" (print "<@" (reFind `\d+` (index (split $g.Content "\n") 1)) ">: " $desc1 "\n\n<@" .User.ID ">: " (.Options.Get "reason"))}}
+{{$emb3.Set "author" (sdict "icon_url" "" "name" "👥 • From multiple people")}}
+{{$cont2 := split $g.Content "\n"}}
+{{$cont3 := cslice}}
+{{range $cont2}}
+{{$cont3 = $cont3.Append .}}
+{{end}}
+{{$cont3.Set 1 (print (index $cont2 1) ", <@" .User.ID ">")}}
+{{editMessage (index $db2 0) (index $db2 1) (complexMessage "components" ( index $g.Components 0).Components "content" (joinStr "\n" $cont3) "embed" (cslice (index $g.Embeds 0) $emb3))}}
+{{template "a"}}
+{{return}}
+{{end}}
+{{else}}
+{{if $0}}
+{{$cont = (print $cont "\n> " $0)}}
+{{end}}
+{{$dd := sendMessageRetID $defaultReportChannel (complexMessage "content" $cont "components" $comp "embed" (cslice $emb2 $emb))}}
+{{template "a"}}
+{{dbSetExpire $a.ID "flagCC" (cslice $defaultReportChannel $dd) 432000}}
+{{return}}
+{{end}}
