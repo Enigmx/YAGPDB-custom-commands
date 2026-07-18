@@ -1,0 +1,168 @@
+{{if .ExecData}}
+{{$db := (dbGet 0 "flagCC").Value}}
+{{$list := $db.Get "tags"}}
+{{$a := componentBuilder}}
+{{$a.Add "text" (print "# Personal configuration\n\n**Opt in to be notified**\nChoose if and when you want to be notified about new reports. You can be tagged for reports from all channels, or only from specific channels.\nChoose to be notified for every report, or only urgent ones (whenever 3 or more people report the same content).")}}
+{{$dis := false}}
+{{if $u := ($list.Get (str .User.ID))}}
+{{$trfl := false}}
+{{if eq ($u.Get "mode") 1}}
+{{$trfl = true}}
+{{end}}
+{{$a.Add "buttons" (cslice (cbutton "label" "Opt out" "custom_id" "flagOptout" "style" "red")  (cbutton "disabled" (not $trfl) "label" "All reports" "custom_id" "flagAll" "style" "grey") (cbutton "disabled" $trfl "label" "Only urgent reports" "custom_id" "flagUrgent" "style" "grey"))}}
+{{else}}
+{{$dis = true}}
+{{$a.Add "buttons" (cslice (cbutton "label" "Opt in" "custom_id" "flagOptin" "style" "green"))}}
+{{end}}
+{{if not $dis}}
+{{$def := cslice}}
+{{$u := ($list.Get (str .User.ID))}}
+{{if not (eq 0 (len ($u.Get "channels")))}}
+{{range ($u.Get "channels")}}
+{{$def = $def.Append (sdict "id" (str .) "type" "channel")}}
+{{end}}
+{{end}}
+{{$a.Add "menus" (cmenu "default_values" $def "placeholder" "Select channels (leave empty for all)" "min_values" 0 "max_values" 25 "custom_id" "flagSelectChannels" "type" "channel" "channel_types" (cslice 0 2 15 16 13))}}
+{{$a.Add "text" (print "** **\n**Select timezone**\nPick the timezone that best represents your availability, YAGPDB will tag you for reports done during your day.")}}
+{{$a.Add "gallery" (sdict "media" "https://cdn.discordapp.com/attachments/1528151313932882020/1528151436817600522/timezanes.png?ex=6a5d416e&is=6a5befee&hm=987dcb1f5f1fec9317e0d049e39defccb0304c636c724a04c7fbc6414ed7cfd7&")}}
+{{$a.Add "menus" (cmenu "min_values" 0 "max_values" 6 "custom_id" "flagSelectTimezone" "options" (cslice (sdict "default" (in ($u.Get "zone") "1") "label" "1:  West Americas" "value" "1") (sdict "default" (in ($u.Get "zone") "2") "label" "2: East Americas" "value" "2") (sdict "default" (in ($u.Get "zone") "3") "label" "3: West Europe & Africa" "value" "3") (sdict "default" (in ($u.Get "zone") "4") "label" "4: East Europe & Africa, West Asia" "value" "4") (sdict "default" (in ($u.Get "zone") "5") "label" "5: Central Asia" "value" "5") (sdict "default" (in ($u.Get "zone") "6") "label" "6: East Asia, Oceania" "value" "6")))}}
+{{end}}
+{{$a.Add "separator" true}}
+{{$a.Add "text" "# General\n\n**Restrict member from reporting**\nStop reports when they come from a specific individual, if for example they are abusing the tool."}}
+{{$a.Add "buttons" (cslice (cbutton "label" "Restrict" "custom_id" "flagRestrict" "style" "grey")  (cbutton "label" "Unrestrict" "custom_id" "flagUnrestrict" "style" "grey") )}}
+{{if in .Member.Roles (index ($db.Get "config") 1)}}
+{{$a.Add "text" "** **\n**Advanced configuration**\nAdmin-only configuration, where you can configure special log channels/threads if reports come from a certain channel, and you can manually remove other Server Staff from the notification system."}} 
+{{$a.Add "buttons" (cslice (cbutton "label" "Administrator panel" "custom_id" "flagAdmin" "style" "grey"))}}
+{{end}}
+{{$b := componentBuilder "container" (sdict "components" $a)}}
+{{$b.Add "ephemeral" true}}
+{{if (bitwiseAnd .Message.Flags 64)}}
+{{updateMessage $b}}
+{{else}}
+{{sendResponse nil $b}}
+{{end}}
+{{return}}
+{{end}}
+{{if eq .CustomID "flagNote"}}
+{{sendModal (sdict "custom_id" "flagNote" "title" "Add note" "components" (cslice (clabel "label" "Note:" "component" (ctextInput "style" 1 "custom_id" "1"))))}}
+{{return}}
+{{end}}
+{{if eq .CustomID "flagConcluded"}}
+{{if in .Message.Content "Marked the report as concluded"}}
+Report is already marked as concluded
+{{ephemeralResponse}}
+{{return}}
+{{end}}
+{{$a := structToSdict (index .Message.Embeds 1)}}
+{{$a.Set "color" 0x00FF00}}
+{{updateMessage (complexMessage "content" (print .Message.Content "\n\n<@" .User.ID "> Marked the report as concluded.") "components" ( index .Message.Components 0).Components "embed" (cslice (index .Message.Embeds 0) $a))}}
+{{return}}
+{{end}}
+{{if or (eq .CustomID "flagOptin") (eq .CustomID "flagOptout")}}
+{{$db := (dbGet 0 "flagCC").Value}}
+{{$list := $db.Get "tags"}}
+{{if eq .CustomID "flagOptin"}}
+{{$list.Set (str .User.ID) (sdict "zone" "" "channels" (cslice) "mode" 0)}}
+{{else}}
+{{$list.Del (str .User.ID)}}
+{{end}}
+{{$db.Set "tags" $list}}
+{{dbSet 0 "flagCC" $db}}
+{{execCC .CCID nil 0 "config"}}
+{{return}}
+{{end}}
+{{if eq .CustomID "flagRemoveStaff"}}
+{{sendModal (sdict "custom_id" "flagDeleteStaff" "title" "Delete Staff from notification system" "components" (cslice (clabel "label" "User ID" "component" (ctextInput "style" 1 "custom_id" "1"))))}}
+{{return}}
+{{end}}
+{{if eq .CustomID "flagConfigForum"}}
+{{sendModal (sdict "custom_id" "flagConfigForum" "title" "Send delete reasons" "components" (cslice (clabel "label" "Select option:" "component" (cradioGroup "custom_id" "a" "required" true "options" (cslice (sdict "value" "1" "label" "Disable" "description" "Do not send delete reasons to members") (sdict "value" "2" "label" "Use pinned post" "description" "Send delete reasons in the pinned post of the forum") (sdict "value" "3" "label" "Send in a channel/thread (select below)" "description" "Send all delete reasons in a specific channel on thread, specify below")))) (clabel "label" "Channel/thread select" "component" (cmenu "placeholder" "Select a specific channel/thread" "custom_id" "b" "type" "channel" "channel_types" (cslice 0 2 11 12 15 16 13)))))}}
+{{return}}
+{{end}}
+{{if eq .CustomID "flagAddLog"}}
+{{sendModal (sdict "custom_id" "flagAddLog" "title" "Redirect reports" "components" (cslice (clabel "label" "Reports done in..." "component" (cmenu "required" true "custom_id" "a" "type" "channel" "channel_types" (cslice 0 2 15 16 13))) (clabel "label" "Are to be forwarded to.." "component" (cmenu "required" true "custom_id" "b" "type" "channel" "channel_types" (cslice 0 2 11 12 15 16 13)))))}}
+{{return}}
+{{end}}
+{{if eq .CustomID "flagAdmin"}}
+{{$db := (dbGet 0 "flagCC").Value}}
+{{execCC (toInt (index ($db.Get "config") 2)) nil 0 "admin"}} 
+{{return}}
+{{end}}
+{{if eq .CustomID "flagConfig"}}
+{{execCC .CCID nil 0 "admin"}}
+{{return}}
+{{end}}
+{{if or (eq .CustomID "flagUrgent") (eq .CustomID "flagAll")}}
+{{$db := (dbGet 0 "flagCC").Value}}
+{{$a := $db.Get "tags"}}
+{{$b := $a.Get (str .User.ID)}}
+{{if eq .CustomID "flagUrgent"}}
+{{$b.Set "mode" 1}}
+{{else}}
+{{$b.Set "mode" 0}}
+{{end}}
+{{$a.Set (str .User.ID) $b}}
+{{$db.Set "tags" $a}}
+{{dbSet 0 "flagCC" $db}}
+{{execCC .CCID nil 0 "admin"}}
+{{return}}
+{{end}}
+{{if eq .CustomID "flagSelectChannels"}}
+{{$db := (dbGet 0 "flagCC").Value}}
+{{$a := $db.Get "tags"}}
+{{$b := $a.Get (str .User.ID)}}
+{{$b.Set "channels" .Values}}
+{{$a.Set (str .User.ID) $b}}
+{{$db.Set "tags" $a}}
+{{dbSet 0 "flagCC" $db}}
+{{execCC .CCID nil 0 "admin"}}
+{{return}}
+{{end}}
+{{if eq .CustomID "flagSelectTimezone"}}
+{{$db := (dbGet 0 "flagCC").Value}}
+{{$a := $db.Get "tags"}}
+{{$b := $a.Get (str .User.ID)}}
+{{$b.Set "zone" (joinStr "" .Values)}}
+{{$a.Set (str .User.ID) $b}}
+{{$db.Set "tags" $a}}
+{{dbSet 0 "flagCC" $db}}
+{{execCC .CCID nil 0 "admin"}}
+{{return}}
+{{end}}
+{{if eq .CustomID "flagRestrict"}}
+{{sendModal (sdict "custom_id" "flagRestrict" "title" "Block an user from reporting" "components" (cslice (clabel "label" "User ID" "component" (ctextInput "style" 1 "custom_id" "1"))))}}
+{{return}}
+{{end}}
+{{if eq .CustomID "flagUnrestrict"}}
+{{sendModal (sdict "custom_id" "flagUnrestrict" "title" "Unblock an user from reporting" "components" (cslice (clabel "label" "User ID" "component" (ctextInput "style" 1 "custom_id" "1"))))}}
+{{return}}
+{{end}}
+{{if eq .CustomID "flagDeleteMessage"}}
+{{$a := reFind .LinkRegex .Message.Content}}
+{{$messageLink := $a}}
+{{$messageObject := false}}
+{{try}}
+{{$messageObject = getMessage (toInt (index (split $messageLink "/") 5)) (toInt (index (split $messageLink "/") 6))}}
+{{catch}}
+{{end}}
+{{if $messageObject}}
+{{deleteMessage $messageObject.ChannelID $messageObject.ID 0}}
+{{updateMessage (complexMessage "content" (print .Message.Content "\n\n<@" .User.ID "> Deleted the message.") "components" ( index .Message.Components 0).Components "embed" (cslice (index .Message.Embeds 0) (index .Message.Embeds 1)))}}
+{{else}}
+Seems like this message is already deleted
+{{ephemeralResponse}}
+{{end}}
+{{return}}
+{{end}}
+{{if eq .CustomID "flagTimeout"}}
+{{execAdmin "timeout" (reFind `\d+` .Message.Content) "10m" "Preemptively muted by Server Staff"}}
+Done, take a proper decision while they're timed out
+{{ephemeralResponse}}
+{{updateMessage (complexMessage "content" (print .Message.Content "\n\n<@" .User.ID "> Timed out this user.") "components" ( index .Message.Components 0).Components "embed" (cslice (index .Message.Embeds 0) (index .Message.Embeds 1)))}}
+{{return}}
+{{end}}
+{{if eq .CustomID "flagDeletePost"}}
+{{sendModal (sdict "custom_id" "flagDeletePost" "title" "Delete post" "components" (cslice (clabel "label" "Reason (leave empty to remove silently)" "component" (ctextInput "style" 1 "custom_id" "1"))))}}
+{{return}}
+{{end}}
+{{/* https://github.com/Enigmx/YAGPDB-custom-commands/tree/main/CC%3A%20Flag */}}
