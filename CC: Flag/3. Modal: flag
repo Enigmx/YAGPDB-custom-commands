@@ -17,7 +17,9 @@
 {{else if $b}}
 {{$channel = $b}}
 {{end}}
+{{if $a}}
 {{sendMessage $channel (complexMessage "content" (print "<@" $u ">") "embed" (cembed "title" "❗• Server Staff deleted your post" "description" (print "**Reason:** " $a)))}}
+{{end}}
 {{return}}
 {{end}}
 {{if eq .CustomID "flagNote"}}
