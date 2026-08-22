@@ -1,0 +1,25 @@
+{{if .Channel.IsThread}}
+{{if (getChannel .Channel.ParentID).IsForum}}
+{{$db := (dbGet 0 "forumStats").Value}}
+{{$s := sdict "f" (sdict) "m" (sdict)}}
+{{if $db}}
+{{$s = $db}}
+{{end}}
+{{$f := toString .Channel.ParentID}}
+{{$p := toString .Channel.ID}}
+{{$x := $s.f.Get $f}}
+{{if not $x}}
+{{$x = 0}}
+{{end}}
+{{if eq .Message.ID .Channel.ID}}
+{{$s.f.Set $f (add $x 1)}}
+{{end}}
+{{$x = $s.m.Get $p}}
+{{if not $x}}
+{{$x = sdict "f" $f "c" 0}}
+{{end}}
+{{$x.Set "c" (add $x.c 1)}}
+{{$s.m.Set $p $x}}
+{{dbSet 0 "forumStats" $s}}
+{{end}}
+{{end}}
