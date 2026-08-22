@@ -47,7 +47,7 @@ Sent your report to Server Staff 😊
 {{$cont := print "Report made by <@" .User.ID ">\nLocation: <#" .Channel.ID ">"}}
 {{$a := or (.Options.Get "post") (.Options.Get "member") (.Options.Get "link")}}
 {{if eq .SubCommand "post"}}
-{{$a := or (.Options.Get "post") (.Options.Get "member") (.Options.Get "link")}}
+{{$a = (.Options.Get "post")}}
 {{if and (not $a) (not (getChannel .Channel.ParentID).IsForum)}}
 You must select a forum post to report.
 {{ephemeralResponse}}
@@ -157,8 +157,8 @@ You are restricted from using this tool :( contact Staff members regarding appea
 {{$cont = (print $cont "\n> " $0)}}
 {{end}}
 {{$dd := sendMessageRetID $defaultReportChannel (complexMessage "content" $cont "components" $comp "embed" (cslice $emb2 $emb))}}
-{{dbSetExpire $a.ID "flagCC" (cslice $defaultReportChannel $dd) 432000}}
 {{template "a"}}
+{{dbSetExpire $a.ID "flagCC" (cslice $defaultReportChannel $dd) 432000}}
 {{return}}
 {{end}}
 {{if in (index (split $g.Content "\n") 1) (str .User.ID)}}
