@@ -8,23 +8,23 @@
 {{$a = $a.Append (sdict "id" $k "f" $v.f "c" $v.c)}}
 {{end}}
 {{$a = sort $a (sdict "key" "c" "reverse" true)}}
-{{$x := "### Posts created per forum\n"}}
+{{$x := "### New posts created per forum\n"}}
 {{if $f}}
 {{range $k,$v := $f}}
-{{$x = printf "%s<#%s>: %d\n" $x $k $v}}
+{{$x = print $x "<#" $k ">: " $v "\n" $x $k $v}}
 {{end}}
 {{else}}
-{{$x = printf "%sNo activity\n" $x}}
+{{$x = print $x "No activity\n" }}
 {{end}}
-{{$x = printf "%s\n### Top 30 posts by new messages\n" $x}}
+{{$x = print $x "\n### Top 30 posts by new messages\n"}}
 {{if $a}}
 {{range $i,$v := $a}}
 {{if lt $i 30}}
-{{$x = printf "%s<#%s>: %d\n" $x $v.id $v.c}}
+{{$x = print $x "<#" $v.id ">: " $v.c "\n"}}
 {{end}}
 {{end}}
 {{else}}
-{{$x = printf "%sNo activity\n" $x}}
+{{$x = print $x "No activity\n"}}
 {{end}}
 {{$sdi := sdict}}
 {{$list := cslice}}
@@ -53,7 +53,7 @@
 {{if eq (len .Guild.Threads) 0}}
 {{$2x = "No activity"}}
 {{end}}
-{{$x = print "### All currently open posts per forums\n" $2x "\n\n" $x}}
-{{sendMessage nil (cembed "title" (printf "Forum statistics: %s" (currentTime.Format "2 January 2006")) "description" $x)}}
+{{$x = print "### All currently open posts per forums (" (len .Guild.Threads) "/1000)\n" $2x "\n\n" $x}}
+{{sendMessage nil (cembed "title" (print "Forum statistics: " (currentTime.Format "2 January 2006")) "description" $x)}}
 {{dbSet 0 "forumStats" (sdict "f" (sdict) "m" (sdict))}}
 {{end}}
