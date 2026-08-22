@@ -157,9 +157,8 @@ You are restricted from using this tool :( contact Staff members regarding appea
 {{$cont = (print $cont "\n> " $0)}}
 {{end}}
 {{$dd := sendMessageRetID $defaultReportChannel (complexMessage "content" $cont "components" $comp "embed" (cslice $emb2 $emb))}}
-{{template "a"}}
 {{dbSetExpire $a.ID "flagCC" (cslice $defaultReportChannel $dd) 432000}}
-{{return}}
+{{template "a"}}
 {{end}}
 {{if in (index (split $g.Content "\n") 1) (str .User.ID)}}
 You have already made a report regarding this {{.SubCommand}}. If you believe it was missed by Server Staff, or if it's urgent, you may have to resort to direct reporting through DMs of a Staff member.
