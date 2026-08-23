@@ -1,0 +1,11 @@
+{{if (reFindAll `[\w~]+:\d{17,20}` .Message.Content)}}
+{{$db := (dbGet 0 "emoteUsage").Value}}
+{{if $db}}
+{{range (reFindAll `[\w~]+:\d{17,20}` .Message.Content)}}
+{{if $db.HasKey .}}
+{{$db.Set . (add ($db.Get .) 1)}}
+{{end}}
+{{end}}
+{{dbSet 0 "emoteUsage" $db}}
+{{end}}
+{{end}}
