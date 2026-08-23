@@ -1,0 +1,38 @@
+{{/* configuration */}}
+{{$channel := 0}}
+{{/* end configuration */}}
+
+{{$db := (dbGet 0 "emoteUsage").Value}}
+{{if $db}}
+{{$a := cslice}}
+{{range $k,$v := $db}}
+{{$a = $a.Append (sdict "n" $k "c" $v)}}
+{{end}}
+{{$a = sort $a "key" "c" "reverse" true}}
+{{$z := len $a}}
+{{$q := 10}}
+{{if lt $z 10}}
+{{$q = $z}}
+{{end}}
+{{$l := slice $a (sub $z $q) $z}}
+{{$t := ""}}
+{{range $v := $a}}
+{{$t = print $t $v.n ": " $v.c "\n"}}
+{{end}}
+{{$x := "### Most used\n"}}
+{{range $i,$v := $a}}
+{{if lt $i 10}}
+{{$x = print $x "<:" $v.n ">: " $v.c "\n"}}
+{{end}}
+{{end}}
+{{$x = print $x "\n### Least used\n"}}
+{{range $v := $l}}
+{{$x = print $x "<:" $v.n ">: " $v.c "\n"}}
+{{end}}
+{{sendMessage $channel (complexMessage "embed" (cembed "title" (print "Emoji monthly usage: " (currentTime.Format "January 2006")) "description" $x) "file" $t)}}
+{{end}}
+{{$n := sdict}}
+{{range .Guild.Emojis}}
+{{$n.Set (print .Name ":" .ID) 0}}
+{{end}}
+{{dbSet 0 "emoteUsage" $n}}
