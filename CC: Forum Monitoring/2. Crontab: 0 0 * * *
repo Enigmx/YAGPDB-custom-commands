@@ -1,17 +1,21 @@
+{{/* configuration */}}
+{{$channel := 0}}
+{{/* end configuration */}}
+
 {{$db := (dbGet 0 "forumStats").Value}}
 {{if $db}}
 {{$s := $db}}
 {{$f := $s.f}}
 {{$m := $s.m}}
 {{$a := cslice}}
+{{$x := "### New posts created per forum\n"}}
 {{range $k,$v := $m}}
 {{$a = $a.Append (sdict "id" $k "f" $v.f "c" $v.c)}}
 {{end}}
 {{$a = sort $a (sdict "key" "c" "reverse" true)}}
-{{$x := "### New posts created per forum\n"}}
 {{if $f}}
 {{range $k,$v := $f}}
-{{$x = print $x "<#" $k ">: " $v "\n" $x $k $v}}
+{{$x = print $x "<#" $k ">: " $v "\n"}}
 {{end}}
 {{else}}
 {{$x = print $x "No activity\n" }}
@@ -35,6 +39,28 @@
 {{end}}
 {{$non := 0}}
 {{range .Guild.Threads}}
+{{if in $list .ParentID}}
+{{if $sdi.HasKey (str .ParentID)}}
+{{$sdi.Set (str .ParentID) (add ($sdi.Get (str .ParentID)) 1)}}
+{{else}}
+{{$sdi.Set (str .ParentID) 1}}
+{{end}}
+{{else}}
+{{$non = add $non 1}}
+{{end}}
+{{end}}
+{{$2x := ""}}
+{{range $k , $v := $sdi}}
+{{$2x = print $2x "\n<#" $k "> has " $v " open posts, " (mult (div (toFloat $v) (toFloat (len $.Guild.Threads)) ) 100) "% of total threads."}}
+{{end}}
+{{$2x = print $2x "\nThreads that don't belong to forum channels: " $non ", " (mult (div (toFloat $non) (toFloat (len $.Guild.Threads)) ) 100) "% of total threads."}}
+{{if eq (len .Guild.Threads) 0}}
+{{$2x = "No activity"}}
+{{end}}
+{{$x = print "### All currently open posts per forums (" (len .Guild.Threads) "/1000)\n" $2x "\n\n" $x}}
+{{sendMessage $channel (cembed "title" (print "Forum statistics: " (currentTime.Format "2 January 2006")) "description" $x)}}
+{{dbSet 0 "forumStats" (sdict "f" (sdict) "m" (sdict))}}
+{{end}}{{range .Guild.Threads}}
 {{if in $list .ParentID}}
 {{if $sdi.HasKey (str .ParentID)}}
 {{$sdi.Set (str .ParentID) (add ($sdi.Get (str .ParentID)) 1)}}
