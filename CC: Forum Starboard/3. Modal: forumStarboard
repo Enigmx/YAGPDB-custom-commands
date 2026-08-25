@@ -1,0 +1,97 @@
+{{if eq .CustomID "forumStarboardAdd"}}
+{{$f := (.ModalValues.Get "f").Get "value"}}
+{{$f = index $f 0}}
+{{$c := (.ModalValues.Get "c").Get "value"}}
+{{$c = index $c 0}}
+{{$n := (.ModalValues.Get "n").Get "value" | toInt}}
+{{$e := (.ModalValues.Get "e").Get "value"}}
+{{if le $n 0}}
+❗ **• {{.User.Mention}} Invalid reaction threshold**
+The reaction threshold must be greater than 0.
+{{return}}
+{{end}}
+{{$p := eq ((.ModalValues.Get "p").Get "value") "public"}}
+{{range .Guild.Emojis}}
+{{if eq $e .Name}}
+{{$e = print ":" .Name ":" .ID}}
+{{end}}
+{{end}}
+{{$db := (dbGet 0 "forumStarboard").Value}}
+{{if not $db}}
+{{$db = sdict}}
+{{end}}
+{{$db.Set $f (sdict "c" $c "n" $n "e" $e "p" $p "t" "")}}
+{{dbSet 0 "forumStarboard" $db}}
+⚙️ **• {{.User.Mention}} New starboard configured**
+<#{{$f}}>
+{{execCC ($db.Get "id") nil 0 .Message.ID}}
+{{return}}
+{{end}}
+{{if in .CustomID "forumStarboardEdit"}}
+{{$f := reFind `\d+` .CustomID}}
+{{$c := (.ModalValues.Get "c").Get "value"}}
+{{$c = index $c 0}}
+{{$n := (.ModalValues.Get "n").Get "value" | toInt}}
+{{$e := (.ModalValues.Get "e").Get "value"}}
+{{$t := (.ModalValues.Get "t").Get "value"}}
+{{if le $n 0}}
+❗ **• {{.User.Mention}} Invalid reaction threshold**
+The reaction threshold must be greater than 0.
+{{return}}
+{{end}}
+{{$p := eq ((.ModalValues.Get "p").Get "value") "public"}}
+{{range .Guild.Emojis}}
+{{if eq $e .Name}}
+{{$e = print ":" .Name ":" .ID}}
+{{end}}
+{{end}}
+{{$db := (dbGet 0 "forumStarboard").Value}}
+{{$s := $db.Get $f}}
+{{$s.Set "c" $c}}
+{{$s.Set "n" $n}}
+{{$s.Set "e" $e}}
+{{$s.Set "p" $p}}
+{{$s.Set "t" (index $t 0)}}
+{{$db.Set $f $s}}
+{{dbSet 0 "forumStarboard" $db}}
+⚙️ **• {{.User.Mention}} Starboard configuration updated**
+<#{{$f}}>
+{{execCC ($db.Get "id") nil 0 .Message.ID}}
+{{return}}
+{{end}}
+{{if in .CustomID "forumStarboardDelete"}}
+{{$f := reFind `\d+` .CustomID}}
+{{$db := (dbGet 0 "forumStarboard").Value}}
+{{$db.Del $f}}
+{{dbSet 0 "forumStarboard" $db}}
+⚙️ **• {{.User.Mention}} Starboard deleted**
+<#{{$f}}>
+{{execCC ($db.Get "id") nil 0 .Message.ID}}
+{{return}}
+{{end}}
+{{if eq .CustomID "forumStarboardAccept"}}
+{{$i := reFindAll `\d+` .Message.Content}}
+{{$p := index $i 0}}
+{{$u := index $i 1}}
+{{$db := (dbGet 0 "forumStarboard").Value}}
+{{$s := $db.Get (str (getChannelOrThread (toInt $p)).ParentID)}}
+{{$r := (.ModalValues.Get "r").Get "value"}}
+{{$e := structToSdict (index .Message.Embeds 0)}}
+{{$e.Set "color" 0x00FF00}}
+{{$a := cbutton "emoji" (sdict "id" "1526085926340788375") "custom_id" "forumStarboardAccept" "style" "success" "disabled" true}}
+{{$d := cbutton "emoji" (sdict "id" "1526085880568348732") "custom_id" "forumStarboardDecline" "style" "danger" "disabled" true}}
+{{updateMessage (complexMessage "content" (print "• <#" $p "> - Courtesy of <@" $u ">\n\n> " $r) "buttons" (cslice $a $d) "embed" (cslice $e))}}
+{{if $s.t}}
+{{editThread (toInt $p) (sdict "tags" (cslice (toInt $s.t)))}}
+{{end}}
+{{return}}
+{{end}}
+{{if eq .CustomID "forumStarboardDecline"}}
+{{$r := (.ModalValues.Get "r").Get "value"}}
+{{$e := structToSdict (index .Message.Embeds 0)}}
+{{$e.Set "color" 0x00FF00}}
+{{$a := cbutton "emoji" (sdict "id" "1526085926340788375") "custom_id" "forumStarboardAccept" "style" "success" "disabled" true}}
+{{$d := cbutton "emoji" (sdict "id" "1526085880568348732") "custom_id" "forumStarboardDecline" "style" "danger" "disabled" true}}
+{{updateMessage (complexMessage "content" (print .Message.Content "\n\n<@" .User.ID "> Declined this feature.\n" $r) "buttons" (cslice $a $d) "embed" (cslice $e))}}
+{{return}}
+{{end}}
