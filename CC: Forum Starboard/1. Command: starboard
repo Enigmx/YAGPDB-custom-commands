@@ -1,0 +1,27 @@
+{{$db := (dbGet 0 "forumStarboard").Value}}
+{{$a := componentBuilder}}
+{{$a.Add "text" "# Starboard configuration"}}
+{{$a.Add "separator" false}}
+{{$a.Add "text" "Configure per-forum starboards for the server. Click + to enable in a forum channel."}}
+{{if $db}}
+{{range $k,$v := $db}}
+{{if eq $k "id"}}
+{{continue}}
+{{end}}
+{{$a.Add "text" (print "\nActive in: <#" $k "> (" $v.n " " $v.e ")")}}
+{{$b1 := cbutton "emoji" (sdict "id" "1527138600414875678") "custom_id" (print "forumStarboardEdit" $k) "style" "grey"}}
+{{$b2 := cbutton "emoji" (sdict "id" "1526085970263281755") "custom_id" (print "forumStarboardDelete" $k) "style" "danger"}}
+{{$a.Add "buttons" (cslice $b1 $b2)}}
+{{end}}
+{{else}}
+{{dbSet 0 "forumStarboard" (sdict "id" .CCID)}}
+{{end}}
+{{$a.Add "separator" false}}
+{{$b := cbutton "emoji" (sdict "id" "1527450008197009498") "custom_id" "forumStarboardAdd" "style" "success"}}
+{{$a.Add "buttons" (cslice $b)}}
+{{$c := componentBuilder "container" (sdict "components" $a)}}
+{{if .ExecData}}
+{{editMessage nil .ExecData $c}}
+{{else}}
+{{sendMessage nil $c}}
+{{end}}
