@@ -1,0 +1,49 @@
+{{if eq .CustomID "forumStarboardAdd"}}
+{{sendModal (sdict "custom_id" "forumStarboardAdd" "title" "Add forum starboard" "components" (cslice
+(clabel "label" "Forum channel" "component" (cmenu "placeholder" "Select a forum channel" "custom_id" "f" "type" "channel" "channel_types" (cslice 15) "required" true))
+(clabel "label" "Send featured posts in:" "component" (cmenu "placeholder" "Select a channel or thread" "custom_id" "c" "type" "channel" "channel_types" (cslice 0 1 2 3 5 10 11 12 13 15 16) "required" true))
+(clabel "label" "Reaction threshold" "component" (ctextInput "style" 1 "custom_id" "n" "required" true))
+(clabel "label" "Emote (Name or unicode)" "component" (ctextInput "style" 1 "custom_id" "e" "required" true))
+(clabel "label" "Select type of starboard" "component" (cradioGroup "custom_id" "p" "required" true "options" (cslice
+(sdict "value" "public" "label" "Public" "description" "Posts are automatically featured")
+(sdict "value" "private" "label" "Private" "description" "Posts require moderator approval"))))))}}
+{{return}}
+{{end}}
+{{if in .CustomID "forumStarboardDelete"}}
+{{$f := reFind `\d+` .CustomID}}
+{{sendModal (sdict "custom_id" (print "forumStarboardDelete" $f) "title" "Confirm action" "components" (cslice (clabel "label" "Are you sure?" "component" (ccheckboxGroup "required" true "custom_id" "a" "options" (cslice (sdict "value" "1" "label" "Confirm"))))))}}
+{{return}}
+{{end}}
+{{if eq .CustomID "forumStarboardAccept"}}
+{{sendModal (sdict "custom_id" "forumStarboardAccept" "title" "Accept featured post" "components" (cslice
+(clabel "label" "Write a review here" "component" (ctextInput "style" 2 "custom_id" "r" "required" true))))}}
+{{return}}
+{{end}}
+{{if eq .CustomID "forumStarboardDecline"}}
+{{sendModal (sdict "custom_id" "forumStarboardDecline" "title" "Decline featured post" "components" (cslice
+(clabel "label" "Reason (optional)" "component" (ctextInput "style" 1 "custom_id" "r" "required" false))))}}
+{{return}}
+{{end}}
+{{if in .CustomID "forumStarboardEdit"}}
+{{$channel := reFind `\d+` .CustomID}}
+{{$db := (dbGet 0 "forumStarboard").Value}}
+{{$s := $db.Get $channel}}
+{{$ch := getChannel (toInt $channel)}}
+{{$o := cslice}}
+{{range $ch.AvailableTags}}
+{{$d := false}}
+{{if eq (toString $s.t) (toString .ID)}}
+{{$d = true}}
+{{end}}
+{{$o = $o.Append (sdict "label" .Name "value" (str .ID) "default" $d)}}
+{{end}}
+{{sendModal (sdict "custom_id" (print "forumStarboardEdit" $channel) "title" "Edit forum starboard" "components" (cslice
+(clabel "label" "Send featured posts in:" "component" (cmenu "placeholder" "Select a channel or thread" "custom_id" "c" "type" "channel" "channel_types" (cslice 0 1 2 3 5 10 11 12 13 15 16) "required" true "default_values" (cslice (sdict "ID" $s.c "type" "channel"))))
+(clabel "label" "Reaction threshold" "component" (ctextInput "style" 1 "custom_id" "n" "required" true "value" (toString $s.n)))
+(clabel "label" "Emote" "component" (ctextInput "style" 1 "custom_id" "e" "required" true "value" $s.e))
+(clabel "label" "Select type of starboard" "component" (cradioGroup "custom_id" "p" "required" true "options" (cslice
+(sdict "value" "public" "label" "Public" "description" "Posts are automatically featured" "default" $s.p)
+(sdict "value" "private" "label" "Private" "description" "Posts require moderator approval" "default" (not $s.p)))))
+(clabel "label" "Add tag automatically" "component" (cmenu "type" "text" "min_values" 0  "placeholder" "Select a tag" "custom_id" "t" "required" false "options" $o))))}}
+{{return}}
+{{end}}
