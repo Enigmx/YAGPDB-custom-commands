@@ -1,0 +1,58 @@
+{{if eq .Message.ID .Channel.ID}}
+{{$db := (dbGet 0 "forumStarboard").Value}}
+{{$s := $db.Get (toString .Channel.ParentID)}}
+{{if $s}}
+{{$e := $s.e}}
+{{$r := 0}}
+{{if .Reaction.Emoji.ID}}
+{{if eq $e (print ":" .Reaction.Emoji.Name ":" .Reaction.Emoji.ID)}}
+{{range .Message.Reactions}}
+{{if eq $e (print ":" .Emoji.Name ":" .Emoji.ID)}}
+{{$r = .Count}}
+{{end}}
+{{end}}
+{{end}}
+{{else}}
+{{if eq $e .Reaction.Emoji.Name}}
+{{range .Message.Reactions}}
+{{if eq $e .Emoji.Name}}
+{{$r = .Count}}
+{{end}}
+{{end}}
+{{end}}
+{{end}}
+{{if ge $r $s.n}}
+{{if gt (toInt (currentTime.Sub (snowflakeToTime .Channel.ID)).Seconds) 157680000}}
+{{return}}
+{{end}}
+{{if not .Message}}
+{{return}}
+{{end}}
+{{ if (dbGet .Channel.ID "forumStarboard")}}
+{{return}}
+{{end }}
+{{dbSetExpire .Channel.ID "forumStarboard" true 157680000}}
+{{$u := getMember .Message.Author.ID}}
+{{$i := ""}}
+{{$e := sdict "title" .Channel.Name "description" .Message.Content "color" 16766720}}
+{{if $u}}
+{{$e.Set "author" (sdict "name" ($u.User.Username) "icon_url" ($u.User.AvatarURL "512"))}}
+{{end}}
+{{if .Message.Attachments}}
+{{$e.Set "image" (sdict "url" (index .Message.Attachments 0).URL)}}
+{{end}}
+{{$m := print "⭐ • <#" .Channel.ID "> - opened by <@" .Message.Author.ID ">\nForum: <#" .Channel.ParentID ">"}}
+{{if $s.p}}
+{{if $s.t}}
+{{editThread .Channel.ID (sdict "tags" (cslice (toInt $s.t)))}}
+{{end}}
+{{sendMessage $s.c (complexMessage "content" $m "embed" $e)}}
+{{else}}
+{{$a := cbutton "emoji" (sdict "id" "1526085926340788375") "custom_id" "forumStarboardAccept" "style" "success"}}
+{{$d := cbutton "emoji" (sdict "id" "1526085880568348732") "custom_id" "forumStarboardDecline" "style" "danger"}}
+{{$e.Set "color" 0xFF0000}}
+{{sendMessage $s.c (complexMessage "content" $m "embed" $e "buttons" (cslice $a $d))}}
+{{end}}
+{{end}}
+{{end}}
+{{end}}
