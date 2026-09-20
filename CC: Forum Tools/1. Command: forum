@@ -1,15 +1,13 @@
 {{/* configuration */}}
 {{$mod := 0}}
 {{$notificationChannel := 1}}
-{{$supportSpecialTag := ""}}
-{{$reportChannel := 0}}
 {{/* end configuration */}}
 
 {{$t := false}}
 {{if (in .Member.Roles $mod)}}
 {{$t = true}}
 {{end}}
-{{dbSet 0 "forumTools" (cslice $supportSpecialTag .CCID $mod)}}
+{{dbSet 0 "forumTools" (cslice .CCID $mod)}}
 {{if .ExecData}}
 {{if eq (index .ExecData 1) "expire"}}
 {{if not (getChannelOrThread (index .ExecData 0))}}
@@ -23,7 +21,7 @@
 {{deleteForumPost (index .ExecData 0)}}
 {{if eq (len .ExecData) 4}}
 {{$member := getMember (index .ExecData 3)}}
-{{if $member}}}
+{{if $member}}
 {{if eq $notificationChannel 1}}
 {{$o := 0}}
 {{range .Guild.Threads}}
@@ -33,32 +31,29 @@
 {{end}}
 {{end}}
 {{end}}
-{{sendMessage $notificationChannel (complexMessage "content" (print "<@" (index .ExecData 3) ">") "embed" (cembed "title" "❗ A  moderator deleted your post" "description" (print "**__Reason:__**\n" (index .ExecData 2))))}}
-{{end}}
+{{sendMessage $notificationChannel (complexMessage "content" (print "<@" (index .ExecData 3) ">") "embed" (cembed "title" "❗ A moderator deleted your post" "description" (print "**__Reason:__**\n" (index .ExecData 2))))}}
 {{end}}
 {{end}}
 {{return}}
 {{end}}
-{{if eq (len .Args) 1}}
-{{$str := ""}}
-{{if $supportSpecialTag}}
-{{$str = print "**" .ServerPrefix "forum " $supportSpecialTag "**: mark the post as " $supportSpecialTag " and close it after 12 hours"}}
+{{return}}
 {{end}}
+{{if eq (len .CmdArgs) 0}}
 ## Tools available
-**{{.ServerPrefix}}forum tags**: Modify the post's tags
-**{{.ServerPrefix}}forum close**: Close the post
-**{{.ServerPrefix}}forum lock**: Lock the post
-**{{.ServerPrefix}}forum closelock**: Close and lock the post
-**{{.ServerPrefix}}forum expire [time]**: Close and lock the post after some time
-**{{.ServerPrefix}}forum delete [reason]**: Delete the post and optionally notify the creator why so
-**{{.ServerPrefix}}forum search [forum] [name]**: Search posts in a forum channel by name
-**{{.ServerPrefix}}forum slowmode [seconds]:** Set slowmode to be the specified seconds
-{{$str}}
+**<@204255221017214977> forum tags**: Modify the post's tags
+**<@204255221017214977> forum close**: Close the post
+**<@204255221017214977> forum lock**: Lock the post
+**<@204255221017214977> forum closelock**: Close and lock the post
+**<@204255221017214977> forum expire [time]**: Close and lock the post after some time
+**<@204255221017214977> forum delete [reason]**: Delete the post
+**<@204255221017214977> forum search [forum] [name]**: Search posts in a forum channel by name
+**<@204255221017214977> forum slowmode [seconds]**: Set slowmode to the specified seconds
+**<@204255221017214977> forum pin [message link]**: Pin a message 
 {{return}}
 {{end}}
-{{if and (eq (len .Args) 2) (eq (index .Args 1) "tags")}}
-{{if not $t}}
-Only moderators of the server can use this tool :(
+{{if and (eq (len .CmdArgs) 1) (eq (index .CmdArgs 0) "tags")}}
+{{if and (not $t) (not (eq .User.ID .Channel.OwnerID))}}
+Only moderators of the server and the post creator can use this tool :(
 {{return}}
 {{end}}
 {{if not (getChannel .Channel.ParentID).IsForum}}
@@ -71,6 +66,9 @@ No tags exist in this forum...
 {{end}}
 {{$aeiou := cslice}}
 {{range (getChannel .Channel.ParentID).AvailableTags}}
+{{if .Moderated}}
+{{continue}}
+{{end}}
 {{$tf := false}}
 {{if in $.Channel.AppliedTags .ID}}
 {{$tf = true}}
@@ -81,12 +79,12 @@ No tags exist in this forum...
 {{$aeiou = $aeiou.Append (sdict "label" .Name "value" .Name "default" $tf)}}
 {{end}}
 {{end}}
-{{sendMessage nil (complexMessage "menus" (cmenu "type" "text" "placeholder" "Change tags" "custom_id" "forumToolsModifyTags"  "options" $aeiou "min_values" 1 "max_values" (len $aeiou)))}}
+{{sendMessage nil (complexMessage "menus" (cmenu "type" "text" "placeholder" "Change tags" "custom_id" "forumToolsModifyTags" "options" $aeiou "min_values" 1 "max_values" (len $aeiou)))}}
 {{return}}
 {{end}}
-{{if eq ($b := (lower (index .Args 1))) "close" "lock" "closelock"}}
-{{if not $t}}
-Only moderators of the server can use this tool :(
+{{if eq ($b := (lower (index .CmdArgs 0))) "close" "lock" "closelock"}}
+{{if and (not $t) (not (eq .User.ID .Channel.OwnerID))}}
+Only moderators of the server and the post creator can use this tool :(
 {{return}}
 {{end}}
 {{if not (getChannel .Channel.ParentID).IsForum}}
@@ -108,17 +106,17 @@ This tool must be used inside the post itself
 {{end}}
 {{return}}
 {{end}}
-{{if eq (lower (index .Args 1)) "expire"}}
-{{if not $t}}
-Only moderators of the server can use this tool :(
+{{if eq (lower (index .CmdArgs 0)) "expire"}}
+{{if and (not $t) (not (eq .User.ID .Channel.OwnerID))}}
+Only moderators of the server and the post creator can use this tool :(
 {{return}}
 {{end}}
 {{if not (getChannel .Channel.ParentID).IsForum}}
 Close and lock a post after some time, must be used inside the post itself.
 {{return}}
 {{end}}
-{{if ge (len .Args) 3}}
-{{$e := toDuration (index .Args 2)}}
+{{if ge (len .CmdArgs) 2}}
+{{$e := toDuration (index .CmdArgs 1)}}
 {{if $e}}
 {{scheduleUniqueCC .CCID nil $e.Seconds (print .Channel.ID "expire") (cslice .Channel.ID "expire")}}
 {{dbSetExpire .Channel.ID "forumToolsExpire" "a" (toInt $e.Seconds)}}
@@ -135,12 +133,12 @@ This post will no longer expire 👍
 When should this post close?
 
 **__Use:__**
-{{.ServerPrefix}}forum expire [time]
--# example: {{.ServerPrefix}}forum expire 12h
+<@204255221017214977> forum expire [time]
+-# example: <@204255221017214977> forum expire 12h
 {{return}}
 {{end}}
 {{end}}
-{{if eq (lower (index .Args 1)) "delete"}}
+{{if eq (lower (index .CmdArgs 0)) "delete"}}
 {{if not $t}}
 Only moderators of the server can use this tool :(
 {{return}}
@@ -155,77 +153,50 @@ Delete a post, must be used inside the post itself.
 Canceled 👍
 {{return}}
 {{else}}
+{{$u := .Channel.OwnerID}}
+{{if eq $u 204255221017214977}}
+{{$m := getMessage .Channel.ID .Channel.ID}}
+{{if $m}}
+{{$h := index (split $m.Content "\n") 0}}
+{{if in (lower $h) "post opened by"}}
+{{$i := reFind `\d{16,20}` $h}}
+{{if $i}}
+{{$u = toInt $i}}
+{{end}}
+{{end}}
+{{end}}
+{{end}}
 {{try}}
-{{scheduleUniqueCC .CCID nil 12 (print .Channel.ID "delete") (cslice .Channel.ID "delete" (joinStr " " (slice .Args 2)) .Channel.OwnerID)}}
+{{scheduleUniqueCC .CCID nil 12 (print .Channel.ID "delete") (cslice .Channel.ID "delete" (joinStr " " (slice .CmdArgs 1)) $u)}}
 {{catch}}
-{{scheduleUniqueCC $.CCID nil 12 (print $.Channel.ID "delete") (cslice $.Channel.ID "delete")}}
+{{scheduleUniqueCC $.CCID nil 12 (print $.Channel.ID "delete") (cslice $.Channel.ID "delete" $u)}}
 {{end}}
 {{dbSetExpire .Channel.ID "forumToolsDelete" 1 12}}
-Done! this post will be deleted in ten seconds, to cancel, run "-forum delete" again.
+Done! this post will be deleted in ten seconds, to cancel, run "<@204255221017214977> forum delete" again.
 {{return}}
 {{end}}
 {{end}}
-{{if and (eq (lower (index .Args 1)) (lower $supportSpecialTag)) $supportSpecialTag}}
-{{$f := false}}
-{{range (getChannel .Channel.ParentID).AvailableTags }}
-{{if eq .Name $supportSpecialTag}}
-{{$f = true}}
-{{break}}
-{{end}}
-{{end}}
-{{if not $f}}
-This tool can only be used in forum channels with the **{{$supportSpecialTag}}** tag :(
+{{if eq (lower (index .CmdArgs 0)) "search"}}
+{{if lt (len .CmdArgs) 3}}
+Search posts in a forum channel by name.
+
+**__Use:__**
+<@204255221017214977> forum search [forum] [name]
 {{return}}
 {{end}}
-{{if and (not $t) (not (eq .User.ID .Channel.OwnerID)) }}
-{{if and (getMessage .Channel.ID .Channel.ID) (getChannelOrThread $reportChannel)}}
-{{sendMessage $reportChannel (complexMessage "content" (print .User.Mention " notified this post has to be marked as " $supportSpecialTag ": <#" .Channel.ID ">" ) "buttons" (cslice  (sdict "label" "Accept" "style" "green" "custom_id" "forumToolsAcceptConcluded") (sdict "label" "Decline" "style" "red" "custom_id" "forumToolsDeclineConcluded")) "embed" (cembed "title" .Channel.Name "description" (getMessage .Channel.ID .Channel.ID).Content "color" 0xFF0000))}}
-Notified server moderators 👍
-{{return}}
-{{else if (getChannelOrThread $reportChannel)}}
-{{sendMessage $reportChannel (complexMessage "content" (print .User.Mention " notified that this post has to be marked as " $supportSpecialTag ": <#" .Channel.ID ">" ) "buttons" (cslice  (sdict "label" "Accept" "style" "green" "custom_id" "forumToolsAcceptConcluded") (sdict "label" "Decline" "style" "red" "custom_id" "forumToolsDeclineConcluded")) "embed" (cembed "title" .Channel.Name "description" "Unknown... original message has been deleted" "color" 0xFF0000))}}
-Notified server moderators 👍
-{{return}}
-{{else}}
-Only moderators of the server and post creator can use this tool :(
+{{$ch := getChannel (toInt (reFind `\d+` (index .CmdArgs 1)))}}
+{{if not $ch}}
+No forum channel found
 {{return}}
 {{end}}
-{{end}}
-{{scheduleUniqueCC .CCID nil 43200 (print .Channel.ID "expire") (cslice .Channel.ID "expire")}}
-{{dbSetExpire .Channel.ID "forumToolsExpire" "a" (toInt 43200)}}
-{{editThread .Channel.ID (sdict "tags" $supportSpecialTag)}}
-Done! this post has been marked as {{$supportSpecialTag}} and will close in 12 hours.
+{{if not $ch.IsForum}}
+That channel is not a forum
 {{return}}
 {{end}}
-{{if eq (lower (index .Args 1)) "search"}}
-{{$a := 0}}
-{{try}}
-{{$a = getChannel (toInt (reFind `\d+` (index .Args 2)))}}
-{{catch}}
-Select a forum channel to look posts in
-**{{$.ServerPrefix}}forum search [forum] [name]**
-{{return}}
-{{end}}
-{{if not $a}}
-Select a forum channel to look posts in
-**{{$.ServerPrefix}}forum search [forum] [name]**
-{{return}}
-{{end}}
-{{if not ($a.IsForum)}}
-You can only select forum channels to look posts in :(
-{{return}}
-{{end}}
-{{$b := ""}}
-{{try}}
-{{$b = trimSpace (lower (joinStr " " (slice .Args 3)))}}
-{{catch}}
-Select what posts to look up (by name)
-**{{$.ServerPrefix}}forum search [forum] [name]**
-{{return}}
-{{end}}
+{{$n := lower (joinStr " " (slice .CmdArgs 2))}}
 {{$c := ""}}
 {{range .Guild.Threads}}
-{{if and (eq $a.ID .ParentID) (in (lower .Name) $b)}}
+{{if and (eq $ch.ID .ParentID) (in (lower .Name) $n)}}
 {{if ge (len $c) 3950}}
 {{$c = print $c "\n\nAnd some more posts which I can't show due to the character limit..."}}
 {{break}}
@@ -238,28 +209,83 @@ Nothing found...
 {{return}}
 {{end}}
 {{$d := cslice}}
-{{range $a.AvailableTags}}
+{{range $ch.AvailableTags}}
 {{$d = $d.Append (sdict "label" .Name "value" (str .ID))}}
-{{else}}
-{{sendMessage nil (complexMessage "embed" (cembed "title" (print "Search results in <#" $a.ID ">: " $b) "description" $c))}}
+{{end}}
+{{sendMessage nil (complexMessage "embed" (cembed "title" (print "Search results in <#" $ch.ID ">: " $n) "description" $c) "menus" (cslice (sdict "type" "text" "placeholder" "Filter by tags" "custom_id" "forumToolsFilter1" "options" $d "min_values" 0 "max_values" (len $d)) (sdict "type" "text" "placeholder" "Filter out tags" "custom_id" "forumToolsFilter2" "options" $d "max_values" (len $d))))}}
 {{return}}
 {{end}}
-{{sendMessage nil (complexMessage "menus" (cslice (sdict "type" "text" "placeholder" "Filter by tags" "custom_id" "forumToolsFilter1" "options" $d "min_values" 0 "max_values" (len $d)) (sdict "type" "text" "placeholder" "Filter out tags" "custom_id" "forumToolsFilter2" "options" $d "min_values" 0 "max_values" (len $d))) "embed" (cembed "title" (print "Search results in <#" $a.ID ">: " $b) "description" $c))}}
+{{if eq (index .CmdArgs 0) "slowmode"}}
+{{if and (not $t) (not (eq .User.ID .Channel.OwnerID))}}
+Only moderators of the server and the post creator can use this tool :(
 {{return}}
 {{end}}
-{{if (eq (index .Args 1) "slowmode")}}
-{{if not $t}}
-Only moderators of the server can use this tool :(
+{{if lt (len .CmdArgs) 2}}
+What should slowmode be set to?
+
+**__Use:__**
+<@204255221017214977> forum slowmode [seconds]
 {{return}}
 {{end}}
 {{try}}
-{{editThread .Channel.ID (sdict "slowmode" (toInt (reFind `\d+` (index .Args 2))))}}
-Modified slowmode to {{(index .Args 2)}} seconds 👍
+{{editThread .Channel.ID (sdict "slowmode" (toInt (reFind `\d+` (index .CmdArgs 1))))}}
+Modified slowmode to {{(index .CmdArgs 1)}} seconds 👍
 {{return}}
 {{catch}}
 Specify the slowmode to set, must be between 0 and 21600 seconds (6 hours).
-{{return}} 
+{{return}}
 {{end}}
 {{end}}
-No such tool is available... 
+{{if eq (lower (index .CmdArgs 0)) "pin"}}
+{{if and (not $t) (not (eq .User.ID .Channel.OwnerID))}}
+Only moderators of the server and the post creator can use this tool :(
+{{return}}
+{{end}}
+{{if not (getChannel .Channel.ParentID).IsForum}}
+Pin a message in the post, must be used inside the post itself.
+{{return}}
+{{end}}
+{{if lt (len .CmdArgs) 2}}
+Pin or unpin a message in this post.
+
+**__Use:__**
+<@204255221017214977> forum pin [message link]
+{{return}}
+{{end}}
+{{$i := reFindAll `\d{16,20}` (index .CmdArgs 1)}}
+{{if lt (len $i) 2}}
+Invalid message link.
+
+**__Use:__**
+<@204255221017214977> forum pin [message link]
+{{return}}
+{{end}}
+{{$c := toInt (index $i (sub (len $i) 2))}}
+{{$m := toInt (index $i (sub (len $i) 1))}}
+{{if not (eq $c .Channel.ID)}}
+The message must belong to this post
+{{return}}
+{{end}}
+{{$m := getMessage $c $m}}
+{{if not $m}}
+Unable to find that message
+{{return}}
+{{end}}
+{{if $m.Pinned}}
+{{try}}
+{{unpinMessage $c $m.ID}}
+Unpinned message 👍
+{{catch}}
+Unable to unpin that message.
+{{end}}
+{{else}}
+{{try}}
+{{pinMessage $c $m.ID}}
+{{catch}}
+Unable to pin that message
+{{end}}
+{{end}}
+{{return}}
+{{end}}
+No such tool is available...
 {{/* https://github.com/Enigmx/YAGPDB-custom-commands/tree/main/CC%3A%20Forum%20Tools */}}
