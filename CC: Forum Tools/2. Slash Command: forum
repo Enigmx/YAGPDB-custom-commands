@@ -1,0 +1,288 @@
+{{/* configuration */}}
+{{$mod := 1266640791741267979}}
+{{$notificationChannel := 1}}
+{{/* end configuration */}}
+
+{{if .ExecData}}
+{{if eq (index .ExecData 1) "delete"}}
+{{deleteForumPost (index .ExecData 0)}}
+{{if eq (len .ExecData) 4}}
+{{$member := getMember (index .ExecData 3)}}
+{{if $member}}
+{{if eq $notificationChannel 1}}
+{{$o := 0}}
+{{range .Guild.Threads}}
+{{if and (bitwiseAnd .Flags 2) (eq $.Channel.ParentID .ParentID)}}
+{{$notificationChannel = .ID}}
+{{break}}
+{{end}}
+{{end}}
+{{end}}
+{{sendMessage $notificationChannel (complexMessage "content" (print "<@" (index .ExecData 3) ">") "embed" (cembed "title" "❗ A moderator deleted your post" "description" (print "**__Reason:__**\n" (index .ExecData 2))))}}
+{{end}}
+{{end}}
+{{return}}
+{{end}}
+{{if eq (index .ExecData 1) "expire"}}
+{{if not (getChannelOrThread (index .ExecData 0))}}
+{{return}}
+{{end}}
+{{closeThread (index .ExecData 0) true}}
+{{closeThread (index .ExecData 0)}}
+{{return}}
+{{end}}
+{{end}}
+
+{{if eq .SubCommand "slowmode"}}
+{{if and (not (in .Member.Roles $mod)) (not (eq .User.ID .Channel.OwnerID))}}
+Only moderators of the server and the post creator can use this tool :(
+{{ephemeralResponse}}
+{{return}}
+{{end}}
+{{if not (getChannel .Channel.ParentID).IsForum}}
+Set the slowmode of a forum post, must be used inside the post itself.
+{{ephemeralResponse}}
+{{return}}
+{{end}}
+{{$a := .Options.Get "seconds"}}
+{{try}}
+{{editThread .Channel.ID (sdict "slowmode" $a)}}
+Modified slowmode to {{$a}} seconds 👍
+{{catch}}
+Unable to set the slowmode. Specify a value allowed by the command configuration.
+{{ephemeralResponse}}
+{{return}}
+{{end}}
+{{return}}
+{{end}}
+{{if eq .SubCommand "search"}}
+{{$ch := getChannel (.Options.Get "forum").ID}}
+{{$n := lower (.Options.Get "query")}}
+{{if not $ch}}
+No forum channel found.
+{{ephemeralResponse}}
+{{return}}
+{{end}}
+{{if not $ch.IsForum}}
+That channel is not a forum.
+{{ephemeralResponse}}
+{{return}}
+{{end}}
+{{$c := ""}}
+{{range .Guild.Threads}}
+{{if and (eq $ch.ID .ParentID) (in (lower .Name) $n)}}
+{{if ge (len $c) 3950}}
+{{$c = print $c "\n\nAnd some more posts which I can't show due to the character limit..."}}
+{{break}}
+{{end}}
+{{$c = print $c "\n\n<#" .ID "> - " .Name ", opened by <@" .OwnerID ">"}}
+{{end}}
+{{end}}
+{{if not $c}}
+Nothing found...
+{{ephemeralResponse}}
+{{return}}
+{{end}}
+{{$d := cslice}}
+{{range $ch.AvailableTags}}
+{{$d = $d.Append (sdict "label" .Name "value" (str .ID))}}
+{{end}}
+{{sendResponse nil (complexMessage "embed" (cembed "title" (print "Search results in <#" $ch.ID ">: " $n) "description" $c) "menus" (cslice (sdict "type" "text" "placeholder" "Filter by tags" "custom_id" "forumToolsFilter1" "options" $d "min_values" 0 "max_values" (len $d)) (sdict "type" "text" "placeholder" "Filter out tags" "custom_id" "forumToolsFilter2" "options" $d "max_values" (len $d))))}}
+{{return}}
+{{end}}
+{{if eq .SubCommand "delete"}}
+{{if not (in .Member.Roles $mod)}}
+Only moderators of the server can use this tool :(
+{{ephemeralResponse}}
+{{return}}
+{{end}}
+{{if not (getChannel .Channel.ParentID).IsForum}}
+Delete a post, must be used inside the post itself.
+{{ephemeralResponse}}
+{{return}}
+{{end}}
+{{if (dbGet .Channel.ID "forumToolsDelete")}}
+{{cancelScheduledUniqueCC .CCID (print .Channel.ID "delete")}}
+{{dbDel .Channel.ID "forumToolsDelete"}}
+Canceled 👍
+{{return}}
+{{end}}
+{{$u := .Channel.OwnerID}}
+{{if eq $u 204255221017214977}}
+{{$m := getMessage .Channel.ID .Channel.ID}}
+{{if $m}}
+{{$h := index (split $m.Content "\n") 0}}
+{{if in (lower $h) "post opened by"}}
+{{$i := reFind `\d{16,20}` $h}}
+{{if $i}}
+{{$u = toInt $i}}
+{{end}}
+{{end}}
+{{end}}
+{{end}}
+{{$r := .Options.Get "reason"}}
+{{if $r}}
+{{scheduleUniqueCC .CCID nil 12 (print .Channel.ID "delete") (cslice .Channel.ID "delete" $r $u)}}
+{{else}}
+{{scheduleUniqueCC .CCID nil 12 (print .Channel.ID "delete") (cslice .Channel.ID "delete" $u)}}
+{{end}}
+{{dbSetExpire .Channel.ID "forumToolsDelete" 1 12}}
+Done! this post will be deleted in ten seconds. Run this command again to cancel
+{{ephemeralResponse}}
+{{return}}
+{{end}}
+{{if eq .SubCommand "expire"}}
+{{if and (not (in .Member.Roles $mod)) (not (eq .User.ID .Channel.OwnerID))}}
+Only moderators of the server and the post creator can use this tool :(
+{{ephemeralResponse}}
+{{return}}
+{{end}}
+{{if not (getChannel .Channel.ParentID).IsForum}}
+Close and lock a post after some time, must be used inside the post itself
+{{ephemeralResponse}}
+{{return}}
+{{end}}
+{{$a := .Options.Get "duration"}}
+{{if $a}}
+{{$b := toDuration $a}}
+{{if not $b}}
+I couldnt tell when to expire this post, try using this format: 10h
+{{ephemeralResponse}}
+{{return}}
+{{end}}
+{{scheduleUniqueCC .CCID nil $b.Seconds (print .Channel.ID "expire") (cslice .Channel.ID "expire")}}
+{{dbSetExpire .Channel.ID "forumToolsExpire" "a" (toInt $b.Seconds)}}
+Done! this post will expire in **{{$b}}**.
+{{return}}
+{{end}}
+{{if (dbGet .Channel.ID "forumToolsExpire")}}
+{{dbDel .Channel.ID "forumToolsExpire"}}
+{{cancelScheduledUniqueCC .CCID (print .Channel.ID "expire")}}
+This post will no longer expire 👍
+{{ephemeralResponse}}
+{{return}}
+{{end}}
+No expiration is currently set for this post
+{{ephemeralResponse}}
+{{return}}
+{{end}}
+{{if eq .SubCommand "pin"}}
+{{if and (not (in .Member.Roles $mod)) (not (eq .User.ID .Channel.OwnerID))}}
+Only moderators of the server and the post creator can use this tool :(
+{{ephemeralResponse}}
+{{return}}
+{{end}}
+{{if not (getChannel .Channel.ParentID).IsForum}}
+Pin a message in the post, must be used inside the post itself
+{{ephemeralResponse}}
+{{return}}
+{{end}}
+{{$a := .Options.Get "message"}}
+{{if not $a}}
+A message link is required
+{{ephemeralResponse}}
+{{return}}
+{{end}}
+{{$i := reFindAll `\d{16,20}` $a}}
+{{if lt (len $i) 2}}
+Invalid message link.
+{{ephemeralResponse}}
+{{return}}
+{{end}}
+{{$c := toInt (index $i (sub (len $i) 2))}}
+{{$m := toInt (index $i (sub (len $i) 1))}}
+{{if not (eq $c .Channel.ID)}}
+The message must belong to this post
+{{ephemeralResponse}}
+{{return}}
+{{end}}
+{{$m := getMessage $c $m}}
+{{if not $m}}
+Unable to find that message
+{{ephemeralResponse}}
+{{return}}
+{{end}}
+{{if $m.Pinned}}
+{{try}}
+{{unpinMessage $c $m.ID}}
+Unpinned message 👍
+{{catch}}
+Unable to unpin that message.
+{{ephemeralResponse}}
+{{end}}
+{{else}}
+{{try}}
+{{pinMessage $c $m.ID}}
+Pinned message 👍
+{{catch}}
+Unable to pin that message.
+{{ephemeralResponse}}
+{{end}}
+{{end}}
+{{return}}
+{{end}}
+{{if eq .SubCommand "tags"}}
+{{if and (not (in .Member.Roles $mod)) (not (eq .User.ID .Channel.OwnerID))}}
+Only moderators of the server and the post creator can use this tool :(
+{{ephemeralResponse}}
+{{return}}
+{{end}}
+{{if not (getChannel .Channel.ParentID).IsForum}}
+Edit the tags of forum posts, must be used inside the post itself.
+{{ephemeralResponse}}
+{{return}}
+{{end}}
+{{if not (getChannel .Channel.ParentID).AvailableTags}}
+No tags exist in this forum...
+{{return}}
+{{end}}
+{{$a := cslice}}
+{{range (getChannel .Channel.ParentID).AvailableTags}}
+{{if .Moderated}}
+{{continue}}
+{{end}}
+{{$t := false}}
+{{if in $.Channel.AppliedTags .ID}}
+{{$t = true}}
+{{end}}
+{{if .EmojiName}}
+{{$a = $a.Append (sdict "label" .Name "value" .Name "default" $t "emoji" (sdict "name" .EmojiName))}}
+{{else}}
+{{$a = $a.Append (sdict "label" .Name "value" .Name "default" $t)}}
+{{end}}
+{{end}}
+{{sendMessage nil (complexMessage "menus" (cmenu "type" "text" "placeholder" "Change tags" "custom_id" "forumToolsModifyTags" "options" $a "min_values" 1 "max_values" (len $a)))}}
+{{return}}
+{{end}}
+{{if eq .SubCommand "closing"}}
+{{if and (not (in .Member.Roles $mod)) (not (eq .User.ID .Channel.OwnerID))}}
+Only moderators of the server and the post creator can use this tool :(
+{{return}}
+{{end}}
+{{if not (getChannel .Channel.ParentID).IsForum}}
+This tool must be used inside the post itself
+{{return}}
+{{end}}
+{{$b := .Options.Get "configuration"}}
+{{if eq $b "Close"}}
+{{try}}
+{{addReactions "👍"}}
+{{catch}}
+{{end}}
+{{sleep 1}}
+{{closeThread .Channel.ID}}
+{{else if eq $b "Lock"}}
+{{try}}
+{{addReactions "👍"}}
+{{catch}}Will lock post
+{{end}}
+{{sleep 1}}
+{{closeThread .Channel.ID true}}
+{{else if eq $b "Close & lock"}}
+{{sendResponse nil "Will close and lock"}}
+{{sleep 1}}
+{{closeThread .Channel.ID true}}
+{{closeThread .Channel.ID}}
+{{end}}
+{{return}}
+{{end}}
