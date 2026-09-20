@@ -37,50 +37,10 @@ Nothing found...
 {{end}}
 {{return}}
 {{end}}
-{{if eq .CustomID "forumToolsDeclineConcluded"}}
-{{$db := (dbGet 0 "forumTools").Value}}
-{{if not (in .Member.Roles (index $db 2))}}
-Only moderators of the server can use this tool :(
-{{ephemeralResponse}}
-{{return}}
-{{end}}
-{{$embed := structToSdict (index .Message.Embeds 0)}}
-{{$embed.Set "color" 0x00FF00}}
-{{try}}
-{{updateMessage (complexMessageEdit "content" (print .Message.Content "\n\n" .User.Mention " has declined the report.") "buttons" (cslice  (sdict "disabled" true "label" "Accept" "style" "green" "custom_id" "forumToolsAcceptConcluded") (sdict "disabled" true "label" "Decline" "style" "red" "custom_id" "forumToolsDeclineConcluded")) "embed" (cembed $embed))}}
-{{catch}}
-{{editMessage $.Channel.ID $.Message.ID (complexMessageEdit "content" (print $.Message.Content "\n\n" .User.Mention " has declined the report.") "buttons" (cslice  (sdict "disabled" true "label" "Accept" "style" "green" "custom_id" "forumToolsAcceptConcluded") (sdict "disabled" true "label" "Decline" "style" "red" "custom_id" "forumToolsDeclineConcluded")) "embed" (cembed $embed))}}
-{{end}}
-{{return}}
-{{end}}
-{{if eq .CustomID "forumToolsAcceptConcluded"}}
-{{$db := (dbGet 0 "forumTools").Value}}
-{{if not (in .Member.Roles (index $db 2))}}
-Only moderators of the server can use this tool :(
-{{ephemeralResponse}}
-{{return}}
-{{end}}
-{{$db := (dbGet 0 "forumTools").Value}}
-{{$channel := (index (reFindAll `\d{16,20}` .Message.Content) 1)}}
-{{if (getChannelOrThread (toInt $channel))}}
-{{editThread (toInt $channel) (sdict "tags" (cslice (index $db 0)))}} 
-{{sendMessage $channel (print "Done! post has been marked as " (index $db 0) " and will close in 12 hours.")}}
-{{scheduleUniqueCC (index $db 1) nil 43200 (print (toInt $channel) "expire") (cslice (toInt $channel) "expire")}}
-{{dbSetExpire (toInt $channel) "forumToolsExpire" "a" (toInt 43200)}}
-{{end}}
-{{$embed := structToSdict (index .Message.Embeds 0)}}
-{{$embed.Set "color" 0x00FF00}}
-{{try}}
-{{updateMessage (complexMessageEdit "content" (print .Message.Content "\n\n" .User.Mention " has accepted the report and marked the post as " (index $db 0) ".") "buttons" (cslice  (sdict "disabled" true "label" "Accept" "style" "green" "custom_id" "forumToolsAcceptConcluded") (sdict "disabled" true "label" "Decline" "style" "red" "custom_id" "forumToolsDeclineConcluded")) "embed" (cembed $embed))}}
-{{catch}}
-{{editMessage $.Channel.ID $.Message.ID (complexMessageEdit "content" (print $.Message.Content "\n\n" $.User.Mention " has accepted the report and marked the post as " (index $db 0) ".") "buttons" (cslice  (sdict "disabled" true "label" "Accept" "style" "green" "custom_id" "forumToolsAcceptConcluded") (sdict "disabled" true "label" "Decline" "style" "red" "custom_id" "forumToolsDeclineConcluded")) "embed" (cembed $embed))}}
-{{end}}
-{{return}}
-{{end}}
 {{if eq .CustomID "forumToolsModifyTags"}}
 {{$db := (dbGet 0 "forumTools").Value}}
-{{if not (in .Member.Roles (index $db 2))}}
-Only moderators of the server can use this tool :(
+{{if and (not (in .Member.Roles (index $db 1))) (not (eq .User.ID .Channel.OwnerID))}}
+Only moderators of the server and the post creator can use this tool :(
 {{ephemeralResponse}}
 {{return}}
 {{end}}
@@ -88,7 +48,7 @@ Only moderators of the server can use this tool :(
 {{try}}
 {{updateMessage (complexMessageEdit "content" "Done! modified this post's tags.")}}
 {{catch}}
-{{editMessage $.Channel.ID $.Message.ID  (complexMessageEdit "content" "Done! modified this post's tags.")}}
+{{editMessage $.Channel.ID $.Message.ID (complexMessageEdit "content" "Done! modified this post's tags.")}}
 {{end}}
 {{return}}
 {{end}}
