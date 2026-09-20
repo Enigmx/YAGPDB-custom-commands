@@ -1,0 +1,52 @@
+{{if .ExecData}}
+{{if eq (index .ExecData 1) "expire"}}
+{{if not (getChannelOrThread (index .ExecData 0))}}
+{{return}}
+{{end}}
+{{closeThread (index .ExecData 0) true}}
+{{closeThread (index .ExecData 0)}}
+{{return}}
+{{end}}
+{{end}}
+{{if not (getChannel .Channel.ParentID).IsForum}}
+{{if not .Channel.IsForum}}
+This command can only be used in the support forum.
+{{return}}
+{{end}}
+{{end}}
+{{$db := (dbGet 0 "forumSupport").Value}}
+{{if not $db.t}}
+{{return}}
+{{end}}
+{{$f := .Channel.ID}}
+{{if .Channel.IsThread}}
+{{$f = .Channel.ParentID}}
+{{end}}
+{{if ne $f (toInt $db.f)}}
+This command can only be used in the support forum
+{{return}}
+{{end}}
+{{$m := getMessage .Channel.ID .Channel.ID}}
+{{$u := 0}}
+{{try}}
+{{$u = index (reFindAll `\d+` $m.Content) 0}}
+{{catch}}
+{{$u = $.Channel.OwnerID}}
+{{end}}
+{{$ok := hasAnyPermissions 8192}}
+{{if eq (toInt $u) .User.ID }}
+{{$ok = true}}
+{{end}}
+{{if not $ok}}
+{{if not $db.r}}
+Only Server Staff and post owner can use this tool :(
+{{return}}
+{{end}}
+{{sendMessage $db.r (complexMessage "content" (print .User.Mention " is marking this post as concluded: <#" .Channel.ID ">") "buttons" (cslice (cbutton "emoji" (sdict "id" "1526085926340788375") "custom_id" "forumToolsAcceptConcluded" "style" "green") (cbutton "emoji" (sdict "id" "1526085880568348732") "custom_id" "forumToolsDeclineConcluded" "style" "red")) "embed" (cembed "title" .Channel.Name "description" $m.Content "color" 0xFF0000))}}
+Notified Server Staff
+{{return}}
+{{end}}
+{{editThread .Channel.ID (sdict "tags" (cslice $db.t))}}
+{{scheduleUniqueCC .CCID nil 43200 (print .Channel.ID "expire") (cslice .Channel.ID "expire")}}
+{{dbSetExpire .Channel.ID "forumSupportExpire" "a" (toInt 43200)}}
+Done! this post has been marked as concluded and will close in 12 hours.
