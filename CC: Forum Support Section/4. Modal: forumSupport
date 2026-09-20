@@ -1,0 +1,259 @@
+{{if in .CustomID "forumSupportDeletePost"}}
+{{$p := toInt (reFind `\d+` .CustomID)}}
+{{$a := trimSpace ((.ModalValues.Get "r").Get "value")}}
+{{$db := (dbGet 0 "forumSupport").Value}}
+{{if not (getChannelOrThread $p)}}
+The support post no longer exists.
+{{ephemeralResponse}}
+{{return}}
+{{end}}
+{{$u := index (reFindAll `\d+` .Message.Content) 1}}
+{{if and $db.n $a}}
+{{sendMessage $db.n (complexMessage "content" (print "<@" $u ">") "embed" (cembed "title" "❗• Server Staff deleted your post" "description" (print "**Reason:** " $a)))}}
+{{end}}
+{{editMessage .Message.ChannelID .Message.ID (complexMessageEdit "content" (print .Message.Content "\n\n" .User.Mention " deleted this post.\n" $a))}}
+{{deleteForumPost $p}}
+{{ephemeralResponse}}
+Deleted this post
+{{return}}
+{{end}}
+{{if in .CustomID "forumSupportEditPost"}}
+{{$p := toInt (reFind `\d+` .CustomID)}}
+{{$n := trimSpace ((.ModalValues.Get "n").Get "value")}}
+{{$d := trimSpace ((.ModalValues.Get "d").Get "value")}}
+{{if not (getChannelOrThread $p)}}
+The support post no longer exists.
+{{ephemeralResponse}}
+{{return}}
+{{end}}
+{{$m := getMessage $p $p}}
+{{$x := split $m.Content "\n"}}
+{{$h := index $x 0}}
+{{editChannelName $p $n}}
+{{editMessage $p $p (print $h "\n\n" $d)}}
+{{$e := structToSdict (index .Message.Embeds 0)}}
+{{$e.Set "title" $n}}
+{{$e.Set "description" $d}}
+{{$c := cslice}}
+{{range .Message.Components}}
+{{$c = $c.Append .Components}}
+{{end}}
+{{updateMessage (complexMessageEdit "content" .Message.Content "embed" $e "components" $c)}}
+{{ephemeralResponse}}
+Done! support post edited.
+{{return}}
+{{end}}
+{{if in .CustomID "forumSupportEdit"}}
+{{$i := toInt (reFind `\d+` .CustomID)}}
+{{$db := (dbGet 0 "forumSupport").Value}}
+{{$x := $db.o}}
+{{$a := false}}
+{{try}}
+{{$a = eq (index ((.ModalValues.Get "a").Get "value") 0) "1"}}
+{{catch}}
+{{end}}
+{{if $a}}
+{{$z := cslice}}
+{{range $j, $v := $x}}
+{{if ne $j $i}}
+{{$z = $z.Append $v}}
+{{end}}
+{{end}}
+{{$db.Set "o" $z}}
+{{dbSet 0 "forumSupport" $db}}
+{{execCC $db.ccid2 nil 0 1}}
+{{return}}
+{{end}}
+{{$n := trimSpace ((.ModalValues.Get "n").Get "value")}}
+{{$d := trimSpace ((.ModalValues.Get "d").Get "value")}}
+{{$e := ""}}
+{{$w := reFind `^\S+` $n}}
+{{if reFind `^\p{So}` $w}}
+{{$e = $w}}
+{{$x := split $n " "}}
+{{if gt (len $x) 1}}
+{{$n = trimSpace (joinStr " " (slice $x 1))}}
+{{else}}
+{{$n = ""}}
+{{end}}
+{{else if and (hasPrefix $w ":") (hasSuffix $w ":")}}
+{{$x := split $w ":"}}
+{{$z := index $x 1}}
+{{range .Guild.Emojis}}
+{{if eq .Name $z}}
+{{$e = print "<:" .Name ":" .ID ">"}}
+{{$x = split $n " "}}
+{{if gt (len $x) 1}}
+{{$n = trimSpace (joinStr " " (slice $x 1))}}
+{{else}}
+{{$n = ""}}
+{{end}}
+{{break}}
+{{end}}
+{{end}}
+{{end}}
+{{$o := index $x $i}}
+{{if eq $o.type 2}}
+{{$m := trimSpace ((.ModalValues.Get "m").Get "value")}}
+{{$x.Set $i (sdict "name" $n "desc" $d "tag" 0 "type" 2 "emoji" $e "message" $m)}}
+{{else}}
+{{$t := 0}}
+{{try}}
+{{$t = toInt (index ((.ModalValues.Get "t").Get "value") 0)}}
+{{catch}}
+{{end}}
+{{$x.Set $i (sdict "name" $n "desc" $d "tag" $t "type" 1 "emoji" $e)}}
+{{end}}
+{{$db.Set "o" $x}}
+{{dbSet 0 "forumSupport" $db}}
+{{execCC $db.ccid2 nil 0 1}}
+{{return}}
+{{end}}
+{{if eq .CustomID "forumSupportAdd"}}
+{{$n := trimSpace ((.ModalValues.Get "n").Get "value")}}
+{{$d := trimSpace ((.ModalValues.Get "d").Get "value")}}
+{{$t := 0}}
+{{try}}
+{{$t = toInt (index ((.ModalValues.Get "t").Get "value") 0)}}
+{{catch}}
+{{end}}
+{{$e := ""}}
+{{$w := reFind `^\S+` $n}}
+{{if reFind `^\p{So}` $w}}
+{{$e = $w}}
+{{$x := split $n " "}}
+{{if gt (len $x) 1}}
+{{$n = trimSpace (joinStr " " (slice $x 1))}}
+{{else}}
+{{$n = ""}}
+{{end}}
+{{else if and (hasPrefix $w ":") (hasSuffix $w ":")}}
+{{$x := split $w ":"}}
+{{$z := index $x 1}}
+{{range .Guild.Emojis}}
+{{if eq .Name $z}}
+{{$e = print "<:" .Name ":" .ID ">"}}
+{{$x = split $n " "}}
+{{if gt (len $x) 1}}
+{{$n = trimSpace (joinStr " " (slice $x 1))}}
+{{else}}
+{{$n = ""}}
+{{end}}
+{{break}}
+{{end}}
+{{end}}
+{{end}}
+{{$db := (dbGet 0 "forumSupport").Value}}
+{{$o := $db.o}}
+{{$o = $o.Append (sdict "name" $n "desc" $d "tag" $t "type" 1 "emoji" $e)}}
+{{$db.Set "o" $o}}
+{{dbSet 0 "forumSupport" $db}}
+{{execCC $db.ccid2 nil 0 1}}
+{{return}}
+{{end}}
+{{if eq .CustomID "forumSupportHoneypot"}}
+{{$n := trimSpace ((.ModalValues.Get "n").Get "value")}}
+{{$d := trimSpace ((.ModalValues.Get "d").Get "value")}}
+{{$m := trimSpace ((.ModalValues.Get "m").Get "value")}}
+{{$e := ""}}
+{{$w := reFind `^\S+` $n}}
+{{if reFind `^\p{So}` $w}}
+{{$e = $w}}
+{{$x := split $n " "}}
+{{if gt (len $x) 1}}
+{{$n = trimSpace (joinStr " " (slice $x 1))}}
+{{else}}
+{{$n = ""}}
+{{end}}
+{{else if and (hasPrefix $w ":") (hasSuffix $w ":")}}
+{{$x := split $w ":"}}
+{{$z := index $x 1}}
+{{range .Guild.Emojis}}
+{{if eq .Name $z}}
+{{$e = print "<:" .Name ":" .ID ">"}}
+{{$x = split $n " "}}
+{{if gt (len $x) 1}}
+{{$n = trimSpace (joinStr " " (slice $x 1))}}
+{{else}}
+{{$n = ""}}
+{{end}}
+{{break}}
+{{end}}
+{{end}}
+{{end}}
+{{$db := (dbGet 0 "forumSupport").Value}}
+{{$o := $db.o}}
+{{$o = $o.Append (sdict "name" $n "desc" $d "tag" 0 "type" 2 "emoji" $e "message" $m)}}
+{{$db.Set "o" $o}}
+{{dbSet 0 "forumSupport" $db}}
+{{execCC $db.ccid2 nil 0 1}}
+{{return}}
+{{end}}
+{{if eq .CustomID "forumSupportMessage"}}
+{{$db := (dbGet 0 "forumSupport").Value}}
+{{$l := trimSpace ((.ModalValues.Get "l").Get "value")}}
+{{$m := trimSpace ((.ModalValues.Get "m").Get "value")}}
+{{$x := false}}
+{{try}}
+{{$x = getMessage (toInt (index (split $l "/") 5)) (toInt (index (split $l "/") 6))}}
+{{catch}}
+{{end}}
+{{if not $x}}
+I couldn't find a message from this link. Make sure it is a valid message link and that YAGPDB can access the message.
+{{ephemeralResponse}}
+{{return}}
+{{end}}
+{{$c := cslice}}
+{{range $x.Components}}
+{{$c = $c.Append (index .Components 0)}}
+{{end}}
+{{$b := cbutton "label" "Open post" "emoji" (sdict "id" "1527450008197009498") "custom_id" "forumSupportOpen" "style" "green"}}
+{{$c = $c.Append $b}}
+{{try}}
+{{editMessage $x.ChannelID $x.ID (complexMessageEdit "content" $x.Content "embed" $x.Embeds "components" $c)}}
+{{catch}}
+{{if in .Error "duplicated"}}
+Support button is already present in this message
+{{ephemeralResponse}}
+{{else}}
+I couldn't update that message. Make sure YAGPDB has permission to edit it.
+{{end}}
+{{ephemeralResponse}}
+{{return}}
+{{end}}
+{{$db.Set "m" $m}}
+{{dbSet 0 "forumSupport" $db}}
+Support button added successfully.
+{{ephemeralResponse}}
+{{return}}
+{{end}}
+{{if eq .CustomID "forumSupportCreate"}}
+{{$db := (dbGet 0 "forumSupport").Value}}
+{{$n := trimSpace ((.ModalValues.Get "n").Get "value")}}
+{{$d := trimSpace ((.ModalValues.Get "d").Get "value")}}
+{{$i := toInt (index ((.ModalValues.Get "o").Get "value") 0)}}
+{{$o := index $db.o $i}}
+{{if eq $o.type 2}}
+{{$o.message}}
+{{ephemeralResponse}}
+{{return}}
+{{end}}
+{{$f := getChannel $db.f}}
+{{$t := cslice}}
+{{if $o.tag}}
+{{$t = $t.Append $o.tag}}
+{{end}}
+{{$p := createForumPost $db.f $n (print "**Post opened by " .User.Mention " - " .User.Username "**\n\n" $d) (sdict "tags" $t)}}
+{{if $db.l}}
+{{$b := cslice}}
+{{$b = $b.Append (cbutton "label" "Mark as concluded" "custom_id" "forumSupportConclude" "emoji" (sdict "id" "1526085926340788375") "style" "green")}}
+{{$b = $b.Append (cbutton "label" "Edit" "custom_id" "forumSupportEditPost" "emoji" (sdict "id" "1527136247259205683") "style" "secondary")}}
+{{$b = $b.Append (cbutton "label" "Delete post" "custom_id" "forumSupportDeletePost" "emoji" (sdict "id" "1526085970263281755") "style" "secondary")}}
+{{sendMessage $db.l (complexMessage "content" (print $p.Mention " - Post opened by " .User.Mention "\nForum: <#" $db.f ">") "embed" (cembed "title" $n "description" $d "author" (sdict "name" .User.Username "icon_url" (.User.AvatarURL "512"))) "buttons" $b)}}
+{{end}}
+{{if $db.m}}
+{{$db.m}}
+{{ephemeralResponse}}
+{{end}}
+{{return}}
+{{end}}
