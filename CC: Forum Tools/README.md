@@ -37,7 +37,7 @@ ___
 - **{{$mod := 0}}**: Replace 0 for the role ID of the moderators who can manage forum posts.
 - **{{$notificationChannel := 0}}**: Replace 0 for the channel/thread ID where members will receive their delete reasons if a moderator deletes a post. You can replace 0 for 1 instead of a channel/thread ID to use the pinned post of the current forum. Leave at 0 if you don't care about members receiving the reasons.
 ___
-### Code #2  
+### Code #3  
 **Trigger type**: Component   
 **Trigger**: forumTools   
 **Response**: Paste code from file #2    
