@@ -1,0 +1,214 @@
+{{$db := (dbGet 0 "forumSupport").Value}}
+{{if not $db}}
+{{$db = sdict "f" 0 "n" 0 "r" 0 "l" 0 "o" (cslice) "ccid1" 0 "ccid2" .CCID}}
+{{dbSet 0 "forumSupport" $db}}
+{{else}}
+{{$db.Set "ccid2" .CCID}}
+{{dbSet 0 "forumSupport" $db}}
+{{end}}
+{{if .ExecData}}
+{{if eq (kindOf .ExecData) "ptr"}}
+{{if eq (index .ExecData 1) "expire"}}
+{{if not (getChannelOrThread (index .ExecData 0))}}
+{{return}}
+{{end}}
+{{end}}
+{{closeThread (index .ExecData 0) true}}
+{{closeThread (index .ExecData 0)}}
+{{return}}
+{{end}}
+{{$db := (dbGet 0 "forumSupport").Value}}
+{{$a := componentBuilder}}
+{{$a.Add "text" "# Select menu configuration"}}
+{{$a.Add "separator" false}}
+{{$a.Add "text" "Click \"Add option\" to configure a new select option members can click when opening a support post,\nClick \"Add honeypot\" to configure a new select option that will prevent posts from opening when selected."}}
+{{$a.Add "separator" false}}
+{{$o := $db.o}}
+{{if $o}}
+{{$a.Add "text" "### Configured options"}}
+{{$f := false}}
+{{if $db.f}}
+{{$f = getChannel $db.f}}
+{{end}}
+{{range $v := $o}}
+{{if eq $v.type 2}}
+{{$a.Add "text" (print "🍯 **" $v.emoji " " $v.name "**\n> " $v.desc)}}
+{{else}}
+{{$t := $v.tag}}
+{{if $f}}
+{{range $x := $f.AvailableTags}}
+{{if eq $x.ID $v.tag}}
+{{$t = $x.Name}}
+{{break}}
+{{end}}
+{{end}}
+{{end}}
+{{$a.Add "text" (print $v.emoji " **" $v.name "**\n> " $v.desc "\n> Tag: " $t)}}
+{{end}}
+{{end}}
+{{else}}
+{{$a.Add "text" "### Configured options\n> None."}}
+{{end}}
+{{if $o}}
+{{$x := cslice}}
+{{range $i, $v := $o}}
+{{$z := sdict "label" $v.name "value" (str $i)}}
+{{if $v.emoji}}
+{{if (reFind `^<:\S+:\d+>$` $v.emoji)}}
+{{$z.Set "emoji" (sdict "id" (reFind `\d+` $v.emoji))}}
+{{else}}
+{{$z.Set "emoji" (sdict "name" $v.emoji)}}
+{{end}}
+{{end}}
+{{$x = $x.Append $z}}
+{{end}}
+{{$a.Add "separator" false}}
+{{$a.Add "menus" (cmenu "placeholder" "Select an option to edit" "custom_id" "forumSupportEdit" "type" "text" "options" $x)}}
+{{end}}
+{{$b := cbutton "label" "Option" "emoji" (sdict "id" "1527450008197009498") "custom_id" "forumSupportAdd" "style" "secondary"}}
+{{$d := cbutton "label" "Honeypot" "emoji" (sdict "id" "1527450008197009498") "custom_id" "forumSupportHoneypot" "style" "secondary"}}
+{{$a.Add "buttons" (cslice $b $d)}}
+{{$a.Add "separator" false}}
+{{$f := cbutton "label" "Back" "emoji" (sdict "id" "1548876258023186523") "custom_id" "forumSupportBack" "style" "secondary"}}
+{{$a.Add "buttons" (cslice $f)}}
+{{$c := componentBuilder "container" (sdict "components" $a)}}
+{{updateMessage $c}}
+{{return}}
+{{end}}
+{{if eq .CustomID "forumSupportOptions"}}
+{{execCC .CCID nil 0 1}}
+{{return}}
+{{end}}
+{{if eq .CustomID "forumSupportHoneypot"}}
+{{$db := (dbGet 0 "forumSupport").Value}}
+{{if ge (len $db.o) 25}}
+{{sendMessage nil "You cannot add another option because Discord allows a maximum of 25 options."}}
+{{return}}
+{{end}}
+{{sendModal (sdict "custom_id" "forumSupportHoneypot" "title" "Add honeypot" "components" (cslice (clabel "label" "Option name" "component" (ctextInput "max_length" 100 "custom_id" "n" "placeholder" "Enter the option name" "required" true "max_length" 100)) (clabel "label" "Option description" "component" (ctextInput "max_length" 100 "custom_id" "d" "placeholder" "Enter the option description" "required" true "max_length" 100)) (clabel "label" "Honeypot message" "component" (ctextInput "custom_id" "m" "placeholder" "Explain why this is not a support inquiry" "required" true "style" 2 "max_length" 1000))))}}
+{{return}}
+{{end}}
+{{if eq .CustomID "forumSupportAdd"}}
+{{$db := (dbGet 0 "forumSupport").Value}}
+{{if ge (len $db.o) 25}}
+{{sendMessage nil "You cannot add another option because Discord allows a maximum of 25 options."}}
+{{return}}
+{{end}}
+{{$f := false}}
+{{$x := cslice}}
+{{if $db.f}}
+{{$f = getChannel $db.f}}
+{{if $f.AvailableTags}}
+{{range $t := $f.AvailableTags}}
+{{$x = $x.Append (sdict "value" (str $t.ID) "label" $t.Name)}}
+{{end}}
+{{end}}
+{{end}}
+{{if $x}}
+{{sendModal (sdict "custom_id" "forumSupportAdd" "title" "Add support option" "components" (cslice (clabel "label" "Option name" "component" (ctextInput "max_length" 100 "custom_id" "n" "placeholder" "Enter the option name" "required" true "max_length" 100)) (clabel "label" "Option description" "component" (ctextInput "max_length" 100 "custom_id" "d" "placeholder" "Enter the option description" "required" true "max_length" 100)) (clabel "label" "If selected, add this tag:" "component" (cmenu "placeholder" "Select a forum tag" "custom_id" "t" "type" "text" "options" $x))))}}
+{{else}}
+{{sendModal (sdict "custom_id" "forumSupportAdd" "title" "Add support option" "components" (cslice (clabel "label" "Option name" "component" (ctextInput "custom_id" "n" "placeholder" "Enter the option name" "required" true "max_length" 100)) (clabel "label" "Option description" "component" (ctextInput "custom_id" "d" "placeholder" "Enter the option description" "required" true "max_length" 100))))}}
+{{end}}
+{{return}}
+{{end}}
+{{if eq .CustomID "forumSupportBack"}}
+{{$db := (dbGet 0 "forumSupport").Value}}
+{{execCC $db.ccid1 nil 0 1}}
+{{return}}
+{{end}}
+{{if eq .CustomID "forumSupportForum"}}
+{{$v := index .Values 0}}
+{{$db := (dbGet 0 "forumSupport").Value}}
+{{$db.Set "f" $v}}
+{{dbSet 0 "forumSupport" $db}}
+{{execCC $db.ccid1 nil 0 1}}
+{{return}}
+{{end}}
+{{if eq .CustomID "forumSupportNotification"}}
+{{$v := index .Values 0}}
+{{$db := (dbGet 0 "forumSupport").Value}}
+{{$db.Set "n" $v}}
+{{dbSet 0 "forumSupport" $db}}
+{{execCC $db.ccid1 nil 0 1}}
+{{return}}
+{{end}}
+{{if eq .CustomID "forumSupportReport"}}
+{{$v := index .Values 0}}
+{{$db := (dbGet 0 "forumSupport").Value}}
+{{$db.Set "r" $v}}
+{{dbSet 0 "forumSupport" $db}}
+{{execCC $db.ccid1 nil 0 1}}
+{{return}}
+{{end}}
+{{if eq .CustomID "forumSupportLogging"}}
+{{$v := index .Values 0}}
+{{$db := (dbGet 0 "forumSupport").Value}}
+{{$db.Set "l" $v}}
+{{dbSet 0 "forumSupport" $db}}
+{{execCC $db.ccid1 nil 0 1}}
+{{return}}
+{{end}}
+{{if eq .CustomID "forumSupportConcludedTag"}}
+{{$v := index .Values 0}}
+{{$db := (dbGet 0 "forumSupport").Value}}
+{{$db.Set "t" $v}}
+{{dbSet 0 "forumSupport" $db}}
+{{execCC $db.ccid1 nil 0 1}}
+{{return}}
+{{end}}
+{{if eq .CustomID "forumSupportEdit"}}
+{{execCC $db.ccid1 nil 0 .Values}}
+{{return}}
+{{end}}
+{{if eq .CustomID "forumSupportMessage"}}
+{{$db := (dbGet 0 "forumSupport").Value}}
+{{if not $db.f}}
+Support forum has to be configured before a support button can be added to a message.
+{{ephemeralResponse}}
+{{return}}
+{{end}}
+{{sendModal (sdict "custom_id" "forumSupportMessage" "title" "Append support button" "components" (cslice (clabel "label" "Message link" "component" (ctextInput "custom_id" "l" "placeholder" "Paste the message link" "required" true)) (clabel "label" "Sucesfully opened a post message:" "component" (ctextInput "custom_id" "m" "style" 2 "value" "Done! your post is now open in the support forum." "required" true "placeholder" "Enter an optional message" "max_length" 2000))))}}
+{{return}}
+{{end}}
+{{if eq .CustomID "forumSupportOpen"}}
+{{$db := (dbGet 0 "forumSupport").Value}}
+{{$x := cslice}}
+{{range $i, $v := $db.o}}
+{{$z := sdict "label" $v.name "value" (str $i)}}
+{{if $v.emoji}}
+{{if reFind `^<:\S+:\d+>$` $v.emoji}}
+{{$z.Set "emoji" (sdict "id" (reFind `\d+` $v.emoji))}}
+{{else}}
+{{$z.Set "emoji" (sdict "name" $v.emoji)}}
+{{end}}
+{{end}}
+{{$x = $x.Append $z}}
+{{end}}
+{{sendModal (sdict "custom_id" "forumSupportCreate" "title" "Create support post" "components" (cslice (clabel "label" "Post title" "component" (ctextInput "custom_id" "n" "placeholder" "Briefly describe your issue or question" "required" true "max_length" 100)) (clabel "label" "Post description" "component" (ctextInput "custom_id" "d" "placeholder" "Offer as much insight as possible" "required" true "style" 2 "max_length" 2000)) (clabel "label" "Inquiry" "description" "Select which of these options best describes your inquiry" "component" (cmenu "required" true "custom_id" "o" "type" "text" "options" $x))))}}
+{{return}}
+{{end}}
+{{if eq .CustomID "forumSupportConclude"}}
+{{$db := (dbGet 0 "forumSupport").Value}}
+{{execCC $db.ccid1 nil 0 (cslice "conclude" .Message.ChannelID .Message.ID)}}
+{{return}}
+{{end}}
+{{if eq .CustomID "forumSupportEditPost"}}
+{{$db := (dbGet 0 "forumSupport").Value}}
+{{execCC $db.ccid1 nil 0 (cslice "editPost" .Message.ChannelID .Message.ID)}}
+{{return}}
+{{end}}
+{{if eq .CustomID "forumSupportDeletePost"}}
+{{$db := (dbGet 0 "forumSupport").Value}}
+{{execCC $db.ccid1 nil 0 (cslice "deletePost" .Message.ChannelID .Message.ID)}}
+{{return}}
+{{end}}
+{{if eq .CustomID "forumSupportAcceptConcluded"}}
+{{$db := (dbGet 0 "forumSupport").Value}}
+{{execCC $db.ccid1 nil 0 (cslice "acceptConcluded" .Message.ChannelID .Message.ID)}}
+{{return}}
+{{end}}
+{{if eq .CustomID "forumSupportDeclineConcluded"}}
+{{$db := (dbGet 0 "forumSupport").Value}}
+{{execCC $db.ccid1 nil 0 (cslice "declineConcluded" .Message.ChannelID .Message.ID)}}
+{{return}}
+{{end}}
