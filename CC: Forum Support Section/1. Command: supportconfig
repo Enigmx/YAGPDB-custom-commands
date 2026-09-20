@@ -1,0 +1,155 @@
+{{$db := (dbGet 0 "forumSupport").Value}}
+{{if not $db}}
+{{$db = sdict "t" 0 "f" 0 "n" 0 "r" 0 "l" 0 "o" (cslice) "t" 0 "ccid1" .CCID "ccid2" 0}}
+{{dbSet 0 "forumSupport" $db}}
+{{end}}
+{{if .ExecData}}
+{{if not (eq (kindOf .ExecData) "int")}}
+{{if eq (index .ExecData 0) "editPost"}}
+{{$m := getMessage (toInt (index .ExecData 1)) (toInt (index .ExecData 2))}}
+{{$p := toInt (reFind `\d+` $m.Content)}}
+{{$e := index $m.Embeds 0}}
+{{sendModal (sdict "custom_id" (print "forumSupportEditPost" $p) "title" "Edit support post" "components" (cslice (clabel "label" "Title" "component" (ctextInput "custom_id" "n" "value" $e.Title "required" true "max_length" 100)) (clabel "label" "Description" "component" (ctextInput "custom_id" "d" "value" $e.Description "required" true "style" 2 "max_length" 2000))))}}
+{{return}}
+{{end}}
+{{if eq (index .ExecData 0) "deletePost"}}
+{{$m := getMessage (toInt (index .ExecData 1)) (toInt (index .ExecData 2))}}
+{{$p := toInt (reFind `\d+` $m.Content)}}
+{{sendModal (sdict "custom_id" (print "forumSupportDeletePost" $p) "title" "Delete support post" "components" (cslice (clabel "label" "Reason (optional)" "component" (ctextInput "custom_id" "r" "style" 1 "required" false "max_length" 1000))))}}
+{{return}}
+{{end}}
+
+{{if eq (index .ExecData 0) "conclude"}}
+{{$m := getMessage (toInt (index .ExecData 1)) (toInt (index .ExecData 2))}}
+{{$p := toInt (reFind `\d+` $m.Content)}}
+{{if not (getChannelOrThread $p)}}
+The support post no longer exists
+{{ephemeralResponse}}
+{{return}}
+{{end}}
+{{if $db.t}}
+{{editThread $p (sdict "tags" (cslice $db.t))}}
+{{updateMessage (complexMessage "content" (print $m.Content "\n\n<@" .User.ID "> Marked the post as concluded.\n") "components" (index $m.Components 0).Components "embed" (cslice (index $m.Embeds 0)))}}
+{{end}}
+{{sendMessage $p "Done! marked this post as concluded and will now close in 12 hours."}}
+{{scheduleUniqueCC .CCID nil 43200 (print $p "expire") (cslice $p "expire")}}
+{{return}}
+{{end}}
+
+{{if eq (index .ExecData 0) "acceptConcluded"}}
+{{$m := getMessage (toInt (index .ExecData 1)) (toInt (index .ExecData 2))}}
+{{$p := toInt (index (reFindAll `\d{16,20}` $m.Content) 1)}}
+{{if getChannelOrThread $p}}
+{{editThread $p (sdict "tags" (cslice $db.t))}}
+{{sendMessage $p "Done! this post has been marked as concluded and will close in 12 hours."}}
+{{scheduleUniqueCC .CCID nil 43200 (print $p "expire") (cslice $p "expire")}}
+{{dbSetExpire $p "forumSupportExpire" "a" (toInt 43200)}}
+{{end}}
+{{$e := structToSdict (index $m.Embeds 0)}}
+{{$e.Set "color" 0x00FF00}}
+{{$b := cslice (sdict "disabled" true "label" "Accept" "style" "green" "custom_id" "forumSupportAcceptConcluded" "emoji" (sdict "id" "1526085926340788375")) (sdict "disabled" true "label" "Decline" "style" "red" "custom_id" "forumSupportDeclineConcluded" "emoji" (sdict "id" "1526085880568348732"))}}
+{{try}}
+{{editMessage (toInt (index .ExecData 1)) (toInt (index .ExecData 2)) (complexMessageEdit "content" (print $m.Content "\n\n" .User.Mention " accepted this report and marked the post as concluded.") "buttons" $b "embed" (cembed $e))}}
+{{catch}}
+{{end}}
+{{return}}
+{{end}}
+{{if eq (index .ExecData 0) "declineConcluded"}}
+{{$m := getMessage (toInt (index .ExecData 1)) (toInt (index .ExecData 2))}}
+{{$e := structToSdict (index $m.Embeds 0)}}
+{{$e.Set "color" 0x00FF00}}
+{{$b := cslice (sdict "disabled" true "label" "Accept" "style" "green" "custom_id" "forumSupportAcceptConcluded" "emoji" (sdict "id" "1526085926340788375")) (sdict "disabled" true "label" "Decline" "style" "red" "custom_id" "forumSupportDeclineConcluded" "emoji" (sdict "id" "1526085880568348732"))}}
+{{try}}
+{{editMessage (toInt (index .ExecData 1)) (toInt (index .ExecData 2)) (complexMessageEdit "content" (print $m.Content "\n\n" .User.Mention " declined this report.") "buttons" $b "embed" (cembed $e))}}
+{{catch}}
+{{end}}
+{{return}}
+{{end}}
+{{$i := toInt (index .ExecData 0)}}
+{{$o := index $db.o $i}}
+{{$e := $o.emoji}}
+{{if reFind `^<:\S+:\d+>$` $e}}
+{{$e = print ":" (index (split $e ":") 1) ":"}}
+{{end}}
+{{if eq $o.type 2}}
+{{sendModal (sdict "custom_id" (print "forumSupportEdit" $i) "title" "Edit honeypot" "components" (cslice (clabel "label" "Option name" "component" (ctextInput "custom_id" "n" "value" (print $e " " $o.name) "required" true "max_length" 100)) (clabel "label" "Option description" "component" (ctextInput "custom_id" "d" "value" $o.desc "required" true "max_length" 100)) (clabel "label" "Honeypot message" "component" (ctextInput "custom_id" "m" "value" $o.message "required" true "style" 2 "max_length" 1000)) (clabel "label" "Delete" "component" (ccheckboxGroup "custom_id" "a" "options" (cslice (sdict "value" "1" "label" "Delete"))))))}}
+{{else}}
+{{$f := false}}
+{{$x := cslice}}
+{{if $db.f}}
+{{$f = getChannel $db.f}}
+{{if $f.AvailableTags}}
+{{range $t := $f.AvailableTags}}
+{{$x = $x.Append (sdict "value" (str $t.ID) "label" $t.Name "default" (eq $t.ID $o.tag))}}
+{{end}}
+{{end}}
+{{end}}
+{{if $x}}
+{{sendModal (sdict "custom_id" (print "forumSupportEdit" $i) "title" "Edit support option" "components" (cslice (clabel "label" "Option name" "component" (ctextInput "custom_id" "n" "value" (print $e " " $o.name) "required" true "max_length" 100)) (clabel "label" "Option description" "component" (ctextInput "custom_id" "d" "value" $o.desc "required" true "max_length" 100)) (clabel "label" "If selected, add this tag:" "component" (cmenu "placeholder" "Select a forum tag" "custom_id" "t" "type" "text" "options" $x)) (clabel "label" "Delete option" "component" (ccheckboxGroup "required" false "custom_id" "a" "options" (cslice (sdict "value" "1" "label" "Click here to delete this option"))))))}}
+{{else}}
+{{sendModal (sdict "custom_id" (print "forumSupportEdit" $i) "title" "Edit support option" "components" (cslice (clabel "label" "Option name" "component" (ctextInput "custom_id" "n" "value" (print $e " " $o.name) "required" true "max_length" 100)) (clabel "label" "Option description" "component" (ctextInput "custom_id" "d" "value" $o.desc "required" true "max_length" 100)) (clabel "label" "Delete" "component" (ccheckboxGroup "custom_id" "a" "options" (cslice (sdict "value" "1" "label" "Delete"))))))}}
+{{end}}
+{{end}}
+{{return}}
+{{end}}
+{{end}}
+{{$a := componentBuilder}}
+{{$a.Add "text" "# Support forum configuration"}}
+{{$a.Add "separator" false}}
+{{$a.Add "text" "Set up what options members can select when filling out the support modal, and decide what happens when each option is selected. Options can either act as a honeypot, preventing a new post from being opened and explaining why, or open a new post with a specific tag."}}
+{{$b := cbutton "emoji" (sdict "id" "1527138600414875678") "custom_id" "forumSupportOptions" "style" "secondary"}}
+{{$a.Add "buttons" (cslice $b)}}
+{{$a.Add "separator" false}}
+{{$a.Add "text" "Select which forum to use as the support forum, where YAGPDB will open new posts."}}
+{{if $db.f}}
+{{$a.Add "text" (print "> Currently selected: <#" $db.f ">")}}
+{{else}}
+{{$a.Add "text" "> Currently selected: none"}}
+{{end}}
+{{$a.Add "menus" (cmenu "placeholder" "Select a forum channel" "custom_id" "forumSupportForum" "type" "channel" "channel_types" (cslice 15))}}
+{{if $db.f}}
+{{$f := getChannel $db.f}}
+{{if $f.AvailableTags}}
+{{$a.Add "separator" false}}
+{{$a.Add "text" "Select which forum tag will be used to indicate that a support post has been concluded."}}
+{{$x := cslice}}
+{{range $t := $f.AvailableTags}}
+{{$x = $x.Append (sdict "value" (str $t.ID) "label" $t.Name "default" (eq (toInt $t.ID) (toInt $db.t)))}}
+{{end}}
+{{$a.Add "menus" (cmenu "min_values" 0 "placeholder" "Select the concluded tag" "custom_id" "forumSupportConcludedTag" "type" "text" "options" $x)}}
+{{end}}
+{{end}}
+{{$a.Add "separator" false}}
+{{$a.Add "text" "Select which channel or thread where members will be notified when a moderator deletes their support post, including the reason."}}
+{{if $db.n}}
+{{$a.Add "text" (print "> Currently selected: <#" $db.n ">")}}
+{{else}}
+{{$a.Add "text" "> Currently selected: none"}}
+{{end}}
+{{$a.Add "menus" (cmenu "min_values" 0 "placeholder" "Select a notification channel or thread" "custom_id" "forumSupportNotification" "type" "channel" "channel_types" (cslice 0 1 2 3 5 10 11 12 13 16))}}
+{{$a.Add "separator" false}}
+{{$a.Add "text" "Select which channel or thread will receive reports when members mark another member's support post as concluded."}}
+{{if $db.r}}
+{{$a.Add "text" (print "> Currently selected: <#" $db.r ">")}}
+{{else}}
+{{$a.Add "text" "> Currently selected: none"}}
+{{end}}
+{{$a.Add "menus" (cmenu "min_values" 0 "placeholder" "Select a reports channel or thread" "type" "channel" "custom_id" "forumSupportReport" "channel_types" (cslice 0 1 2 3 5 10 11 12 13 16))}}
+{{$a.Add "separator" false}}
+{{$a.Add "text" "Select which channel or thread will log newly created support posts."}}
+{{if $db.l}}
+{{$a.Add "text" (print "> Currently selected: <#" $db.l ">")}}
+{{else}}
+{{$a.Add "text" "> Currently selected: none"}}
+{{end}}
+{{$a.Add "menus" (cmenu "min_values" 0 "placeholder" "Select a logging channel or thread" "type" "channel" "custom_id" "forumSupportLogging" "channel_types" (cslice 0 1 2 3 5 10 11 12 13 16))}}
+{{$a.Add "separator" false}}
+{{$a.Add "text" "Append the support button to an existing YAGPDB message."}}
+{{$b = cbutton "emoji" (sdict "id" "1527138600414875678") "custom_id" "forumSupportMessage" "style" "secondary"}}
+{{$a.Add "buttons" (cslice $b)}}
+{{$c := componentBuilder "container" (sdict "components" $a)}}
+{{if .ExecData}}
+{{updateMessage $c}}
+{{else}}
+{{sendMessage nil $c}}
+{{end}}
