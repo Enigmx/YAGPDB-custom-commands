@@ -43,7 +43,7 @@
 {{end}}
 {{end}}
 {{end}}
-{{$a.Add "text" (print $v.emoji " **" $v.name "**\n> " $v.desc "\n> Tag: " $t)}}
+{{$a.Add "text" (print $v.emoji " **" $v.name  "**\n> " $v.desc "\n> Tag: " $t)}}
 {{end}}
 {{end}}
 {{else}}
@@ -52,7 +52,7 @@
 {{if $o}}
 {{$x := cslice}}
 {{range $i, $v := $o}}
-{{$z := sdict "label" $v.name "value" (str $i)}}
+{{$z := sdict "label" ( or $v.name "Empty option") "value" (str $i)}}
 {{if $v.emoji}}
 {{if (reFind `^<:\S+:\d+>$` $v.emoji)}}
 {{$z.Set "emoji" (sdict "id" (reFind `\d+` $v.emoji))}}
