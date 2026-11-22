@@ -1,0 +1,58 @@
+{{$db := (dbGet 0 "birthdayTracker").Value}}
+{{$str := ""}}
+{{$str2 := ""}}
+{{$str3 := ""}}
+{{$act := false}}
+{{range (($db.Get "list").Get (lower (str currentTime.Month)))}}
+{{$t := 0}}
+{{if lt .t 0}}
+{{$t = currentTime.Add (mult -1 (toDuration (print (mult -1 .t) "h")))}}
+{{else}}
+{{$t = currentTime.Add (toDuration (print .t "h"))}}
+{{end}}
+{{if and (eq (toInt $t.Day) .d) (lt (toInt $t.Hour) 9)}}
+{{$member := getMember .u}}
+{{if $member}}
+{{$ao := false}}
+{{range $db.roles}}
+{{if in $member.Roles (toInt .)}}
+{{$ao = true}}
+{{end}}
+{{end}}
+{{if $ao}}
+{{if .p}}
+{{$str = print $str "🟢 <@" .u "> - **" $member.User.Username "** (" .d "): day started " (toInt $t.Hour) " hour(s) ago\n"}}
+{{$act = true}}
+{{else}}
+{{$str = print $str "🔴 <@" .u "> - **" $member.User.Username "** (" .d "): day started " (toInt $t.Hour) " hour(s) ago, but does not want to be announced\n"}}
+{{end}}
+{{else}}
+{{$str = print $str "🔴 <@" .u "> - **" $member.User.Username "** (" .d "): day started " (toInt $t.Hour) " hour(s) ago, but does not have required role(s)\n"}}
+{{end}}
+{{else}}
+{{$str = print $str "🔴 <@" .u "> (" .d "): day started " (toInt $t.Hour) " hour(s) ago, but is not in the server\n"}}
+{{end}}
+{{else if (eq (toInt ($t.Add (toDuration "24h")).Day) .d)}}
+{{ if not (gt (toInt $t.Hour) 24) }}
+{{if .p}}
+{{$str2 = print $str2 "🟡 <@" .u "> (" .d "): day will start in " (sub 24 (toInt $t.Hour)) " hour(s) \n"}}
+{{else}}
+{{$str2 = print $str2 "🔴 <@" .u "> (" .d "): day will start in " (sub 24 (toInt $t.Hour)) " hour(s), but does not want to be announced \n"}}
+{{end}}
+{{ end }}
+{{end}}
+{{end}}
+{{$g := cslice}}
+{{range $db.tag}}
+{{$g = $g.Append (str .)}}
+{{end}}
+{{$str3 = joinStr "> <@" $g}}
+{{$col := 0x00FF00}}
+{{if $act}}
+{{$col = 0xFF0000}}
+{{end}}
+{{if and $act $str3}}
+{{sendMessage $db.channel (complexMessage "content" (print "<@" $str3 ">") "buttons" (cslice (cbutton "emoji" (sdict "id" "1526085926340788375") "custom_id" "birthdayNotificationConclude" "style" "green" "disabled" (not $act))) "embed" (cembed "color" $col "title" "🪅 ∙ Birthdays" "description" (print (or $str "None") "\n### Upcoming\n" (or $str2 "None"))))}}
+{{else}}
+{{sendMessage $db.channel (complexMessage "buttons" (cslice (cbutton "emoji" (sdict "id" "1526085926340788375") "custom_id" "birthdayNotificationConclude" "style" "green" "disabled" (not $act))) "embed" (cembed "color" $col "title" "🪅 ∙ Birthdays" "description" (print (or $str "None") "\n### Upcoming\n" (or $str2 "None"))))}}
+{{end}}
