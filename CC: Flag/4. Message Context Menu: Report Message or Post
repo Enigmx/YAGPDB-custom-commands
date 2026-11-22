@@ -1,0 +1,1 @@
+{{sendModal (sdict "custom_id" (print "flagMessageContext" .Message.ID) "title" "Report" "components" (cslice (clabel "label" "Reason" "component" (ctextInput "custom_id" "r" "style" 2 "required" true "max_length" 1000))))}}
