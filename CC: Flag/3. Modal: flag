@@ -103,4 +103,140 @@ Select which channel or thread to forward delete reasons to
 {{execCC (toInt (index ($db.Get "config") 2)) nil 0 "admin"}} 
 {{return}}
 {{end}}
-{{/* https://github.com/Enigmx/YAGPDB-custom-commands/tree/main/CC%3A%20Flag */}}
+
+{{if in .CustomID "flagMessageContext"}}
+{{$db := (dbGet 0 "flagCC").Value}}
+{{if not $db}}
+Reporting isn't set up yet :(
+{{ephemeralResponse}}
+{{return}}
+{{end}}
+{{if dbGet .User.ID "flagCCRestrict"}}
+You are restricted from using this tool :( contact Staff members regarding appeals.
+{{ephemeralResponse}}
+{{return}}
+{{end}}
+{{$q := getMessage .Channel.ID (toInt (reFind `\d+` .CustomID))}}
+{{if not $q}}
+Message not found :(
+{{ephemeralResponse}}
+{{return}}
+{{end}}
+{{$n := (.ModalValues.Get "r").Get "value"}}
+{{$c := toInt (index $db.config 0)}}
+{{$r := str .Channel.ID}}
+{{if .Channel.IsThread}}
+{{$r = str .Channel.ParentID}}
+{{end}}
+{{with $db.logs.Get $r}}
+{{$c = toInt .}}
+{{end}}
+{{if not $c}}
+No report channel is configured, contact Server Staff.
+{{ephemeralResponse}}
+{{return}}
+{{end}}
+{{$i := ""}}
+{{if $q.Attachments}}
+{{$i = (index $q.Attachments 0).URL}}
+{{end}}
+{{$m := sdict "image" (sdict "url" $i) "description" $q.Content "author" (sdict "name" $q.Author.Username "icon_url" ($q.Author.AvatarURL "512"))}}
+{{$p := cslice (cbutton "emoji" (sdict "id" "1526085926340788375") "style" "green" "custom_id" "flagConcluded") (cbutton "emoji" (sdict "id" "1527136247259205683") "style" "grey" "custom_id" "flagNote") (cbutton "emoji" (sdict "id" "1527138600414875678") "style" "grey" "custom_id" "flagConfig")}}
+{{$a := .Channel.ID}}
+{{$w := "message"}}
+{{$k := print "🗨️ • **Message report**: " .Message.ID ", sent by <@" $q.Author.ID ">\n"}}
+{{if eq .Channel.ID $q.ID}}
+{{$a = .Channel.ParentID}}
+{{$w = "post"}}
+{{$k = print "📜 • **Post report**: <#" .Channel.ID ">, created by <@" .Channel.OwnerID ">\n"}}
+{{$m.Set "title" .Channel.Name}}
+{{$p = $p.Append (cbutton "label" "Delete post" "emoji" (sdict "id" "1526085970263281755") "style" "grey" "custom_id" "flagDeletePost")}}
+{{else}}
+{{$p = $p.Append (cbutton "label" "Delete message" "emoji" (sdict "id" "1526113479315165255") "style" "grey" "custom_id" "flagDeleteMessage")}}
+{{end}}
+{{$o := print $k "Report made by <@" .User.ID ">\nLocation: <#" $a ">"}}
+{{$e := cembed "author" (sdict "name" .User.Username "icon_url" (.User.AvatarURL "512")) "description" $n "color" 0xFF0000}}
+{{$list := $db.Get "tags"}}
+{{$time := cslice}}
+{{$hour := currentTime.Hour}}
+{{$ch := str .Channel.ID}}
+{{if .Channel.IsThread}}
+{{$ch = str .Channel.ParentID}}
+{{end}}
+{{$0 := ""}}
+{{$1 := ""}}
+{{if or (ge $hour 20) (lt $hour 4)}}{{$time = $time.Append "1"}}{{end}}
+{{if or (ge $hour 17) (lt $hour 1)}}{{$time = $time.Append "2"}}{{end}}
+{{if and (ge $hour 13) (lt $hour 21)}}{{$time = $time.Append "3"}}{{end}}
+{{if and (ge $hour 10) (lt $hour 18)}}{{$time = $time.Append "4"}}{{end}}
+{{if and (ge $hour 7) (lt $hour 15)}}{{$time = $time.Append "5"}}{{end}}
+{{if and (ge $hour 4) (lt $hour 12)}}{{$time = $time.Append "6"}}{{end}}
+{{range $k , $v := $list}}
+{{$c1 := false}}{{$c2 := false}}{{$c3 := false}}
+{{if eq ($v.Get "mode") 1}}
+{{$c1 = true}}
+{{end}}
+{{if ($v.Get "zone")}}
+{{range $time}}
+{{if in ($v.Get "zone") .}}
+{{$c2 = true}}
+{{break}}
+{{end}}
+{{end}}
+{{else}}
+{{$c2 = true}}
+{{end}}
+{{if ($v.Get "channels") }}
+{{if in ($v.Get "channels") $ch}}
+{{$c3 = true}}
+{{end}}
+{{else}}
+{{$c3 = true}}
+{{end}}
+{{if and $c1 $c2 $c3}}
+{{$1 = print $1 " <@" $k ">"}}
+{{else if and (not $c1) $c2 $c3}}
+{{$0 = print $0 " <@" $k ">"}}
+{{end}}
+{{end}}
+{{$g := false}}
+{{$d := (dbGet $q.ID "flagCC").Value}}
+{{if $d}}
+{{$g = getMessage (index $d 0) (index $d 1)}}
+{{end}}
+{{if not $g}}
+{{if $0}}
+{{$o = print $o "\n> " $0}}
+{{end}}
+{{$d = sendMessageRetID $c (complexMessage "content" $o "components" $p "embed" (cslice (cembed $m) $e))}}
+{{dbSetExpire $q.ID "flagCC" (cslice $c $d) 432000}}
+{{else}}
+{{$s := split $g.Content "\n"}}
+{{if in (index $s 1) (str .User.ID)}}
+You have already made a report regarding this {{$w}}. If you believe it was missed by Server Staff, or if it's urgent, you may have to resort to direct reporting through DMs of a Staff member.
+{{ephemeralResponse}}
+{{return}}
+{{end}}
+{{$x := index $g.Embeds 1}}
+{{$b := structToSdict $x}}
+{{$f := print $x.Description "\n\n<@" .User.ID ">: " $n}}
+{{if in $x.Author.Name "👥"}}
+{{if and (eq (len (reFindAll `\d+` (index $s 1))) 2) $1 (not (in $g.Content "concluded"))}}
+{{sendMessage $g.ChannelID (complexMessage "content" (print "❗**• Urgent report**\n" $1 "\n** **") "reply" $g.ID)}}
+{{end}}
+{{else}}
+{{$f = print "<@" (reFind `\d+` (index $s 1)) ">: " $f}}
+{{$b.Set "author" (sdict "icon_url" "" "name" "👥 • From multiple people")}}
+{{end}}
+{{$b.Set "description" $f}}
+{{$l := cslice}}
+{{range $s}}
+{{$l = $l.Append .}}
+{{end}}
+{{$l.Set 1 (print (index $s 1) ", <@" .User.ID ">")}}
+{{editMessage $g.ChannelID $g.ID (complexMessage "components" (index $g.Components 0).Components "content" (joinStr "\n" $l) "embed" (cslice (index $g.Embeds 0) $b))}}
+{{end}}
+Sent your report to Server Staff 😊
+{{ephemeralResponse}}
+{{return}}
+{{end}}
