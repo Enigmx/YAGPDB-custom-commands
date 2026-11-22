@@ -10,7 +10,7 @@
 {{end}}
 {{if not (getChannel .Channel.ParentID).IsForum}}
 {{if not .Channel.IsForum}}
-This command can only be used in the support forum.
+This command can only be used in the support forum
 {{return}}
 {{end}}
 {{end}}
@@ -18,6 +18,8 @@ This command can only be used in the support forum.
 {{if not $db.t}}
 {{return}}
 {{end}}
+{{$db.Set "ccid3" .CCID}}
+{{dbSet 0 "forumSupport" $db}}
 {{$f := .Channel.ID}}
 {{if .Channel.IsThread}}
 {{$f = .Channel.ParentID}}
@@ -27,11 +29,12 @@ This command can only be used in the support forum
 {{return}}
 {{end}}
 {{$m := getMessage .Channel.ID .Channel.ID}}
-{{$u := 0}}
+{{$u := .Channel.OwnerID}}
+{{if eq $u 204255221017214977}}
 {{try}}
 {{$u = index (reFindAll `\d+` $m.Content) 0}}
 {{catch}}
-{{$u = $.Channel.OwnerID}}
+{{end}}
 {{end}}
 {{$ok := hasAnyPermissions 8192}}
 {{if eq (toInt $u) .User.ID }}
@@ -42,8 +45,12 @@ This command can only be used in the support forum
 Only Server Staff and post owner can use this tool :(
 {{return}}
 {{end}}
-{{sendMessage $db.r (complexMessage "content" (print .User.Mention " is marking this post as concluded: <#" .Channel.ID ">") "buttons" (cslice (cbutton "emoji" (sdict "id" "1526085926340788375") "custom_id" "forumToolsAcceptConcluded" "style" "green") (cbutton "emoji" (sdict "id" "1526085880568348732") "custom_id" "forumToolsDeclineConcluded" "style" "red")) "embed" (cembed "title" .Channel.Name "description" $m.Content "color" 0xFF0000))}}
-Notified Server Staff
+{{if $m}}
+{{sendMessage $db.r (complexMessage "content" (print .User.Mention " is marking this post as concluded: <#" .Channel.ID ">") "buttons" (cslice (cbutton "emoji" (sdict "id" "1526085926340788375") "custom_id" "forumSupportAcceptConcluded" "style" "green") (cbutton "emoji" (sdict "id" "1526085880568348732") "custom_id" "forumSupportDeclineConcluded" "style" "red")) "embed" (cembed "title" .Channel.Name "description" $m.Content "color" 0xFF0000))}}
+{{else}}
+{{sendMessage $db.r (complexMessage "content" (print .User.Mention " is marking this post as concluded: <#" .Channel.ID ">") "buttons" (cslice (cbutton "emoji" (sdict "id" "1526085926340788375") "custom_id" "forumSupportAcceptConcluded" "style" "green") (cbutton "emoji" (sdict "id" "1526085880568348732") "custom_id" "forumSupportDeclineConcluded" "style" "red")) "embed" (cembed "title" .Channel.Name "description" "[Original message has been deleted]" "color" 0xFF0000))}}
+{{end}}
+Notified Server Staff 👍
 {{return}}
 {{end}}
 {{editThread .Channel.ID (sdict "tags" (cslice $db.t))}}
