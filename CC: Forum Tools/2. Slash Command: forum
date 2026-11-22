@@ -1,5 +1,5 @@
 {{/* configuration */}}
-{{$mod := 1266640791741267979}}
+{{$mod := 0}}
 {{$notificationChannel := 1}}
 {{/* end configuration */}}
 
@@ -18,7 +18,7 @@
 {{end}}
 {{end}}
 {{end}}
-{{sendMessage $notificationChannel (complexMessage "content" (print "<@" (index .ExecData 3) ">") "embed" (cembed "title" "❗ A moderator deleted your post" "description" (print "**__Reason:__**\n" (index .ExecData 2))))}}
+{{sendMessage $notificationChannel (complexMessage "content" (print "<@" (index .ExecData 3) ">") "embed" (cembed "title" "❗ • Server Staff deleted your post" "description" (print "**__Reason:__** " (index .ExecData 2))))}}
 {{end}}
 {{end}}
 {{return}}
@@ -251,12 +251,13 @@ No tags exist in this forum...
 {{$a = $a.Append (sdict "label" .Name "value" .Name "default" $t)}}
 {{end}}
 {{end}}
-{{sendMessage nil (complexMessage "menus" (cmenu "type" "text" "placeholder" "Change tags" "custom_id" "forumToolsModifyTags" "options" $a "min_values" 1 "max_values" (len $a)))}}
+{{sendResponse nil (complexMessage "menus" (cmenu "type" "text" "placeholder" "Change tags" "custom_id" "forumToolsModifyTags" "options" $a "min_values" 1 "max_values" (len $a)))}}
 {{return}}
 {{end}}
 {{if eq .SubCommand "closing"}}
 {{if and (not (in .Member.Roles $mod)) (not (eq .User.ID .Channel.OwnerID))}}
 Only moderators of the server and the post creator can use this tool :(
+{{ephemeralResponse}}
 {{return}}
 {{end}}
 {{if not (getChannel .Channel.ParentID).IsForum}}
