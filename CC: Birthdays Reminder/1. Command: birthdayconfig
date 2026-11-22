@@ -1,0 +1,158 @@
+{{$admin := cslice 0}}
+
+{{$db := (dbGet 0 "birthdayTracker").Value}}
+{{if not $db}}
+{{$db = sdict
+"ccid" .CCID
+"list" (sdict
+"january" (cslice)
+"february" (cslice)
+"march" (cslice)
+"april" (cslice)
+"may" (cslice)
+"june" (cslice)
+"july" (cslice)
+"august" (cslice)
+"september" (cslice)
+"october" (cslice)
+"november" (cslice)
+"december" (cslice))
+"channel" 0
+"tag" (cslice)
+"roles" (cslice)
+"a" $admin
+"messages" (cslice 0 0 0 0 0 0 0)}}
+{{dbSet 0 "birthdayTracker" $db}}
+{{end}}
+{{$db.Set "a" $admin}}
+{{dbSet 0 "birthdayTracker" $db}}
+{{if .ExecData}}
+{{if eq (kindOf .ExecData) "slice"}}
+{{$c := toInt (index .ExecData 0)}}
+{{$m := cslice}}
+{{range (cslice
+(cslice (sdict "n" "January" "k" "january") (sdict "n" "February" "k" "february"))
+(cslice (sdict "n" "March" "k" "march") (sdict "n" "April" "k" "april"))
+(cslice (sdict "n" "May" "k" "may") (sdict "n" "June" "k" "june"))
+(cslice (sdict "n" "July" "k" "july") (sdict "n" "August" "k" "august"))
+(cslice (sdict "n" "September" "k" "september") (sdict "n" "October" "k" "october"))
+(cslice (sdict "n" "November" "k" "november") (sdict "n" "December" "k" "december")))}}
+{{$a := ""}}
+{{range .}}
+{{$a = print $a "## " .n "\n"}}
+{{$d := 0}}
+{{$x := ""}}
+{{range $db.list.Get .k}}
+{{if ne .d $d}}
+{{if $x}}
+{{$a = print $a $x "\n"}}
+{{end}}
+{{$d = .d}}
+{{$x = print "**" $d ".** "}}
+{{else}}
+{{$x = print $x " "}}
+{{end}}
+{{$x = print $x "<@" .u ">"}}
+{{end}}
+{{if $x}}
+{{$a = print $a $x "\n"}}
+{{end}}
+{{$a = print $a "\n"}}
+{{end}}
+{{$m = $m.Append $a}}
+{{end}}
+{{$i := 0}}
+{{$ids := cslice $c}}
+{{range $m}}
+{{$r := componentBuilder}}
+{{$r.Add "text" .}}
+{{$r.Add "allowed_mentions" (sdict "parse" (cslice))}}
+{{if eq $i 5}}
+{{$r.Add "buttons" (cbutton "label" "Add me" "emoji" (sdict "id" "1527450008197009498") "custom_id" "birthdayPublicAdd" "style" "green")}}
+{{end}}
+{{$id := sendMessageRetID $c $r}}
+{{$ids = $ids.Append $id}}
+{{if lt $i 5}}
+{{sleep 2}}
+{{end}}
+{{$i = add $i 1}}
+{{end}}
+{{$db.Set "messages" $ids}}
+{{dbSet 0 "birthdayTracker" $db}}
+{{return}}
+{{end}}
+
+{{if or (eq .ExecData 2) (eq .ExecData 3)}}
+{{$m := cslice
+(sdict "label" "January" "value" "january")
+(sdict "label" "February" "value" "february")
+(sdict "label" "March" "value" "march")
+(sdict "label" "April" "value" "april")
+(sdict "label" "May" "value" "may")
+(sdict "label" "June" "value" "june")
+(sdict "label" "July" "value" "july")
+(sdict "label" "August" "value" "august")
+(sdict "label" "September" "value" "september")
+(sdict "label" "October" "value" "october")
+(sdict "label" "November" "value" "november")
+(sdict "label" "December" "value" "december")}}
+{{$t := cslice}}
+{{$h := ""}}
+{{range seq -11 14}}
+{{if lt . 0}}
+{{$h = currentTime.Add (mult -1 (toDuration (print (mult . -1) "h")))}}
+{{else}}
+{{$h = currentTime.Add (toDuration (print . "h"))}}
+{{end}}
+{{$t = $t.Append (sdict "label" (print (formatTime $h "15") ":00, " (formatTime $h "January 2")) "value" (str .))}}
+{{end}}
+{{$c := cslice}}
+{{if eq .ExecData 3}}
+{{$c = $c.Append (clabel "label" "In behalf of (ID)" "component" (ctextInput "max_length" 20 "custom_id" "u" "style" 1 "required" true))}}
+{{end}}
+{{$c = $c.Append (clabel "label" "Day" "component" (ctextInput "max_length" 2 "custom_id" "d" "style" 1 "required" true))}}
+{{$c = $c.Append (clabel "label" "Month" "component" (cmenu "type" "text" "custom_id" "m" "options" $m "required" true))}}
+{{$c = $c.Append (clabel "label" "Your current time" "description" "Dont worry if your country uses daylight savings, we use this to estimate when your day starts" "component" (cmenu "type" "text" "custom_id" "t" "options" $t "required" true))}}
+{{$c = $c.Append (clabel "label" "Do we announce your birthday?" "component" (ccheckboxGroup "required" false "custom_id" "a" "options" (cslice (sdict "value" "1" "label" "Yes, announce my birthday"))))}}
+{{sendModal (sdict "custom_id" "birthdayPublicAdd" "title" "Add birthday" "components" $c)}}
+{{return}}
+{{end}}
+{{end}}
+{{$a := componentBuilder}}
+{{$a.Add "text" "# Birthdays system configuration"}}
+{{$a.Add "separator" false}}
+{{$a.Add "text" "View list of those who are registered"}}
+{{$a.Add "buttons" (cbutton "emoji" (sdict "id" "1527138600414875678") "custom_id" "birthdayConfigList" "style" "grey")}}
+{{$a.Add "separator" false}}
+{{$a.Add "text" "Opt in or out to be tagged when I remind you"}}
+{{$a.Add "buttons" (cslice (cbutton "emoji" (sdict "id" "1527450008197009498") "custom_id" "birthdayConfigOptIn" "style" "green") (cbutton "emoji" (sdict "id" "1527457280017043626") "custom_id" "birthdayConfigOptOut" "style" "red"))}}
+{{$a.Add "separator" false}}
+{{$a.Add "text" "Remove someone from being reminded"}}
+{{$a.Add "buttons" (cbutton "emoji" (sdict "id" "1527457280017043626") "custom_id" "birthdayConfigRemove" "style" "red")}}
+{{$a.Add "separator" false}}
+{{$a.Add "text" "Select channel or thread where I remind you whose birthday it is today"}}
+{{$d := cslice}}
+{{if $db.channel}}
+{{$d = cslice (sdict "ID" (str $db.channel) "type" "channel")}}
+{{end}}
+{{$a.Add "menus" (cmenu "placeholder" "Select a reminder channel" "custom_id" "birthdayConfigChannel" "type" "channel" "channel_types" (cslice 0 10 11 12) "required" true "default_values" $d)}}
+{{$a.Add "separator" false}}
+{{$a.Add "text" "Select roles of people who are getting birthdays announced"}}
+{{$d = cslice}}
+{{range $db.roles}}
+{{$d = $d.Append (sdict "ID" (str .) "type" "role")}}
+{{end}}
+{{$a.Add "menus" (cmenu "placeholder" "Select roles" "custom_id" "birthdayConfigRoles" "type" "role" "min_values" 0 "max_values" 25 "default_values" $d)}}
+{{$a.Add "separator" false}}
+{{$a.Add "text" "Send a public list of birthdays with the button to opt in"}}
+{{$d = cslice}}
+{{if (index $db.messages 0)}}
+{{$d = cslice (sdict "ID" (str (index $db.messages 0)) "type" "channel")}}
+{{end}}
+{{$a.Add "menus" (cmenu "placeholder" "Select a channel" "custom_id" "birthdayConfigPublic" "type" "channel" "channel_types" (cslice 0 10 11 12))}}
+{{$c := componentBuilder "container" (sdict "components" $a)}}
+{{if .ExecData}}
+{{updateMessage $c}}
+{{else}}
+{{sendMessage nil $c}}
+{{end}}
