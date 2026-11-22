@@ -1,28 +1,13 @@
 {{$defaultReportChannel := 0}}
 {{$admin := 0}}
 
-{{define "a"}}
-Sent your report to Server Staff 😊
-{{ephemeralResponse}}
-{{end}}
+{{if not $defaultReportChannel}}No default report channel configured{{return}}{{end}}
+{{define "a"}}Sent your report to Server Staff 😊
+{{ephemeralResponse}}{{end}}
 {{$db := (dbGet 0 "flagCC").Value}}
-{{if not $db}}
-{{$db = sdict "config" (cslice $defaultReportChannel $admin .CCID 0) "logs" (sdict) "tags" (sdict)}}
-{{dbSet 0 "flagCC" $db}}
-{{end}}
-{{$db.Set "config" (cslice $defaultReportChannel $admin .CCID (index ($db.Get "config") 3))}}
-{{dbSet 0 "flagCC" $db}}
-{{if .ExecData}}
-{{if eq .ExecData "admin"}}
-{{$a := componentBuilder}}
-{{$str := ""}}
-{{range $k , $v := ($db.Get "logs")}}
-{{$str = print $str "\nReports from <#" $k "> go to <#" $v ">"}}
-{{end}}
-{{$a.Add "text" (print "# Administrator panel\n\n**Report logging channels**\nSelect where reports are forwarded to when they come from a specific channel.\n> Default log channel: <#" (index ($db.Get "config") 0) ">" $str)}}
-{{$a.Add "buttons" (cbutton "label" "Add" "emoji" (sdict "id" "1527450008197009498") "custom_id" "flagAddLog" "style" "grey")}}
-{{$str2 := "> Current status: Disabled"}}
-{{if eq (index ($db.Get "config") 3) 1}}
+{{if not $db}}{{$db = sdict "config" (cslice $defaultReportChannel $admin .CCID 0) "logs" (sdict) "tags" (sdict)}}{{dbSet 0 "flagCC" $db}}{{end}}{{$db.Set "config" (cslice $defaultReportChannel $admin .CCID (index ($db.Get "config") 3))}}{{dbSet 0 "flagCC" $db}}
+{{if .ExecData}}{{if eq .ExecData "admin"}}{{$a := componentBuilder}}{{$str := ""}}{{range $k , $v := ($db.Get "logs")}}{{$str = print $str "\nReports from <#" $k "> go to <#" $v ">"}}{{end}}{{$a.Add "text" (print "# Administrator panel\n\n**Report logging channels**\nSelect where reports are forwarded to when they come from a specific channel.\n> Default log channel: <#" (index ($db.Get "config") 0) ">" $str)}}
+{{$a.Add "buttons" (cbutton "label" "Add" "emoji" (sdict "id" "1527450008197009498") "custom_id" "flagAddLog" "style" "grey")}}{{$str2 := "> Current status: Disabled"}}{{if eq (index ($db.Get "config") 3) 1}}
 {{$str2 = "> Current status: Use pinned posts"}}
 {{else if (index ($db.Get "config") 3)}}
 {{$str2 = print "> Current status: Use <#" (index ($db.Get "config") 3) ">"}}
