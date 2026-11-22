@@ -50,13 +50,11 @@ ___
 
 ⚙️ **Extra configuration**: Configure the first section of the code as follows:
 - **{{$admin := cslice 0}}**: Replace `0` with the role IDs of your admin roles, separated by spaces (for example `cslice 123456789012345678 987654321098765432`). These are the roles allowed to use the buttons and menus. Being a server administrator is not enough, you need one of these roles. If you change this line later, run the command again to apply it.
-
-❗ **Warning**: The command does not check roles by itself, so set the role restrictions above to keep members out of the settings.
 ___
 
 ### Code #2
 **Trigger type**: Component  
-**Trigger**: ^birthday (regex)  
+**Trigger**: birthday (regex)  
 **Response**: Paste code from file #2  
 **Role restrictions**: None  
 **Channel restrictions**: None  
@@ -66,7 +64,7 @@ ___
 
 ### Code #3
 **Trigger type**: Modal  
-**Trigger**: ^birthday (regex)  
+**Trigger**: birthday (regex)  
 **Response**: Paste code from file #3  
 **Role restrictions**: None  
 **Channel restrictions**: None  
@@ -83,4 +81,4 @@ ___
 
 ⚙️ **Extra configuration**: None
 ___
-Once everything is set up, run **-birthdayconfig** once to create the database. Then pick the reminder channel, pick the roles, press **Opt in** if you want to be tagged, and send the public list. Make sure the bot can see and write in both channels. You can now tell your members to press **Add me**.
+You can begin use should everything be set up until this point.
