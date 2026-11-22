@@ -1,0 +1,246 @@
+{{$db := (dbGet 0 "birthdayTracker").Value}}
+{{$adm := false}}
+{{range $db.a}}
+{{if in $.Member.Roles (toInt .)}}
+{{$adm = true}}
+{{end}}
+{{end}}
+
+{{if .ExecData}}
+{{if eq .ExecData 1}}
+{{$a := ""}}
+{{range (cslice (sdict "n" "January" "k" "january") (sdict "n" "February" "k" "february") (sdict "n" "March" "k" "march"))}}
+{{$l := $db.list.Get .k}}
+{{$x := ""}}
+{{range $l}}
+{{if $x}}
+{{$x = print $x ", "}}
+{{end}}
+{{$x = print $x "<@" .u "> (" .d ")"}}
+{{end}}
+{{if not $x}}
+{{$x = "None"}}
+{{end}}
+{{$a = print $a "**" .n "**: " $x "\n\n"}}
+{{end}}
+{{$b1 := cbutton "emoji" (sdict "id" "1527138600414875678") "custom_id" "birthdayConfigSelect" "style" "grey"}}
+{{$b2 := cbutton "emoji" (sdict "id" "1527450008197009498") "custom_id" "birthdayConfigAdd" "style" "green"}}
+{{$b3 := cbutton "emoji" (sdict "id" "1527457280017043626") "custom_id" "birthdayConfigRemoveUser" "style" "red"}}
+{{$b4 := cbutton "emoji" (sdict "id" "1548876258023186523") "custom_id" "birthdayConfigPage4" "style" "grey"}}
+{{$b5 := cbutton "emoji" (sdict "id" "1548876309256474664") "custom_id" "birthdayConfigPage2" "style" "grey"}}
+{{$v := componentBuilder}}
+{{$v.Add "text" "# Birthday list"}}
+{{$v.Add "separator" false}}
+{{$v.Add "text" $a}}
+{{$v.Add "separator" false}}
+{{$v.Add "buttons" (cslice $b4 $b2 $b1 $b3 $b5)}}
+{{$v = componentBuilder "container" (sdict "components" $v)}}
+{{$v.Add "allowed_mentions" (sdict "parse" (cslice))}}
+{{updateMessage $v}}
+{{return}}
+{{end}}
+
+{{if eq .ExecData 2}}
+{{$a := ""}}
+{{range (cslice (sdict "n" "April" "k" "april") (sdict "n" "May" "k" "may") (sdict "n" "June" "k" "june"))}}
+{{$l := $db.list.Get .k}}
+{{$x := ""}}
+{{range $l}}
+{{if $x}}
+{{$x = print $x ", "}}
+{{end}}
+{{$x = print $x "<@" .u "> (" .d ")"}}
+{{end}}
+{{if not $x}}
+{{$x = "None"}}
+{{end}}
+{{$a = print $a "**" .n "**: " $x "\n\n"}}
+{{end}}
+{{$b1 := cbutton "emoji" (sdict "id" "1548876258023186523") "custom_id" "birthdayConfigPage1" "style" "grey"}}
+{{$b2 := cbutton "emoji" (sdict "id" "1527138600414875678") "custom_id" "birthdayConfigSelect" "style" "grey"}}
+{{$b3 := cbutton "emoji" (sdict "id" "1527450008197009498") "custom_id" "birthdayConfigAdd" "style" "green"}}
+{{$b4 := cbutton "emoji" (sdict "id" "1527457280017043626") "custom_id" "birthdayConfigRemoveUser" "style" "red"}}
+{{$b5 := cbutton "emoji" (sdict "id" "1548876309256474664") "custom_id" "birthdayConfigPage3" "style" "grey"}}
+{{$v := componentBuilder}}
+{{$v.Add "text" "# Birthday list"}}
+{{$v.Add "separator" false}}
+{{$v.Add "text" $a}}
+{{$v.Add "separator" false}}
+{{$v.Add "buttons" (cslice $b1 $b3 $b2 $b4 $b5)}}
+{{$v = componentBuilder "container" (sdict "components" $v)}}
+{{$v.Add "allowed_mentions" (sdict "parse" (cslice))}}
+{{updateMessage $v}}
+{{return}}
+{{end}}
+
+{{if eq .ExecData 3}}
+{{$a := ""}}
+{{range (cslice (sdict "n" "July" "k" "july") (sdict "n" "August" "k" "august") (sdict "n" "September" "k" "september"))}}
+{{$l := $db.list.Get .k}}
+{{$x := ""}}
+{{range $l}}
+{{if $x}}
+{{$x = print $x ", "}}
+{{end}}
+{{$x = print $x "<@" .u "> (" .d ")"}}
+{{end}}
+{{if not $x}}
+{{$x = "None"}}
+{{end}}
+{{$a = print $a "**" .n "**: " $x "\n\n"}}
+{{end}}
+{{$b1 := cbutton "emoji" (sdict "id" "1548876258023186523") "custom_id" "birthdayConfigPage2" "style" "grey"}}
+{{$b2 := cbutton "emoji" (sdict "id" "1527138600414875678") "custom_id" "birthdayConfigSelect" "style" "grey"}}
+{{$b3 := cbutton "emoji" (sdict "id" "1527450008197009498") "custom_id" "birthdayConfigAdd" "style" "green"}}
+{{$b4 := cbutton "emoji" (sdict "id" "1527457280017043626") "custom_id" "birthdayConfigRemoveUser" "style" "red"}}
+{{$b5 := cbutton "emoji" (sdict "id" "1548876309256474664") "custom_id" "birthdayConfigPage4" "style" "grey"}}
+{{$v := componentBuilder}}
+{{$v.Add "text" "# Birthday list"}}
+{{$v.Add "separator" false}}
+{{$v.Add "text" $a}}
+{{$v.Add "separator" false}}
+{{$v.Add "buttons" (cslice $b1 $b3 $b2 $b4 $b5)}}
+{{$v = componentBuilder "container" (sdict "components" $v)}}
+{{$v.Add "allowed_mentions" (sdict "parse" (cslice))}}
+{{updateMessage $v}}
+{{return}}
+{{end}}
+
+{{if eq .ExecData 4}}
+{{$a := ""}}
+{{range (cslice (sdict "n" "October" "k" "october") (sdict "n" "November" "k" "november") (sdict "n" "December" "k" "december"))}}
+{{$l := $db.list.Get .k}}
+{{$x := ""}}
+{{range $l}}
+{{if $x}}
+{{$x = print $x ", "}}
+{{end}}
+{{$x = print $x "<@" .u "> (" .d ")"}}
+{{end}}
+{{if not $x}}
+{{$x = "None"}}
+{{end}}
+{{$a = print $a "**" .n "**: " $x "\n\n"}}
+{{end}}
+{{$b1 := cbutton "emoji" (sdict "id" "1548876258023186523") "custom_id" "birthdayConfigPage3" "style" "grey"}}
+{{$b2 := cbutton "emoji" (sdict "id" "1527138600414875678") "custom_id" "birthdayConfigSelect" "style" "grey"}}
+{{$b3 := cbutton "emoji" (sdict "id" "1527450008197009498") "custom_id" "birthdayConfigAdd" "style" "green"}}
+{{$b4 := cbutton "emoji" (sdict "id" "1527457280017043626") "custom_id" "birthdayConfigRemoveUser" "style" "red"}}
+{{$b5 := cbutton "emoji" (sdict "id" "1548876309256474664") "custom_id" "birthdayConfigPage1" "style" "grey"}}
+{{$v := componentBuilder}}
+{{$v.Add "text" "# Birthday list"}}
+{{$v.Add "separator" false}}
+{{$v.Add "text" $a}}
+{{$v.Add "separator" false}}
+{{$v.Add "buttons" (cslice $b1 $b3 $b2 $b4 $b5)}}
+{{$v = componentBuilder "container" (sdict "components" $v)}}
+{{$v.Add "allowed_mentions" (sdict "parse" (cslice))}}
+{{updateMessage $v}}
+{{return}}
+{{end}}
+{{end}}
+
+{{if and (eq .CustomID "birthdayConfigRemove") $adm}}
+{{sendModal (sdict
+"custom_id" "birthdayConfigRemove"
+"title" "Remove from notifications"
+"components" (cslice
+(clabel "label" "User ID" "component" (ctextInput "custom_id" "u" "type" 1 "required" true))))}}
+{{return}}
+{{end}}
+
+{{if and (eq .CustomID "birthdayConfigAdd") $adm}}
+{{execCC $db.ccid nil 0 3}}
+{{return}}
+{{end}}
+
+{{if and $adm (eq .CustomID "birthdayConfigOptIn")}}
+{{$a := $db.tag}}
+{{if not (in $a .User.ID)}}
+{{$a = $a.Append .User.ID}}
+{{end}}
+{{$db.Set "tag" $a}}
+{{dbSet 0 "birthdayTracker" $db}}
+Added you to notifications
+{{ephemeralResponse}}
+{{return}}
+{{end}}
+
+{{if and $adm (eq .CustomID "birthdayConfigOptOut")}}
+{{$a := cslice}}
+{{range $db.tag}}
+{{if ne . $.User.ID}}
+{{$a = $a.Append .}}
+{{end}}
+{{end}}
+{{$db.Set "tag" $a}}
+{{dbSet 0 "birthdayTracker" $db}}
+Removed you from notifications
+{{ephemeralResponse}}
+{{return}}
+{{end}}
+
+{{if and (eq .CustomID "birthdayConfigChannel") $adm}}
+{{$db.Set "channel" (toInt (index .Values 0))}}
+{{dbSet 0 "birthdayTracker" $db}}
+{{execCC $db.ccid nil 0 1}}
+{{return}}
+{{end}}
+
+{{if and (eq .CustomID "birthdayConfigRoles") $adm}}
+{{$db.Set "roles" .Values}}
+{{dbSet 0 "birthdayTracker" $db}}
+{{execCC $db.ccid nil 0 1}}
+{{return}}
+{{end}}
+
+{{if and (eq .CustomID "birthdayConfigList") $adm}}
+{{execCC .CCID nil 0 1}}
+{{return}}
+{{end}}
+
+{{if and (eq .CustomID "birthdayConfigSelect") $adm}}
+{{execCC $db.ccid nil 0 1}}
+{{return}}
+{{end}}
+
+{{if and (in .CustomID "birthdayConfigPage") $adm}}
+{{$p := toInt (reFind `\d+` .CustomID)}}
+{{execCC .CCID nil 0 $p}}
+{{return}}
+{{end}}
+
+{{if and (eq .CustomID "birthdayConfigPublic") $adm}}
+{{execCC $db.ccid nil 0 .Values}}
+Sending messages...
+{{return}}
+{{end}}
+
+{{if eq .CustomID "birthdayPublicAdd"}}
+{{execCC $db.ccid nil 0 2}}
+{{return}}
+{{end}}
+
+{{if and (eq .CustomID "birthdayConfigRemoveUser") $adm}}
+{{sendModal (sdict
+"custom_id" "birthdayConfigRemoveUser"
+"title" "Remove from the birthday list"
+"components" (cslice
+(clabel "label" "User ID" "component" (ctextInput "custom_id" "u" "type" 1 "required" true))))}}
+{{return}}
+{{end}}
+
+{{if eq .CustomID "birthdayNotificationConclude"}}
+{{$m := getMessage .Channel.ID .Message.ID}}
+{{$e := structToSdict (index $m.Embeds 0)}}
+{{$e.Set "color" 0x00FF00}}
+{{updateMessage (complexMessageEdit
+"content" (print $m.Content "\n\n" .User.Mention " marked as concluded")
+"embed" (cembed $e)
+"buttons" (cslice (sdict
+"disabled" true
+"style" "success"
+"custom_id" "birthdayNotificationConclude"
+"emoji" (sdict "id" "1526085926340788375"))))}}
+{{return}}
+{{end}}
