@@ -1,0 +1,192 @@
+{{$db := (dbGet 0 "birthdayTracker").Value}}
+{{if .ExecData}}
+{{if (eq (index .ExecData 0) 4)}}
+{{$v := index .ExecData 1}}
+{{$u := .User.ID}}
+{{if ($v.Get "u")}}
+{{$u = toInt (($v.Get "u").Get "value")}}
+{{end}}
+{{$d := toInt (($v.Get "d").Get "value")}}
+{{$m := index (($v.Get "m").Get "value") 0}}
+{{$t := index (($v.Get "t").Get "value") 0 | toInt}}
+{{$p := 0}}
+{{if (($v.Get "a").Get "value")}}
+{{$p = 1}}
+{{end}}
+
+{{$o := ""}}
+{{range $n, $l := $db.list}}
+{{$x := cslice}}
+{{range $l}}
+{{if eq .u $u}}
+{{$o = $n}}
+{{else}}
+{{$x = $x.Append .}}
+{{end}}
+{{end}}
+{{$db.list.Set $n $x}}
+{{end}}
+
+{{$l := $db.list.Get $m}}
+{{$l = $l.Append (sdict "u" $u "d" $d "t" $t "p" $p)}}
+{{$l = sort $l (sdict "key" "d")}}
+{{$db.list.Set $m $l}}
+{{dbSet 0 "birthdayTracker" $db}}
+
+{{$i := 0}}
+{{range (cslice
+(cslice "january" "february")
+(cslice "march" "april")
+(cslice "may" "june")
+(cslice "july" "august")
+(cslice "september" "october")
+(cslice "november" "december"))}}
+{{if or (eq $m (index . 0)) (eq $m (index . 1)) (eq $o (index . 0)) (eq $o (index . 1))}}
+{{$a := ""}}
+{{range .}}
+{{$a = print $a "## " (title .) "\n"}}
+{{$z := 0}}
+{{$y := ""}}
+{{range $db.list.Get .}}
+{{if ne .d $z}}
+{{if $y}}
+{{$a = print $a $y "\n"}}
+{{end}}
+{{$z = .d}}
+{{$y = print "**" $z ".** "}}
+{{else}}
+{{$y = print $y " "}}
+{{end}}
+{{$y = print $y "<@" .u ">"}}
+{{end}}
+{{if $y}}
+{{$a = print $a $y "\n"}}
+{{end}}
+{{$a = print $a "\n"}}
+{{end}}
+{{if eq $i 5}}
+{{$r := componentBuilder}}
+{{$r.Add "text" $a}}
+{{$r.Add "allowed_mentions" (sdict "parse" (cslice))}}
+{{$r.Add "buttons" (cbutton "label" "Add me" "emoji" (sdict "id" "1527450008197009498") "custom_id" "birthdayPublicAdd" "style" "green")}}
+{{editMessage (index $db.messages 0) (index $db.messages (add $i 1)) $r}}
+{{else}}
+{{$r := componentBuilder}}
+{{$r.Add "text" $a}}
+{{$r.Add "allowed_mentions" (sdict "parse" (cslice))}}
+{{editMessage (index $db.messages 0) (index $db.messages (add $i 1)) $r}}
+{{end}}
+{{end}}
+{{if eq $i 5}}
+{{break}}
+{{end}}
+{{$i = add $i 1}}
+{{end}}
+Added birthday 🎉
+{{ephemeralResponse}}
+{{return}}
+{{end}}
+{{end}}
+{{if eq .CustomID "birthdayConfigRemove"}}
+{{$u := toInt ((.ModalValues.Get "u").Get "value")}}
+{{$t := cslice}}
+{{range $db.tag}}
+{{if ne . $u}}
+{{$t = $t.Append .}}
+{{end}}
+{{end}}
+{{$db.Set "tag" $t}}
+{{dbSet 0 "birthdayTracker" $db}}
+Removed user ID {{$u}} form the notification system
+{{ephemeralResponse}}
+{{return}}
+{{end}}
+{{if eq .CustomID "birthdayPublicAdd"}}
+{{$d := toInt (($.ModalValues.Get "d").Get "value")}}
+{{$m := index (($.ModalValues.Get "m").Get "value") 0}}
+{{$n := 31}}
+{{if or (eq $m "april") (eq $m "june") (eq $m "september") (eq $m "november")}}
+{{$n = 30}}
+{{else if eq $m "february"}}
+{{$n = 29}}
+{{end}}
+{{if or (lt $d 1) (gt $d $n) (ne (str $d) (($.ModalValues.Get "d").Get "value"))}}
+Day does not exist for this month ❔
+{{ephemeralResponse}}
+{{return}}
+{{end}}
+{{execCC .CCID nil 0 (cslice 4 .ModalValues)}}
+{{return}}
+{{end}}
+{{if eq .CustomID "birthdayConfigRemoveUser"}}
+{{$u := toInt ((.ModalValues.Get "u").Get "value")}}
+{{$o := ""}}
+{{range $n, $l := $db.list}}
+{{$x := cslice}}
+{{range $l}}
+{{if eq .u $u}}
+{{$o = $n}}
+{{else}}
+{{$x = $x.Append .}}
+{{end}}
+{{end}}
+{{$db.list.Set $n $x}}
+{{end}}
+{{if $o}}
+{{dbSet 0 "birthdayTracker" $db}}
+{{$i := 0}}
+{{range (cslice
+(cslice "january" "february")
+(cslice "march" "april")
+(cslice "may" "june")
+(cslice "july" "august")
+(cslice "september" "october")
+(cslice "november" "december"))}}
+{{if or (eq $o (index . 0)) (eq $o (index . 1))}}
+{{$a := ""}}
+{{range .}}
+{{$a = print $a "## " (title .) "\n"}}
+{{$z := 0}}
+{{$y := ""}}
+{{range $db.list.Get .}}
+{{if ne .d $z}}
+{{if $y}}
+{{$a = print $a $y "\n"}}
+{{end}}
+{{$z = .d}}
+{{$y = print "**" $z ".** "}}
+{{else}}
+{{$y = print $y " "}}
+{{end}}
+{{$y = print $y "<@" .u ">"}}
+{{end}}
+{{if $y}}
+{{$a = print $a $y "\n"}}
+{{end}}
+{{$a = print $a "\n"}}
+{{end}}
+{{if eq $i 5}}
+{{$r := componentBuilder}}
+{{$r.Add "text" $a}}
+{{$r.Add "allowed_mentions" (sdict "parse" (cslice))}}
+{{$r.Add "buttons" (cbutton "label" "Add me" "emoji" (sdict "id" "1527450008197009498") "custom_id" "birthdayPublicAdd" "style" "green")}}
+{{editMessage (index $db.messages 0) (index $db.messages (add $i 1)) $r}}
+{{else}}
+{{$r := componentBuilder}}
+{{$r.Add "text" $a}}
+{{$r.Add "allowed_mentions" (sdict "parse" (cslice))}}
+{{editMessage (index $db.messages 0) (index $db.messages (add $i 1)) $r}}
+{{end}}
+{{end}}
+{{if eq $i 5}}
+{{break}}
+{{end}}
+{{$i = add $i 1}}
+{{end}}
+Removed user ID {{$u}} from the birthday list
+{{else}}
+User ID {{$u}} was not found in the birthday list
+{{end}}
+{{ephemeralResponse}}
+{{return}}
+{{end}}
